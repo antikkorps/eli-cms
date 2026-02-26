@@ -8,6 +8,7 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRY: z.string().default('7d'),
   API_PORT: z.coerce.number().default(8080),
   CORS_ORIGINS: z.string().default('*'),
+  COOKIE_SECURE: z.enum(['true', 'false']).default('true').transform(v => v === 'true'),
 });
 
 export const env = envSchema.parse(process.env);

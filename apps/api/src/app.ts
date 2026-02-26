@@ -20,14 +20,15 @@ export function createApp() {
   app.use(securityHeaders);
   app.use(
     cors({
-      origin:
-        env.CORS_ORIGINS === '*'
-          ? '*'
-          : (ctx) => {
-              const origin = ctx.get('Origin');
-              const allowed = env.CORS_ORIGINS.split(',').map(s => s.trim());
-              return allowed.includes(origin) ? origin : '';
-            },
+      origin: (ctx) => {
+        const origin = ctx.get('Origin');
+        if (env.CORS_ORIGINS === '*') {
+          return origin || '*';
+        }
+        const allowed = env.CORS_ORIGINS.split(',').map(s => s.trim());
+        return allowed.includes(origin) ? origin : '';
+      },
+      credentials: true,
       allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
       allowHeaders: ['Content-Type', 'Authorization'],
       maxAge: 86400,

@@ -6,11 +6,18 @@ import type { JwtPayload } from '@eli-cms/shared';
 
 export async function authenticate(ctx: Context, next: Next) {
   const header = ctx.headers.authorization;
-  if (!header?.startsWith('Bearer ')) {
+  let token: string | undefined;
+
+  if (header?.startsWith('Bearer ')) {
+    token = header.slice(7);
+  } else {
+    token = ctx.cookies.get('eli_access') || undefined;
+  }
+
+  if (!token) {
     throw new AppError(401, 'Missing or invalid authorization header');
   }
 
-  const token = header.slice(7);
   try {
     const payload = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
     ctx.state.user = payload;

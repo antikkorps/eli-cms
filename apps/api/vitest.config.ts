@@ -9,6 +9,7 @@ export default defineConfig({
       JWT_SECRET: 'test-jwt-secret-min-10-chars',
       JWT_REFRESH_SECRET: 'test-jwt-refresh-secret-min-10-chars',
       API_PORT: '0',
+      COOKIE_SECURE: 'false',
     },
     globalSetup: './src/__tests__/global-setup.ts',
     setupFiles: ['./src/__tests__/helpers/setup.ts'],

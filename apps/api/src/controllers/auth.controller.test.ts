@@ -1,6 +1,26 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { agent, getAdminToken } from '../__tests__/helpers/setup.js';
 
+function extractCookies(res: { headers: Record<string, string | string[]> }): Record<string, string> {
+  const raw = res.headers['set-cookie'];
+  if (!raw) return {};
+  const arr = Array.isArray(raw) ? raw : [raw];
+  const map: Record<string, string> = {};
+  for (const c of arr) {
+    const [pair] = c.split(';');
+    const [name, ...rest] = pair.split('=');
+    map[name.trim()] = rest.join('=');
+  }
+  return map;
+}
+
+function getCookieHeader(res: { headers: Record<string, string | string[]> }): string {
+  const raw = res.headers['set-cookie'];
+  if (!raw) return '';
+  const arr = Array.isArray(raw) ? raw : [raw];
+  return arr.map(c => c.split(';')[0]).join('; ');
+}
+
 describe('Auth endpoints', () => {
   // ─── POST /api/auth/register ─────────────────────────
   describe('POST /api/auth/register', () => {
@@ -96,6 +116,25 @@ describe('Auth endpoints', () => {
       expect(res.body.data.refreshToken).toBeDefined();
     });
 
+    it('200 sets httpOnly cookies', async () => {
+      const res = await agent().post('/api/auth/login').send({
+        email: 'login@test.local',
+        password: 'password123',
+      });
+
+      expect(res.status).toBe(200);
+      const cookies = extractCookies(res);
+      expect(cookies['eli_access']).toBeDefined();
+      expect(cookies['eli_refresh']).toBeDefined();
+
+      const raw = res.headers['set-cookie'] as string[];
+      const accessCookie = raw.find(c => c.startsWith('eli_access='))!;
+      const refreshCookie = raw.find(c => c.startsWith('eli_refresh='))!;
+      expect(accessCookie).toContain('httponly');
+      expect(refreshCookie).toContain('httponly');
+      expect(refreshCookie).toContain('path=/api/auth');
+    });
+
     it('401 rejects unknown email', async () => {
       const res = await agent().post('/api/auth/login').send({
         email: 'unknown@test.local',
@@ -152,6 +191,31 @@ describe('Auth endpoints', () => {
       expect(res.body.data.refreshToken).not.toBe(loginRes.body.data.refreshToken);
     });
 
+    it('200 refreshes via cookie when no body token', async () => {
+      const api = agent();
+      await api.post('/api/auth/register').send({
+        email: 'cookierefresh@test.local',
+        password: 'password123',
+      });
+
+      const loginRes = await api.post('/api/auth/login').send({
+        email: 'cookierefresh@test.local',
+        password: 'password123',
+      });
+
+      const cookieHeader = getCookieHeader(loginRes);
+
+      const res = await api
+        .post('/api/auth/refresh')
+        .set('Cookie', cookieHeader)
+        .send({});
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.accessToken).toBeDefined();
+      expect(res.body.data.refreshToken).toBeDefined();
+    });
+
     it('401 rejects invalid refresh token', async () => {
       const res = await agent().post('/api/auth/refresh').send({
         refreshToken: 'invalid-token',
@@ -161,7 +225,7 @@ describe('Auth endpoints', () => {
       expect(res.body.success).toBe(false);
     });
 
-    it('400 rejects empty body', async () => {
+    it('400 rejects when no token provided at all', async () => {
       const res = await agent().post('/api/auth/refresh').send({});
 
       expect(res.status).toBe(400);
@@ -248,6 +312,56 @@ describe('Auth endpoints', () => {
       expect(refreshRes.status).toBe(401);
     });
 
+    it('200 revokes via cookie when no body token', async () => {
+      const api = agent();
+      await api.post('/api/auth/register').send({
+        email: 'cookielogout@test.local',
+        password: 'password123',
+      });
+
+      const loginRes = await api.post('/api/auth/login').send({
+        email: 'cookielogout@test.local',
+        password: 'password123',
+      });
+
+      const { accessToken } = loginRes.body.data;
+      const cookieHeader = getCookieHeader(loginRes);
+
+      const res = await api
+        .post('/api/auth/logout')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', cookieHeader)
+        .send({});
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+    });
+
+    it('200 clears cookies on logout', async () => {
+      const api = agent();
+      await api.post('/api/auth/register').send({
+        email: 'clearcookies@test.local',
+        password: 'password123',
+      });
+
+      const loginRes = await api.post('/api/auth/login').send({
+        email: 'clearcookies@test.local',
+        password: 'password123',
+      });
+
+      const { accessToken, refreshToken } = loginRes.body.data;
+
+      const res = await api
+        .post('/api/auth/logout')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ refreshToken });
+
+      const cookies = extractCookies(res);
+      // Cleared cookies have empty value
+      expect(cookies['eli_access']).toBe('');
+      expect(cookies['eli_refresh']).toBe('');
+    });
+
     it('401 without auth', async () => {
       const res = await agent().post('/api/auth/logout').send({ refreshToken: 'abc' });
       expect(res.status).toBe(401);
@@ -286,6 +400,27 @@ describe('Auth endpoints', () => {
       expect(r1.status).toBe(401);
       expect(r2.status).toBe(401);
     });
+
+    it('200 clears cookies on logout-all', async () => {
+      const api = agent();
+      await api.post('/api/auth/register').send({
+        email: 'logoutallcookie@test.local',
+        password: 'password123',
+      });
+
+      const loginRes = await api.post('/api/auth/login').send({
+        email: 'logoutallcookie@test.local',
+        password: 'password123',
+      });
+
+      const res = await api
+        .post('/api/auth/logout-all')
+        .set('Authorization', `Bearer ${loginRes.body.data.accessToken}`);
+
+      const cookies = extractCookies(res);
+      expect(cookies['eli_access']).toBe('');
+      expect(cookies['eli_refresh']).toBe('');
+    });
   });
 
   // ─── PUT /api/auth/change-password ───────────────────
@@ -322,6 +457,28 @@ describe('Auth endpoints', () => {
         password: 'newpass456',
       });
       expect(newLogin.status).toBe(200);
+    });
+
+    it('200 clears cookies on password change', async () => {
+      const api = agent();
+      await api.post('/api/auth/register').send({
+        email: 'changepwcookie@test.local',
+        password: 'password123',
+      });
+
+      const loginRes = await api.post('/api/auth/login').send({
+        email: 'changepwcookie@test.local',
+        password: 'password123',
+      });
+
+      const res = await api
+        .put('/api/auth/change-password')
+        .set('Authorization', `Bearer ${loginRes.body.data.accessToken}`)
+        .send({ currentPassword: 'password123', newPassword: 'newpass456' });
+
+      const cookies = extractCookies(res);
+      expect(cookies['eli_access']).toBe('');
+      expect(cookies['eli_refresh']).toBe('');
     });
 
     it('401 rejects wrong current password', async () => {
@@ -378,6 +535,29 @@ describe('Auth endpoints', () => {
       expect(res.body.data.id).toBeDefined();
       expect(res.body.data.email).toBe('admin-test@eli-cms.local');
       expect(res.body.data.role).toBe('admin');
+    });
+
+    it('200 authenticates via cookie fallback', async () => {
+      const api = agent();
+      await api.post('/api/auth/register').send({
+        email: 'cookieme@test.local',
+        password: 'password123',
+      });
+
+      const loginRes = await api.post('/api/auth/login').send({
+        email: 'cookieme@test.local',
+        password: 'password123',
+      });
+
+      const cookieHeader = getCookieHeader(loginRes);
+
+      const res = await api
+        .get('/api/auth/me')
+        .set('Cookie', cookieHeader);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.email).toBe('cookieme@test.local');
     });
 
     it('401 without token', async () => {
