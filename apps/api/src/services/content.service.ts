@@ -1,4 +1,4 @@
-import { eq, and, count as drizzleCount, asc, desc } from 'drizzle-orm';
+import { eq, and, count as drizzleCount, asc, desc, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { contents } from '../db/schema/index.js';
 import { ContentTypeService } from './content-type.service.js';
@@ -13,14 +13,27 @@ const sortColumns = {
   status: contents.status,
 } as const;
 
+function sanitizeSearchTerms(raw: string): string | null {
+  const terms = raw
+    .split(/\s+/)
+    .map(t => t.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, ''))
+    .filter(t => t.length > 0);
+  return terms.length > 0 ? terms.join(' & ') : null;
+}
+
 export class ContentService {
   static async findAll(query: ContentListQuery) {
-    const { page, limit, contentTypeId, status, sortBy, sortOrder } = query;
+    const { page, limit, contentTypeId, status, search, sortBy, sortOrder } = query;
     const offset = (page - 1) * limit;
 
     const filters = [];
     if (contentTypeId) filters.push(eq(contents.contentTypeId, contentTypeId));
     if (status) filters.push(eq(contents.status, status));
+
+    const tsquery = search ? sanitizeSearchTerms(search) : null;
+    if (tsquery) {
+      filters.push(sql`search_vector @@ to_tsquery('simple', ${tsquery})`);
+    }
 
     const where = filters.length > 0 ? and(...filters) : undefined;
 
@@ -29,14 +42,21 @@ export class ContentService {
       .from(contents)
       .where(where);
 
-    const orderFn = sortOrder === 'asc' ? asc : desc;
-    const orderCol = sortColumns[sortBy];
+    // Determine ordering
+    let orderByClause;
+    if (sortBy === 'relevance' && tsquery) {
+      orderByClause = sql`ts_rank(search_vector, to_tsquery('simple', ${tsquery})) DESC`;
+    } else {
+      const orderFn = sortOrder === 'asc' ? asc : desc;
+      const orderCol = sortBy === 'relevance' ? contents.createdAt : sortColumns[sortBy];
+      orderByClause = orderFn(orderCol);
+    }
 
     const data = await db
       .select()
       .from(contents)
       .where(where)
-      .orderBy(orderFn(orderCol))
+      .orderBy(orderByClause)
       .limit(limit)
       .offset(offset);
 

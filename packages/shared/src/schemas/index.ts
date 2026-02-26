@@ -115,12 +115,14 @@ export const contentTypeListQuerySchema = paginationSchema.extend({
 export const contentListQuerySchema = paginationSchema.extend({
   contentTypeId: z.string().uuid().optional(),
   status: z.enum(['draft', 'published']).optional(),
-  sortBy: z.enum(['createdAt', 'updatedAt', 'status']).default('createdAt'),
+  search: z.string().max(200).optional(),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'status', 'relevance']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
 export const publicContentListQuerySchema = paginationSchema.extend({
-  sortBy: z.enum(['createdAt', 'updatedAt']).default('createdAt'),
+  search: z.string().max(200).optional(),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'relevance']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
