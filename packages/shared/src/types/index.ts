@@ -72,3 +72,31 @@ export interface TokenPair {
   accessToken: string;
   refreshToken: string;
 }
+
+// ─── Storage / Media ────────────────────────────────────
+export type StorageType = 'local' | 's3';
+
+export interface S3Config {
+  bucket: string;
+  region: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  endpoint?: string;
+}
+
+export interface StorageConfig {
+  activeStorage: StorageType;
+  s3?: S3Config;
+}
+
+export interface Media {
+  id: string;
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  storageKey: string;
+  storageType: StorageType;
+  createdBy: string;
+  createdAt: Date;
+}

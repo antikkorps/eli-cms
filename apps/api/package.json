@@ -14,8 +14,10 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.999.0",
     "@eli-cms/shared": "workspace:*",
     "@koa/cors": "^5.0.0",
+    "@koa/multer": "^4.0.0",
     "@koa/router": "^15.3.0",
     "bcryptjs": "^2.4.3",
     "drizzle-orm": "^0.44.0",
@@ -23,6 +25,7 @@
     "koa": "^3.1.0",
     "koa-bodyparser": "^4.4.1",
     "koa-ratelimit": "^6.0.0",
+    "multer": "^2.0.2",
     "pg": "^8.13.0",
     "zod": "^3.24.0"
   },
@@ -33,6 +36,7 @@
     "@types/koa-bodyparser": "^4.3.12",
     "@types/koa-ratelimit": "^5.0.5",
     "@types/koa__cors": "^5.0.1",
+    "@types/multer": "^2.0.0",
     "@types/pg": "^8.11.10",
     "@types/supertest": "^7.2.0",
     "drizzle-kit": "^0.31.0",
