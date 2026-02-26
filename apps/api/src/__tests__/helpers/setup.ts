@@ -11,7 +11,7 @@ export function agent() {
 }
 
 export async function truncateAll() {
-  await db.execute(sql`TRUNCATE TABLE contents, content_types, users RESTART IDENTITY CASCADE`);
+  await db.execute(sql`TRUNCATE TABLE contents, content_types, refresh_tokens, users RESTART IDENTITY CASCADE`);
 }
 
 let adminToken: string | null = null;

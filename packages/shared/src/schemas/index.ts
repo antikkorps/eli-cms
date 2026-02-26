@@ -17,6 +17,15 @@ export const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1),
 });
 
+export const logoutSchema = z.object({
+  refreshToken: z.string().min(1),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(6),
+  newPassword: z.string().min(6),
+});
+
 // Content Type schemas
 const fieldDefinitionSchema = z.object({
   name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
@@ -129,4 +138,6 @@ export type UpdateContentInput = z.infer<typeof updateContentSchema>;
 export type ContentTypeListQuery = z.infer<typeof contentTypeListQuerySchema>;
 export type ContentListQuery = z.infer<typeof contentListQuerySchema>;
 export type PublicContentListQuery = z.infer<typeof publicContentListQuerySchema>;
+export type LogoutInput = z.infer<typeof logoutSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type UserListQuery = z.infer<typeof userListQuerySchema>;

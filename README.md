@@ -96,6 +96,8 @@ eli-cms/
 | `JWT_SECRET` | — | Secret for access tokens (min 10 chars) |
 | `JWT_REFRESH_SECRET` | — | Secret for refresh tokens (min 10 chars) |
 | `API_PORT` | `8080` | API listening port |
+| `JWT_ACCESS_EXPIRY` | `15m` | Access token TTL (e.g. `15m`, `1h`) |
+| `JWT_REFRESH_EXPIRY` | `7d` | Refresh token TTL (e.g. `7d`, `30d`) |
 | `CORS_ORIGINS` | `*` | Allowed origins (comma-separated, or `*` for all) |
 
 See `.env.example` for a complete template.
@@ -108,6 +110,9 @@ See `.env.example` for a complete template.
 | `POST` | `/api/auth/login` | — | Login, get tokens |
 | `POST` | `/api/auth/refresh` | — | Refresh access token |
 | `GET` | `/api/auth/me` | JWT | Current user info |
+| `POST` | `/api/auth/logout` | JWT | Revoke a refresh token |
+| `POST` | `/api/auth/logout-all` | JWT | Revoke all refresh tokens |
+| `PUT` | `/api/auth/change-password` | JWT | Change password |
 | `GET` | `/api/content-types` | JWT | List content types |
 | `GET` | `/api/content-types/:id` | JWT | Get content type |
 | `POST` | `/api/content-types` | Admin | Create content type |
