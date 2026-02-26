@@ -49,6 +49,16 @@ export class ContentService {
     return content;
   }
 
+  static async findPublishedById(id: string) {
+    const [content] = await db
+      .select()
+      .from(contents)
+      .where(and(eq(contents.id, id), eq(contents.status, 'published')))
+      .limit(1);
+    if (!content) throw new AppError(404, 'Content not found');
+    return content;
+  }
+
   static async create(input: CreateContentInput) {
     const contentType = await ContentTypeService.findById(input.contentTypeId);
 

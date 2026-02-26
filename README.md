@@ -96,6 +96,7 @@ eli-cms/
 | `JWT_SECRET` | — | Secret for access tokens (min 10 chars) |
 | `JWT_REFRESH_SECRET` | — | Secret for refresh tokens (min 10 chars) |
 | `API_PORT` | `8080` | API listening port |
+| `CORS_ORIGINS` | `*` | Allowed origins (comma-separated, or `*` for all) |
 
 See `.env.example` for a complete template.
 
@@ -121,6 +122,18 @@ See `.env.example` for a complete template.
 | `GET` | `/api/users/:id` | Admin | Get user |
 | `DELETE` | `/api/users/:id` | Admin | Delete user |
 | `GET` | `/health` | — | Health check |
+
+### Public API (no auth, read-only)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/public/content-types` | List content types (pagination, search) |
+| `GET` | `/api/public/content-types/:slug` | Get content type by slug |
+| `GET` | `/api/public/contents` | List published contents (pagination, sort) |
+| `GET` | `/api/public/contents/:id` | Get published content by ID |
+| `GET` | `/api/public/contents/by-type/:slug` | List published contents by content type slug |
+
+Public endpoints only return `published` contents. Rate limited to 100 req/min per IP.
 
 All list endpoints support **pagination** (`?page=&limit=`), **filtering** (`?filter[field]=value`), and **sorting** (`?sort=field&order=asc|desc`).
 

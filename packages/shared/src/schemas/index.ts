@@ -110,6 +110,11 @@ export const contentListQuerySchema = paginationSchema.extend({
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
+export const publicContentListQuerySchema = paginationSchema.extend({
+  sortBy: z.enum(['createdAt', 'updatedAt']).default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+
 export const userListQuerySchema = paginationSchema.extend({
   role: z.enum(['admin', 'editor']).optional(),
   search: z.string().optional(),
@@ -123,4 +128,5 @@ export type CreateContentInput = z.infer<typeof createContentSchema>;
 export type UpdateContentInput = z.infer<typeof updateContentSchema>;
 export type ContentTypeListQuery = z.infer<typeof contentTypeListQuerySchema>;
 export type ContentListQuery = z.infer<typeof contentListQuerySchema>;
+export type PublicContentListQuery = z.infer<typeof publicContentListQuerySchema>;
 export type UserListQuery = z.infer<typeof userListQuerySchema>;
