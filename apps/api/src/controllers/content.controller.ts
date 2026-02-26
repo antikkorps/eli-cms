@@ -1,13 +1,16 @@
 import type { Context } from 'koa';
-import { createContentSchema, updateContentSchema } from '@eli-cms/shared';
+import { createContentSchema, updateContentSchema, contentListQuerySchema } from '@eli-cms/shared';
 import { ContentService } from '../services/content.service.js';
 import { AppError } from '../utils/app-error.js';
 
 export class ContentController {
   static async list(ctx: Context) {
-    const contentTypeId = ctx.query.contentTypeId as string | undefined;
-    const data = await ContentService.findAll(contentTypeId);
-    ctx.body = { success: true, data };
+    const result = contentListQuerySchema.safeParse(ctx.query);
+    if (!result.success) {
+      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+    }
+    const { data, meta } = await ContentService.findAll(result.data);
+    ctx.body = { success: true, data, meta };
   }
 
   static async get(ctx: Context) {

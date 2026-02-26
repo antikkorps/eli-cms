@@ -1,17 +1,46 @@
-import { eq, and } from 'drizzle-orm';
+import { eq, and, count as drizzleCount, asc, desc } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { contents } from '../db/schema/index.js';
 import { ContentTypeService } from './content-type.service.js';
 import { AppError } from '../utils/app-error.js';
+import { buildMeta } from '../utils/pagination.js';
 import { buildContentDataSchema } from '@eli-cms/shared';
-import type { CreateContentInput, UpdateContentInput } from '@eli-cms/shared';
+import type { CreateContentInput, UpdateContentInput, ContentListQuery } from '@eli-cms/shared';
+
+const sortColumns = {
+  createdAt: contents.createdAt,
+  updatedAt: contents.updatedAt,
+  status: contents.status,
+} as const;
 
 export class ContentService {
-  static async findAll(contentTypeId?: string) {
-    if (contentTypeId) {
-      return db.select().from(contents).where(eq(contents.contentTypeId, contentTypeId)).orderBy(contents.createdAt);
-    }
-    return db.select().from(contents).orderBy(contents.createdAt);
+  static async findAll(query: ContentListQuery) {
+    const { page, limit, contentTypeId, status, sortBy, sortOrder } = query;
+    const offset = (page - 1) * limit;
+
+    const filters = [];
+    if (contentTypeId) filters.push(eq(contents.contentTypeId, contentTypeId));
+    if (status) filters.push(eq(contents.status, status));
+
+    const where = filters.length > 0 ? and(...filters) : undefined;
+
+    const [{ total }] = await db
+      .select({ total: drizzleCount() })
+      .from(contents)
+      .where(where);
+
+    const orderFn = sortOrder === 'asc' ? asc : desc;
+    const orderCol = sortColumns[sortBy];
+
+    const data = await db
+      .select()
+      .from(contents)
+      .where(where)
+      .orderBy(orderFn(orderCol))
+      .limit(limit)
+      .offset(offset);
+
+    return { data, meta: buildMeta(total, page, limit) };
   }
 
   static async findById(id: string) {

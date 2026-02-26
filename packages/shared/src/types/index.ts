@@ -38,15 +38,28 @@ export interface Content {
   updatedAt: Date;
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface PaginationParams {
+  page: number;
+  limit: number;
+}
+
+export interface SortParams {
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+}
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
-  meta?: {
-    page?: number;
-    limit?: number;
-    total?: number;
-  };
+  meta?: PaginationMeta;
 }
 
 export interface JwtPayload {

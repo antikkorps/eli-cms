@@ -27,9 +27,20 @@ All endpoints return:
   success: boolean;
   data?: T;
   error?: string;
-  meta?: { page?: number; limit?: number; total?: number };
+  meta?: { page: number; limit: number; total: number; totalPages: number };
 }
 ```
+
+## Pagination & Filtering
+All list endpoints (`GET` collections) support offset-based pagination and filtering via query params:
+- **Pagination**: `?page=1&limit=20` — page ≥ 1, limit 1–100, defaults: page=1, limit=20
+- **Query validation**: Zod schemas in `packages/shared` (`contentTypeListQuerySchema`, `contentListQuerySchema`, `userListQuerySchema`) with `z.coerce` for query string parsing
+- **Service pattern**: `findAll(query)` returns `{ data, meta }` — controller destructures and returns both
+- **Meta helper**: `buildMeta(total, page, limit)` in `apps/api/src/utils/pagination.ts`
+- **Filters by endpoint**:
+  - `content-types`: `?search=` (ILIKE on name + slug)
+  - `contents`: `?contentTypeId=`, `?status=draft|published`, `?sortBy=createdAt|updatedAt|status`, `?sortOrder=asc|desc`
+  - `users`: `?role=admin|editor`, `?search=` (ILIKE on email)
 
 ## Error Handling
 - Throw `AppError(statusCode, message)` for expected errors
