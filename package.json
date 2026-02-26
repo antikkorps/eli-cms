@@ -11,6 +11,7 @@
     "db:generate": "pnpm --filter @eli-cms/api db:generate",
     "db:migrate": "pnpm --filter @eli-cms/api db:migrate",
     "db:seed": "pnpm --filter @eli-cms/api db:seed",
+    "test:api": "pnpm --filter @eli-cms/api test",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "lint": "eslint .",

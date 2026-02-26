@@ -93,9 +93,34 @@ export function buildContentDataSchema(fields: FieldDefinition[]): z.ZodObject<R
   return z.object(shape);
 }
 
+// ─── Pagination & Query schemas ────────────────────────
+export const paginationSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+export const contentTypeListQuerySchema = paginationSchema.extend({
+  search: z.string().optional(),
+});
+
+export const contentListQuerySchema = paginationSchema.extend({
+  contentTypeId: z.string().uuid().optional(),
+  status: z.enum(['draft', 'published']).optional(),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'status']).default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+
+export const userListQuerySchema = paginationSchema.extend({
+  role: z.enum(['admin', 'editor']).optional(),
+  search: z.string().optional(),
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type CreateContentTypeInput = z.infer<typeof createContentTypeSchema>;
 export type UpdateContentTypeInput = z.infer<typeof updateContentTypeSchema>;
 export type CreateContentInput = z.infer<typeof createContentSchema>;
 export type UpdateContentInput = z.infer<typeof updateContentSchema>;
+export type ContentTypeListQuery = z.infer<typeof contentTypeListQuerySchema>;
+export type ContentListQuery = z.infer<typeof contentListQuerySchema>;
+export type UserListQuery = z.infer<typeof userListQuerySchema>;

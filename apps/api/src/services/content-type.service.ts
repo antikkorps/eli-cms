@@ -1,12 +1,33 @@
-import { eq } from 'drizzle-orm';
+import { eq, ilike, or, count as drizzleCount } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { contentTypes } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
-import type { CreateContentTypeInput, UpdateContentTypeInput } from '@eli-cms/shared';
+import { buildMeta } from '../utils/pagination.js';
+import type { CreateContentTypeInput, UpdateContentTypeInput, ContentTypeListQuery } from '@eli-cms/shared';
 
 export class ContentTypeService {
-  static async findAll() {
-    return db.select().from(contentTypes).orderBy(contentTypes.createdAt);
+  static async findAll(query: ContentTypeListQuery) {
+    const { page, limit, search } = query;
+    const offset = (page - 1) * limit;
+
+    const conditions = search
+      ? or(ilike(contentTypes.name, `%${search}%`), ilike(contentTypes.slug, `%${search}%`))
+      : undefined;
+
+    const [{ total }] = await db
+      .select({ total: drizzleCount() })
+      .from(contentTypes)
+      .where(conditions);
+
+    const data = await db
+      .select()
+      .from(contentTypes)
+      .where(conditions)
+      .orderBy(contentTypes.createdAt)
+      .limit(limit)
+      .offset(offset);
+
+    return { data, meta: buildMeta(total, page, limit) };
   }
 
   static async findById(id: string) {
