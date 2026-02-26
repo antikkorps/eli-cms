@@ -115,18 +115,44 @@ export const contentTypeListQuerySchema = paginationSchema.extend({
 export const contentListQuerySchema = paginationSchema.extend({
   contentTypeId: z.string().uuid().optional(),
   status: z.enum(['draft', 'published']).optional(),
-  sortBy: z.enum(['createdAt', 'updatedAt', 'status']).default('createdAt'),
+  search: z.string().max(200).optional(),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'status', 'relevance']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
 export const publicContentListQuerySchema = paginationSchema.extend({
-  sortBy: z.enum(['createdAt', 'updatedAt']).default('createdAt'),
+  search: z.string().max(200).optional(),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'relevance']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
 export const userListQuerySchema = paginationSchema.extend({
   role: z.enum(['admin', 'editor']).optional(),
   search: z.string().optional(),
+});
+
+// ─── Storage / Upload schemas ───────────────────────────
+export const s3ConfigSchema = z.object({
+  bucket: z.string().min(1),
+  region: z.string().min(1),
+  accessKeyId: z.string().min(1),
+  secretAccessKey: z.string().min(1),
+  endpoint: z.string().url().optional(),
+});
+
+export const storageConfigSchema = z
+  .object({
+    activeStorage: z.enum(['local', 's3']),
+    s3: s3ConfigSchema.optional(),
+  })
+  .refine(
+    (data) => data.activeStorage !== 's3' || data.s3 !== undefined,
+    { message: 'S3 configuration is required when activeStorage is "s3"', path: ['s3'] },
+  );
+
+export const uploadListQuerySchema = paginationSchema.extend({
+  mimeType: z.string().optional(),
+  createdBy: z.string().uuid().optional(),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -141,3 +167,6 @@ export type PublicContentListQuery = z.infer<typeof publicContentListQuerySchema
 export type LogoutInput = z.infer<typeof logoutSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type UserListQuery = z.infer<typeof userListQuerySchema>;
+export type S3ConfigInput = z.infer<typeof s3ConfigSchema>;
+export type StorageConfigInput = z.infer<typeof storageConfigSchema>;
+export type UploadListQuery = z.infer<typeof uploadListQuerySchema>;

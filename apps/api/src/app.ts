@@ -10,6 +10,8 @@ import { publicRouter } from './routes/public.js';
 import { contentTypesRouter } from './routes/content-types.js';
 import { contentsRouter } from './routes/contents.js';
 import { usersRouter } from './routes/users.js';
+import { uploadsRouter } from './routes/uploads.js';
+import { settingsRouter } from './routes/settings.js';
 
 export function createApp() {
   const app = new Koa();
@@ -55,6 +57,8 @@ export function createApp() {
   app.use(contentTypesRouter.routes()).use(contentTypesRouter.allowedMethods());
   app.use(contentsRouter.routes()).use(contentsRouter.allowedMethods());
   app.use(usersRouter.routes()).use(usersRouter.allowedMethods());
+  app.use(uploadsRouter.routes()).use(uploadsRouter.allowedMethods());
+  app.use(settingsRouter.routes()).use(settingsRouter.allowedMethods());
 
   return app;
 }
