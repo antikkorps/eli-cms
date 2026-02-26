@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.nuxt/
+.output/
+*.log
+.env
+.DS_Store
+drizzle/meta/

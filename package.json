@@ -1,0 +1,32 @@
+{
+  "name": "eli-cms",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev:api": "pnpm --filter @eli-cms/api dev",
+    "dev:web": "pnpm --filter @eli-cms/web dev",
+    "build:shared": "pnpm --filter @eli-cms/shared build",
+    "build:api": "pnpm --filter @eli-cms/api build",
+    "build:web": "pnpm --filter @eli-cms/web build",
+    "db:generate": "pnpm --filter @eli-cms/api db:generate",
+    "db:migrate": "pnpm --filter @eli-cms/api db:migrate",
+    "db:seed": "pnpm --filter @eli-cms/api db:seed",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.2",
+    "eslint-config-prettier": "^10.1.8",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "typescript-eslint": "^8.56.1"
+  }
+}
