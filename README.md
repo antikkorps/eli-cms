@@ -99,6 +99,7 @@ eli-cms/
 | `JWT_ACCESS_EXPIRY` | `15m` | Access token TTL (e.g. `15m`, `1h`) |
 | `JWT_REFRESH_EXPIRY` | `7d` | Refresh token TTL (e.g. `7d`, `30d`) |
 | `CORS_ORIGINS` | `*` | Allowed origins (comma-separated, or `*` for all) |
+| `COOKIE_SECURE` | `true` | Set `false` in dev (no HTTPS), `true` in prod |
 
 See `.env.example` for a complete template.
 
