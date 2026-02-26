@@ -38,10 +38,15 @@ The API is now running at **http://localhost:8080**.
 ## Quick Start (Production — Docker)
 
 ```bash
-docker compose -f docker-compose.prod.yml up --build
+# 1. Create your env file with required secrets
+cp .env.prod.example .env.prod
+
+# 2. Edit .env.prod with real values
+# 3. Start everything
+docker compose -f docker-compose.prod.yml --env-file .env.prod up --build
 ```
 
-That's it. Postgres starts, migrations run, seed creates the default admin, and the API listens on port **8080**.
+Postgres starts, migrations run, seed creates the default admin, and the API listens on port **8080**.
 
 ## Commands
 
