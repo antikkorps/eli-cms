@@ -9,7 +9,9 @@
     "start": "node dist/index.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx src/db/seed.ts"
+    "db:seed": "tsx src/db/seed.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@eli-cms/shared": "workspace:*",
@@ -30,8 +32,11 @@
     "@types/koa-bodyparser": "^4.3.12",
     "@types/koa__cors": "^5.0.1",
     "@types/pg": "^8.11.10",
+    "@types/supertest": "^7.2.0",
     "drizzle-kit": "^0.31.0",
+    "supertest": "^7.2.2",
     "tsx": "^4.19.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^4.0.18"
   }
 }
