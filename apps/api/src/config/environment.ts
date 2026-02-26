@@ -5,6 +5,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(10),
   JWT_REFRESH_SECRET: z.string().min(10),
   API_PORT: z.coerce.number().default(8080),
+  CORS_ORIGINS: z.string().default('*'),
 });
 
 export const env = envSchema.parse(process.env);

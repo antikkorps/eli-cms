@@ -41,6 +41,12 @@ export class ContentTypeService {
     return ct ?? null;
   }
 
+  static async findBySlugOrFail(slug: string) {
+    const ct = await this.findBySlug(slug);
+    if (!ct) throw new AppError(404, 'Content type not found');
+    return ct;
+  }
+
   static async create(input: CreateContentTypeInput) {
     const existing = await this.findBySlug(input.slug);
     if (existing) throw new AppError(409, `Slug "${input.slug}" already exists`);
