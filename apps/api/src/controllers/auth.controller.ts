@@ -1,5 +1,5 @@
 import type { Context } from 'koa';
-import { loginSchema, registerSchema, refreshTokenSchema } from '@eli-cms/shared';
+import { loginSchema, registerSchema, refreshTokenSchema, logoutSchema, changePasswordSchema } from '@eli-cms/shared';
 import { AuthService } from '../services/auth.service.js';
 import { AppError } from '../utils/app-error.js';
 
@@ -33,6 +33,31 @@ export class AuthController {
 
     const tokens = await AuthService.refresh(result.data.refreshToken);
     ctx.body = { success: true, data: tokens };
+  }
+
+  static async logout(ctx: Context) {
+    const result = logoutSchema.safeParse(ctx.request.body);
+    if (!result.success) {
+      throw new AppError(400, 'refreshToken is required');
+    }
+
+    await AuthService.logout(result.data.refreshToken);
+    ctx.body = { success: true };
+  }
+
+  static async logoutAll(ctx: Context) {
+    await AuthService.logoutAll(ctx.state.user.userId);
+    ctx.body = { success: true };
+  }
+
+  static async changePassword(ctx: Context) {
+    const result = changePasswordSchema.safeParse(ctx.request.body);
+    if (!result.success) {
+      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+    }
+
+    await AuthService.changePassword(ctx.state.user.userId, result.data);
+    ctx.body = { success: true };
   }
 
   static async me(ctx: Context) {
