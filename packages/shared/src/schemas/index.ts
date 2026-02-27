@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import type { FieldDefinition } from '../types/index.js';
+import { sanitize } from '../utils/sanitize.js';
+
+/** Zod string that strips all HTML tags and trims. */
+const safeString = (max = 255) => z.string().max(max).transform(sanitize);
 
 // Auth schemas
 export const loginSchema = z.object({
@@ -31,13 +35,13 @@ const fieldDefinitionSchema = z.object({
   name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
   type: z.enum(['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select']),
   required: z.boolean(),
-  label: z.string().min(1),
-  options: z.array(z.string()).optional(),
+  label: safeString(255).pipe(z.string().min(1)),
+  options: z.array(safeString(255)).optional(),
 });
 
 export const createContentTypeSchema = z.object({
-  slug: z.string().min(1).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
-  name: z.string().min(1),
+  slug: z.string().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
+  name: safeString(255).pipe(z.string().min(1)),
   fields: z.array(fieldDefinitionSchema).min(1),
 });
 
@@ -67,8 +71,10 @@ export function buildContentDataSchema(fields: FieldDefinition[]): z.ZodObject<R
 
     switch (field.type) {
       case 'text':
+        fieldSchema = z.string().max(1000).transform(sanitize);
+        break;
       case 'textarea':
-        fieldSchema = z.string();
+        fieldSchema = z.string().max(50000).transform(sanitize);
         break;
       case 'number':
         fieldSchema = z.number();
@@ -109,7 +115,7 @@ export const paginationSchema = z.object({
 });
 
 export const contentTypeListQuerySchema = paginationSchema.extend({
-  search: z.string().optional(),
+  search: z.string().max(200).optional(),
 });
 
 export const contentListQuerySchema = paginationSchema.extend({
@@ -128,7 +134,7 @@ export const publicContentListQuerySchema = paginationSchema.extend({
 
 export const userListQuerySchema = paginationSchema.extend({
   role: z.enum(['admin', 'editor']).optional(),
-  search: z.string().optional(),
+  search: z.string().max(200).optional(),
 });
 
 // ─── Storage / Upload schemas ───────────────────────────

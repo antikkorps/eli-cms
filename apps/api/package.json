@@ -36,6 +36,7 @@
     "@types/koa-bodyparser": "^4.3.12",
     "@types/koa-ratelimit": "^5.0.5",
     "@types/koa__cors": "^5.0.1",
+    "@types/koa__multer": "^2.0.8",
     "@types/multer": "^2.0.0",
     "@types/pg": "^8.11.10",
     "@types/supertest": "^7.2.0",
