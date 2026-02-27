@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { apiFetch } = useApi();
-const { setToken } = useAuth();
+const { setTokens } = useAuth();
+const { t } = useI18n();
 
 const loading = ref(false);
 const error = ref('');
@@ -26,12 +27,12 @@ async function handleSubmit() {
   error.value = '';
 
   if (form.password !== form.confirmPassword) {
-    error.value = 'Passwords do not match';
+    error.value = t('setup.errorPasswordMismatch');
     return;
   }
 
   if (form.password.length < 6) {
-    error.value = 'Password must be at least 6 characters';
+    error.value = t('setup.errorPasswordLength');
     return;
   }
 
@@ -45,13 +46,13 @@ async function handleSubmit() {
       };
     }>('/setup', {
       method: 'POST',
-      body: JSON.stringify(form),
+      body: { email: form.email, password: form.password, confirmPassword: form.confirmPassword },
     });
 
-    setToken(res.data.tokens.accessToken);
-    navigateTo('/');
+    setTokens(res.data.tokens.accessToken, res.data.tokens.refreshToken);
+    navigateTo('/admin');
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Setup failed';
+    const message = err instanceof Error ? err.message : t('setup.errorGeneric');
     error.value = message;
   } finally {
     loading.value = false;
@@ -60,40 +61,44 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
+  <div class="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950 relative">
+    <div class="absolute top-4 right-4">
+      <LocaleSwitcher />
+    </div>
+
     <UCard class="w-full max-w-md">
       <template #header>
         <div class="text-center">
-          <h1 class="text-2xl font-bold">Eli CMS</h1>
-          <p class="text-sm text-gray-500 mt-1">Create your admin account to get started</p>
+          <h1 class="text-2xl font-bold">{{ $t('common.appName') }}</h1>
+          <p class="text-sm text-gray-500 mt-1">{{ $t('setup.subtitle') }}</p>
         </div>
       </template>
 
       <form class="space-y-4" @submit.prevent="handleSubmit">
-        <UFormField label="Email">
+        <UFormField :label="$t('setup.emailLabel')">
           <UInput
             v-model="form.email"
             type="email"
-            placeholder="admin@example.com"
+            :placeholder="$t('setup.emailPlaceholder')"
             required
             autofocus
           />
         </UFormField>
 
-        <UFormField label="Password">
+        <UFormField :label="$t('setup.passwordLabel')">
           <UInput
             v-model="form.password"
             type="password"
-            placeholder="At least 6 characters"
+            :placeholder="$t('setup.passwordPlaceholder')"
             required
           />
         </UFormField>
 
-        <UFormField label="Confirm password">
+        <UFormField :label="$t('setup.confirmPasswordLabel')">
           <UInput
             v-model="form.confirmPassword"
             type="password"
-            placeholder="Confirm your password"
+            :placeholder="$t('setup.confirmPasswordPlaceholder')"
             required
           />
         </UFormField>
@@ -101,7 +106,7 @@ async function handleSubmit() {
         <UAlert v-if="error" color="error" variant="subtle" :title="error" />
 
         <UButton type="submit" block :loading="loading">
-          Create admin account
+          {{ $t('setup.submit') }}
         </UButton>
       </form>
     </UCard>
