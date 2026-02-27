@@ -6,4 +6,5 @@ dist/
 .env
 .DS_Store
 drizzle/meta/
-apps/api/uploads/
+apps/api/uploads/*
+!apps/api/uploads/.gitkeep

@@ -8,11 +8,13 @@ import { getStorageProvider } from './storage/index.js';
 import { SettingsService } from './settings.service.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
+import { sanitizeFilename } from '@eli-cms/shared';
 import type { UploadListQuery } from '@eli-cms/shared';
 
 export class UploadService {
   static async upload(file: { buffer: Buffer; originalname: string; mimetype: string; size: number }, userId: string) {
-    const ext = extname(file.originalname);
+    const safeName = sanitizeFilename(file.originalname);
+    const ext = extname(safeName);
     const filename = `${randomUUID()}${ext}`;
     const storageKey = filename;
 
@@ -25,7 +27,7 @@ export class UploadService {
       .insert(media)
       .values({
         filename,
-        originalName: file.originalname,
+        originalName: safeName,
         mimeType: file.mimetype,
         size: file.size,
         storageKey,
