@@ -29,21 +29,19 @@ const limit = 20;
 const total = ref(0);
 
 const filters = reactive({
-  action: '',
-  resourceType: '',
+  action: null as string | null,
+  resourceType: null as string | null,
 });
 
-const actionOptions = computed(() => [
-  { label: t('auditLogs.allActions'), value: '' },
+const actionOptions = [
   { label: t('auditLogs.actionCreate'), value: 'create' },
   { label: t('auditLogs.actionUpdate'), value: 'update' },
   { label: t('auditLogs.actionDelete'), value: 'delete' },
   { label: t('auditLogs.actionLogin'), value: 'login' },
   { label: t('auditLogs.actionLogout'), value: 'logout' },
-]);
+];
 
-const resourceTypeOptions = computed(() => [
-  { label: t('auditLogs.allResources'), value: '' },
+const resourceTypeOptions = [
   { label: t('auditLogs.resourceContent'), value: 'content' },
   { label: t('auditLogs.resourceContentType'), value: 'content_type' },
   { label: t('auditLogs.resourceUser'), value: 'user' },
@@ -52,7 +50,7 @@ const resourceTypeOptions = computed(() => [
   { label: t('auditLogs.resourceApiKey'), value: 'api_key' },
   { label: t('auditLogs.resourceSetting'), value: 'setting' },
   { label: t('auditLogs.resourceMedia'), value: 'media' },
-]);
+];
 
 const UBadge = resolveComponent('UBadge');
 
@@ -162,14 +160,16 @@ const totalPages = computed(() => Math.ceil(total.value / limit));
     <div class="flex flex-wrap gap-3">
       <USelect
         v-model="filters.action"
+        nullable
         :items="actionOptions"
-        :placeholder="$t('auditLogs.filterByAction')"
+        :placeholder="$t('auditLogs.allActions')"
         class="w-48"
       />
       <USelect
         v-model="filters.resourceType"
+        nullable
         :items="resourceTypeOptions"
-        :placeholder="$t('auditLogs.filterByResource')"
+        :placeholder="$t('auditLogs.allResources')"
         class="w-48"
       />
     </div>

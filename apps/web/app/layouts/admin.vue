@@ -2,12 +2,19 @@
 const { hasPermission } = useAuth();
 const { t } = useI18n();
 
+// Defer permission-based filtering to client to avoid SSR hydration mismatch
+// (server doesn't have auth state → fewer items → mismatch with client)
+const mounted = ref(false);
+onMounted(() => { mounted.value = true; });
+
 const navigation = computed(() => {
   const items: Array<{ label: string; icon: string; to: string }> = [
     { label: t('nav.dashboard'), icon: 'i-lucide-layout-dashboard', to: '/admin' },
   ];
 
-  if (hasPermission('content-types:read') || hasPermission('content-types:manage')) {
+  if (!mounted.value) return items;
+
+  if (hasPermission('content-types:read') || hasPermission('content-types:create')) {
     items.push({ label: t('nav.contentTypes'), icon: 'i-lucide-blocks', to: '/admin/content-types' });
   }
   if (hasPermission('content:read')) {
@@ -16,22 +23,22 @@ const navigation = computed(() => {
   if (hasPermission('uploads:read')) {
     items.push({ label: t('nav.uploads'), icon: 'i-lucide-upload', to: '/admin/uploads' });
   }
-  if (hasPermission('users:read') || hasPermission('users:manage')) {
+  if (hasPermission('users:read') || hasPermission('users:delete')) {
     items.push({ label: t('nav.users'), icon: 'i-lucide-users', to: '/admin/users' });
   }
-  if (hasPermission('roles:read') || hasPermission('roles:manage')) {
+  if (hasPermission('roles:read')) {
     items.push({ label: t('nav.roles'), icon: 'i-lucide-shield', to: '/admin/roles' });
   }
-  if (hasPermission('webhooks:manage')) {
+  if (hasPermission('webhooks:read') || hasPermission('webhooks:create')) {
     items.push({ label: t('nav.webhooks'), icon: 'i-lucide-webhook', to: '/admin/webhooks' });
   }
-  if (hasPermission('settings:manage')) {
+  if (hasPermission('settings:read') || hasPermission('settings:update')) {
     items.push({ label: t('nav.settings'), icon: 'i-lucide-settings', to: '/admin/settings' });
   }
   if (hasPermission('audit-logs:read')) {
     items.push({ label: t('nav.auditLogs'), icon: 'i-lucide-scroll-text', to: '/admin/audit-logs' });
   }
-  if (hasPermission('api-keys:manage')) {
+  if (hasPermission('api-keys:read') || hasPermission('api-keys:create')) {
     items.push({ label: t('nav.apiKeys'), icon: 'i-lucide-key', to: '/admin/api-keys' });
   }
 
@@ -68,11 +75,12 @@ const navigation = computed(() => {
           <UDashboardSidebarCollapse class="hidden lg:flex" />
         </template>
         <template #right>
+          <DarkModeToggle />
           <LocaleSwitcher />
         </template>
       </UDashboardNavbar>
 
-      <UDashboardPanel>
+      <UDashboardPanel class="overflow-y-auto">
         <slot />
       </UDashboardPanel>
     </div>

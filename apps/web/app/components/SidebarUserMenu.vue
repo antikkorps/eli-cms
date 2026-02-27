@@ -24,7 +24,10 @@ const { t } = useI18n();
       <span class="text-xs truncate">{{ user?.email }}</span>
     </div>
     <div class="flex items-center justify-between">
-      <LocaleSwitcher />
+      <div class="flex items-center gap-1">
+        <DarkModeToggle />
+        <LocaleSwitcher />
+      </div>
       <UButton
         icon="i-lucide-log-out"
         variant="ghost"

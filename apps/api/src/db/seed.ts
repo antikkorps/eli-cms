@@ -22,7 +22,9 @@ async function seed() {
       });
       console.log(`Role created: ${name}`);
     } else {
-      console.log(`Role "${slug}" already exists, skipping.`);
+      // Update permissions of existing system roles to stay in sync
+      await db.update(roles).set({ permissions: [...permissions] }).where(eq(roles.slug, slug));
+      console.log(`Role "${slug}" already exists, permissions updated.`);
     }
   }
 

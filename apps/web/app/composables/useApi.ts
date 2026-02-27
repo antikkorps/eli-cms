@@ -63,5 +63,21 @@ export function useApi() {
     }
   }
 
-  return { apiFetch, baseURL };
+  async function uploadFile<T = unknown>(path: string, file: File): Promise<T> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const headers: Record<string, string> = {};
+    if (tokenCookie.value) {
+      headers['Authorization'] = `Bearer ${tokenCookie.value}`;
+    }
+
+    return await $fetch<T>(`${baseURL}${path}`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+  }
+
+  return { apiFetch, uploadFile, baseURL };
 }
