@@ -10,6 +10,7 @@ import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import { sanitizeFilename } from '@eli-cms/shared';
 import type { UploadListQuery } from '@eli-cms/shared';
+import { eventBus } from './event-bus.js';
 
 export class UploadService {
   static async upload(file: { buffer: Buffer; originalname: string; mimetype: string; size: number }, userId: string) {
@@ -36,6 +37,7 @@ export class UploadService {
       })
       .returning();
 
+    eventBus.emit('media.uploaded', { media: record });
     return record;
   }
 
@@ -89,6 +91,7 @@ export class UploadService {
     }
 
     await db.delete(media).where(eq(media.id, id));
+    eventBus.emit('media.deleted', { media: record });
   }
 
   static async getFileStream(id: string): Promise<{ stream: Readable; mimeType: string; filename: string }> {

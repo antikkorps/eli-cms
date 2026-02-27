@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { agent, getAdminToken } from '../__tests__/helpers/setup.js';
+import { agent, getAdminToken, getRoleId } from '../__tests__/helpers/setup.js';
 
 function extractCookies(res: { headers: Record<string, string | string[]> }): Record<string, string> {
   const raw = res.headers['set-cookie'];
@@ -33,19 +33,20 @@ describe('Auth endpoints', () => {
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
       expect(res.body.data.email).toBe('new@test.local');
-      expect(res.body.data.role).toBe('editor');
+      expect(res.body.data.roleId).toBeDefined();
       expect(res.body.data.id).toBeDefined();
     });
 
-    it('201 creates an admin when role=admin', async () => {
+    it('201 creates an admin when roleId is super-admin', async () => {
+      const roleId = await getRoleId('super-admin');
       const res = await agent().post('/api/v1/auth/register').send({
         email: 'admin@test.local',
         password: 'password123',
-        role: 'admin',
+        roleId,
       });
 
       expect(res.status).toBe(201);
-      expect(res.body.data.role).toBe('admin');
+      expect(res.body.data.roleId).toBe(roleId);
     });
 
     it('400 rejects invalid email', async () => {
@@ -127,7 +128,7 @@ describe('Auth endpoints', () => {
       expect(cookies['eli_access']).toBeDefined();
       expect(cookies['eli_refresh']).toBeDefined();
 
-      const raw = res.headers['set-cookie'] as string[];
+      const raw = res.headers['set-cookie'] as unknown as string[];
       const accessCookie = raw.find(c => c.startsWith('eli_access='))!;
       const refreshCookie = raw.find(c => c.startsWith('eli_refresh='))!;
       expect(accessCookie).toContain('httponly');
@@ -534,7 +535,7 @@ describe('Auth endpoints', () => {
       expect(res.body.success).toBe(true);
       expect(res.body.data.id).toBeDefined();
       expect(res.body.data.email).toBe('admin-test@eli-cms.local');
-      expect(res.body.data.role).toBe('admin');
+      expect(res.body.data.roleId).toBeDefined();
     });
 
     it('200 authenticates via cookie fallback', async () => {

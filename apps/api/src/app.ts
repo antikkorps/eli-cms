@@ -15,6 +15,9 @@ import { settingsRouter } from './routes/settings.js';
 import { contentRelationsRouter } from './routes/content-relations.js';
 import { contentVersionsRouter } from './routes/content-versions.js';
 import { docsRouter } from './routes/docs.js';
+import { rolesRouter } from './routes/roles.js';
+import { setupRouter } from './routes/setup.js';
+import { webhooksRouter } from './routes/webhooks.js';
 
 export function createApp() {
   const app = new Koa();
@@ -56,10 +59,14 @@ export function createApp() {
   // Public routes (no auth)
   app.use(publicRouter.routes()).use(publicRouter.allowedMethods());
 
+  // Setup routes (no auth — guarded in service)
+  app.use(setupRouter.routes()).use(setupRouter.allowedMethods());
+
   // Auth routes
   app.use(authRouter.routes()).use(authRouter.allowedMethods());
 
   // Protected routes
+  app.use(rolesRouter.routes()).use(rolesRouter.allowedMethods());
   app.use(contentTypesRouter.routes()).use(contentTypesRouter.allowedMethods());
   app.use(contentsRouter.routes()).use(contentsRouter.allowedMethods());
   app.use(contentRelationsRouter.routes()).use(contentRelationsRouter.allowedMethods());
@@ -67,6 +74,7 @@ export function createApp() {
   app.use(usersRouter.routes()).use(usersRouter.allowedMethods());
   app.use(uploadsRouter.routes()).use(uploadsRouter.allowedMethods());
   app.use(settingsRouter.routes()).use(settingsRouter.allowedMethods());
+  app.use(webhooksRouter.routes()).use(webhooksRouter.allowedMethods());
 
   return app;
 }

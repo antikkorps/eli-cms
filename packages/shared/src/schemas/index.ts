@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { FieldDefinition } from '../types/index.js';
 import { sanitize } from '../utils/sanitize.js';
+import { ALL_PERMISSIONS } from '../constants/permissions.js';
 
 /** Zod string that strips all HTML tags and trims. */
 const safeString = (max = 255) => z.string().max(max).transform(sanitize);
@@ -14,7 +15,7 @@ export const loginSchema = z.object({
 export const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.enum(['admin', 'editor']).default('editor'),
+  roleId: z.string().uuid().optional(),
 });
 
 export const refreshTokenSchema = z.object({
@@ -133,7 +134,7 @@ export const publicContentListQuerySchema = paginationSchema.extend({
 });
 
 export const userListQuerySchema = paginationSchema.extend({
-  role: z.enum(['admin', 'editor']).optional(),
+  roleId: z.string().uuid().optional(),
   search: z.string().max(200).optional(),
 });
 
@@ -174,6 +175,85 @@ export const contentRelationListQuerySchema = paginationSchema.extend({
 // ─── Content Versions schemas ───────────────────────────
 export const contentVersionListQuerySchema = paginationSchema;
 
+// ─── Role schemas ───────────────────────────────────────
+const permissionEnum = z.enum(ALL_PERMISSIONS as unknown as [string, ...string[]]);
+
+export const createRoleSchema = z.object({
+  name: safeString(255).pipe(z.string().min(1)),
+  slug: z.string().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
+  description: safeString(500).nullable().optional(),
+  permissions: z.array(permissionEnum).min(1),
+});
+
+export const updateRoleSchema = z.object({
+  name: safeString(255).pipe(z.string().min(1)).optional(),
+  slug: z
+    .string()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case')
+    .optional(),
+  description: safeString(500).nullable().optional(),
+  permissions: z.array(permissionEnum).min(1).optional(),
+});
+
+export const roleListQuerySchema = paginationSchema.extend({
+  search: z.string().max(200).optional(),
+});
+
+// ─── Webhook schemas ────────────────────────────────────
+const webhookEventEnum = z.enum([
+  'content.created',
+  'content.updated',
+  'content.deleted',
+  'content.published',
+  'content_type.created',
+  'content_type.updated',
+  'content_type.deleted',
+  'media.uploaded',
+  'media.deleted',
+]);
+
+export const createWebhookSchema = z.object({
+  name: safeString(255).pipe(z.string().min(1)),
+  url: z.string().url().max(2048),
+  secret: z.string().min(16).max(255),
+  events: z.array(webhookEventEnum).min(1),
+  isActive: z.boolean().default(true),
+});
+
+export const updateWebhookSchema = z.object({
+  name: safeString(255).pipe(z.string().min(1)).optional(),
+  url: z.string().url().max(2048).optional(),
+  secret: z.string().min(16).max(255).optional(),
+  events: z.array(webhookEventEnum).min(1).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const webhookListQuerySchema = paginationSchema.extend({
+  isActive: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .optional(),
+});
+
+export const webhookDeliveryListQuerySchema = paginationSchema.extend({
+  status: z.enum(['pending', 'success', 'failed']).optional(),
+});
+
+// ─── Setup schema ───────────────────────────────────────
+export const setupSchema = z
+  .object({
+    email: z.string().email(),
+    password: z.string().min(6),
+    confirmPassword: z.string().min(6),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+// ─── Inferred types ─────────────────────────────────────
 export type CreateContentRelationInput = z.infer<typeof createContentRelationSchema>;
 export type ContentRelationListQuery = z.infer<typeof contentRelationListQuerySchema>;
 export type ContentVersionListQuery = z.infer<typeof contentVersionListQuerySchema>;
@@ -193,3 +273,14 @@ export type UserListQuery = z.infer<typeof userListQuerySchema>;
 export type S3ConfigInput = z.infer<typeof s3ConfigSchema>;
 export type StorageConfigInput = z.infer<typeof storageConfigSchema>;
 export type UploadListQuery = z.infer<typeof uploadListQuerySchema>;
+
+export type CreateRoleInput = z.infer<typeof createRoleSchema>;
+export type UpdateRoleInput = z.infer<typeof updateRoleSchema>;
+export type RoleListQuery = z.infer<typeof roleListQuerySchema>;
+
+export type CreateWebhookInput = z.infer<typeof createWebhookSchema>;
+export type UpdateWebhookInput = z.infer<typeof updateWebhookSchema>;
+export type WebhookListQuery = z.infer<typeof webhookListQuerySchema>;
+export type WebhookDeliveryListQuery = z.infer<typeof webhookDeliveryListQuerySchema>;
+
+export type SetupInput = z.infer<typeof setupSchema>;

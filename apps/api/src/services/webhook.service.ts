@@ -1,0 +1,293 @@
+import { createHmac } from 'node:crypto';
+import { eq, and, count as drizzleCount, lte, isNotNull } from 'drizzle-orm';
+import { db } from '../db/index.js';
+import { webhooks, webhookDeliveries } from '../db/schema/index.js';
+import { AppError } from '../utils/app-error.js';
+import { buildMeta } from '../utils/pagination.js';
+import { eventBus } from './event-bus.js';
+import type { CmsEvent } from './event-bus.js';
+import type { CreateWebhookInput, UpdateWebhookInput, WebhookListQuery, WebhookDeliveryListQuery, WebhookEvent } from '@eli-cms/shared';
+
+const MAX_RETRY_ATTEMPTS = 3;
+const RETRY_DELAYS = [10_000, 60_000, 300_000]; // 10s, 60s, 5min
+const RETRY_POLL_INTERVAL = 30_000; // 30s
+
+let retryTimer: ReturnType<typeof setInterval> | null = null;
+
+export class WebhookService {
+  static async findAll(query: WebhookListQuery) {
+    const { page, limit, isActive } = query;
+    const offset = (page - 1) * limit;
+
+    const filters = [];
+    if (isActive !== undefined) filters.push(eq(webhooks.isActive, isActive));
+
+    const where = filters.length > 0 ? and(...filters) : undefined;
+
+    const [{ total }] = await db
+      .select({ total: drizzleCount() })
+      .from(webhooks)
+      .where(where);
+
+    const data = await db
+      .select()
+      .from(webhooks)
+      .where(where)
+      .orderBy(webhooks.createdAt)
+      .limit(limit)
+      .offset(offset);
+
+    return { data, meta: buildMeta(total, page, limit) };
+  }
+
+  static async findById(id: string) {
+    const [webhook] = await db.select().from(webhooks).where(eq(webhooks.id, id)).limit(1);
+    if (!webhook) throw new AppError(404, 'Webhook not found');
+    return webhook;
+  }
+
+  static async create(input: CreateWebhookInput, userId: string) {
+    const [webhook] = await db
+      .insert(webhooks)
+      .values({
+        name: input.name,
+        url: input.url,
+        secret: input.secret,
+        events: input.events,
+        isActive: input.isActive ?? true,
+        createdBy: userId,
+      })
+      .returning();
+
+    // Re-register listeners if active
+    if (webhook.isActive) {
+      this.registerWebhookListeners(webhook);
+    }
+
+    return webhook;
+  }
+
+  static async update(id: string, input: UpdateWebhookInput) {
+    await this.findById(id);
+
+    const [webhook] = await db.update(webhooks).set(input).where(eq(webhooks.id, id)).returning();
+
+    // Re-initialize to pick up event changes
+    await this.initialize();
+
+    return webhook;
+  }
+
+  static async delete(id: string) {
+    await this.findById(id);
+    await db.delete(webhooks).where(eq(webhooks.id, id));
+    // Re-initialize to remove listeners
+    await this.initialize();
+  }
+
+  static async findDeliveries(webhookId: string, query: WebhookDeliveryListQuery) {
+    const { page, limit, status } = query;
+    const offset = (page - 1) * limit;
+
+    const filters = [eq(webhookDeliveries.webhookId, webhookId)];
+    if (status) filters.push(eq(webhookDeliveries.status, status));
+
+    const where = and(...filters);
+
+    const [{ total }] = await db
+      .select({ total: drizzleCount() })
+      .from(webhookDeliveries)
+      .where(where);
+
+    const data = await db
+      .select()
+      .from(webhookDeliveries)
+      .where(where)
+      .orderBy(webhookDeliveries.createdAt)
+      .limit(limit)
+      .offset(offset);
+
+    return { data, meta: buildMeta(total, page, limit) };
+  }
+
+  // ─── Initialization / Event Listeners ──────────────────
+
+  static async initialize() {
+    // Remove all previous webhook listeners
+    const allEvents: WebhookEvent[] = [
+      'content.created', 'content.updated', 'content.deleted', 'content.published',
+      'content_type.created', 'content_type.updated', 'content_type.deleted',
+      'media.uploaded', 'media.deleted',
+    ];
+    for (const evt of allEvents) {
+      eventBus.removeAllListeners(evt);
+    }
+
+    // Load active webhooks
+    const activeWebhooks = await db
+      .select()
+      .from(webhooks)
+      .where(eq(webhooks.isActive, true));
+
+    for (const webhook of activeWebhooks) {
+      this.registerWebhookListeners(webhook);
+    }
+
+    // Start retry poller
+    if (retryTimer) clearInterval(retryTimer);
+    retryTimer = setInterval(() => {
+      this.processRetries().catch(console.error);
+    }, RETRY_POLL_INTERVAL);
+
+    console.log(`Webhooks initialized: ${activeWebhooks.length} active`);
+  }
+
+  static shutdown() {
+    if (retryTimer) {
+      clearInterval(retryTimer);
+      retryTimer = null;
+    }
+  }
+
+  private static registerWebhookListeners(webhook: typeof webhooks.$inferSelect) {
+    for (const evt of webhook.events) {
+      eventBus.on(evt, (cmsEvent: CmsEvent) => {
+        this.deliver(webhook, cmsEvent).catch(console.error);
+      });
+    }
+  }
+
+  // ─── Delivery ─────────────────────────────────────────
+
+  private static async deliver(
+    webhook: typeof webhooks.$inferSelect,
+    cmsEvent: CmsEvent,
+  ) {
+    // Create delivery record
+    const [delivery] = await db
+      .insert(webhookDeliveries)
+      .values({
+        webhookId: webhook.id,
+        event: cmsEvent.event,
+        payload: cmsEvent as unknown as Record<string, unknown>,
+        status: 'pending',
+        attempts: 0,
+      })
+      .returning();
+
+    await this.attemptDelivery(delivery.id, webhook, cmsEvent);
+  }
+
+  private static async attemptDelivery(
+    deliveryId: string,
+    webhook: typeof webhooks.$inferSelect,
+    cmsEvent: CmsEvent,
+  ) {
+    const body = JSON.stringify(cmsEvent);
+    const signature = createHmac('sha256', webhook.secret).update(body).digest('hex');
+
+    try {
+      const response = await fetch(webhook.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Webhook-Signature': signature,
+          'X-Webhook-Event': cmsEvent.event,
+        },
+        body,
+        signal: AbortSignal.timeout(10_000),
+      });
+
+      const [updated] = await db
+        .update(webhookDeliveries)
+        .set({
+          status: response.ok ? 'success' : 'failed',
+          responseStatus: response.status,
+          attempts: 1,
+          nextRetryAt: response.ok ? null : this.getNextRetryAt(1),
+        })
+        .where(eq(webhookDeliveries.id, deliveryId))
+        .returning();
+
+      // If the first attempt failed, we rely on the retry poller
+    } catch {
+      await db
+        .update(webhookDeliveries)
+        .set({
+          status: 'failed',
+          attempts: 1,
+          nextRetryAt: this.getNextRetryAt(1),
+        })
+        .where(eq(webhookDeliveries.id, deliveryId));
+    }
+  }
+
+  private static getNextRetryAt(currentAttempt: number): Date | null {
+    if (currentAttempt >= MAX_RETRY_ATTEMPTS) return null;
+    const delay = RETRY_DELAYS[currentAttempt - 1] ?? RETRY_DELAYS[RETRY_DELAYS.length - 1];
+    return new Date(Date.now() + delay);
+  }
+
+  private static async processRetries() {
+    const now = new Date();
+    const pending = await db
+      .select()
+      .from(webhookDeliveries)
+      .where(
+        and(
+          eq(webhookDeliveries.status, 'failed'),
+          isNotNull(webhookDeliveries.nextRetryAt),
+          lte(webhookDeliveries.nextRetryAt, now),
+        ),
+      )
+      .limit(50);
+
+    for (const delivery of pending) {
+      // Fetch the webhook
+      const [webhook] = await db.select().from(webhooks).where(eq(webhooks.id, delivery.webhookId)).limit(1);
+      if (!webhook || !webhook.isActive) {
+        // Mark as failed permanently
+        await db
+          .update(webhookDeliveries)
+          .set({ nextRetryAt: null })
+          .where(eq(webhookDeliveries.id, delivery.id));
+        continue;
+      }
+
+      const body = JSON.stringify(delivery.payload);
+      const signature = createHmac('sha256', webhook.secret).update(body).digest('hex');
+      const nextAttempt = delivery.attempts + 1;
+
+      try {
+        const response = await fetch(webhook.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Webhook-Signature': signature,
+            'X-Webhook-Event': delivery.event,
+          },
+          body,
+          signal: AbortSignal.timeout(10_000),
+        });
+
+        await db
+          .update(webhookDeliveries)
+          .set({
+            status: response.ok ? 'success' : 'failed',
+            responseStatus: response.status,
+            attempts: nextAttempt,
+            nextRetryAt: response.ok ? null : this.getNextRetryAt(nextAttempt),
+          })
+          .where(eq(webhookDeliveries.id, delivery.id));
+      } catch {
+        await db
+          .update(webhookDeliveries)
+          .set({
+            attempts: nextAttempt,
+            nextRetryAt: this.getNextRetryAt(nextAttempt),
+          })
+          .where(eq(webhookDeliveries.id, delivery.id));
+      }
+    }
+  }
+}
