@@ -1,9 +1,19 @@
-export type UserRole = 'admin' | 'editor';
+// ─── Roles & Permissions ────────────────────────────────
+export interface Role {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  permissions: string[];
+  isSystem: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export interface User {
   id: string;
   email: string;
-  role: UserRole;
+  roleId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -65,7 +75,8 @@ export interface ApiResponse<T = unknown> {
 export interface JwtPayload {
   userId: string;
   email: string;
-  role: UserRole;
+  roleId: string;
+  permissions: string[];
 }
 
 export interface TokenPair {
@@ -120,5 +131,43 @@ export interface Media {
   storageKey: string;
   storageType: StorageType;
   createdBy: string;
+  createdAt: Date;
+}
+
+// ─── Webhooks ───────────────────────────────────────────
+export type WebhookEvent =
+  | 'content.created'
+  | 'content.updated'
+  | 'content.deleted'
+  | 'content.published'
+  | 'content_type.created'
+  | 'content_type.updated'
+  | 'content_type.deleted'
+  | 'media.uploaded'
+  | 'media.deleted';
+
+export interface Webhook {
+  id: string;
+  name: string;
+  url: string;
+  secret: string;
+  events: WebhookEvent[];
+  isActive: boolean;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type WebhookDeliveryStatus = 'pending' | 'success' | 'failed';
+
+export interface WebhookDelivery {
+  id: string;
+  webhookId: string;
+  event: string;
+  payload: Record<string, unknown>;
+  status: WebhookDeliveryStatus;
+  responseStatus: number | null;
+  attempts: number;
+  nextRetryAt: Date | null;
   createdAt: Date;
 }

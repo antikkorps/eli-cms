@@ -2,9 +2,10 @@ import Router from '@koa/router';
 import multer from '@koa/multer';
 import { UploadController } from '../controllers/upload.controller.js';
 import { authenticate } from '../middleware/auth.js';
-import { requireRole } from '../middleware/role-guard.js';
+import { requirePermission } from '../middleware/permission-guard.js';
 import { uploadRateLimit } from '../middleware/rate-limiter.js';
 import { ALLOWED_MIME_TYPES } from '../utils/mime-types.js';
+import { UPLOADS_READ, UPLOADS_CREATE, UPLOADS_DELETE } from '@eli-cms/shared';
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -20,11 +21,11 @@ export const uploadsRouter = new Router({ prefix: '/api/v1/uploads' });
 uploadsRouter.get('/:id/file', UploadController.serve);
 
 // Authenticated
-uploadsRouter.get('/', authenticate, UploadController.list);
-uploadsRouter.get('/:id', authenticate, UploadController.get);
+uploadsRouter.get('/', authenticate, requirePermission(UPLOADS_READ), UploadController.list);
+uploadsRouter.get('/:id', authenticate, requirePermission(UPLOADS_READ), UploadController.get);
 
-// Editor+ — upload (rate limited)
-uploadsRouter.post('/', authenticate, uploadRateLimit, upload.single('file'), UploadController.upload);
+// Upload (rate limited)
+uploadsRouter.post('/', authenticate, requirePermission(UPLOADS_CREATE), uploadRateLimit, upload.single('file'), UploadController.upload);
 
-// Admin — delete
-uploadsRouter.delete('/:id', authenticate, requireRole('admin'), UploadController.delete);
+// Delete
+uploadsRouter.delete('/:id', authenticate, requirePermission(UPLOADS_DELETE), UploadController.delete);

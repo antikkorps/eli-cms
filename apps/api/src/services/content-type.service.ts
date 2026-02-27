@@ -4,6 +4,7 @@ import { contentTypes } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import type { CreateContentTypeInput, UpdateContentTypeInput, ContentTypeListQuery } from '@eli-cms/shared';
+import { eventBus } from './event-bus.js';
 
 export class ContentTypeService {
   static async findAll(query: ContentTypeListQuery) {
@@ -52,6 +53,7 @@ export class ContentTypeService {
     if (existing) throw new AppError(409, `Slug "${input.slug}" already exists`);
 
     const [ct] = await db.insert(contentTypes).values(input).returning();
+    eventBus.emit('content_type.created', { contentType: ct });
     return ct;
   }
 
@@ -66,11 +68,13 @@ export class ContentTypeService {
     }
 
     const [ct] = await db.update(contentTypes).set(input).where(eq(contentTypes.id, id)).returning();
+    eventBus.emit('content_type.updated', { contentType: ct });
     return ct;
   }
 
   static async delete(id: string) {
-    await this.findById(id);
+    const ct = await this.findById(id);
     await db.delete(contentTypes).where(eq(contentTypes.id, id));
+    eventBus.emit('content_type.deleted', { contentType: ct });
   }
 }

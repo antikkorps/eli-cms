@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { eq, and, isNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { users, refreshTokens } from '../db/schema/index.js';
+import { users, refreshTokens, roles } from '../db/schema/index.js';
 import { env } from '../config/environment.js';
 import { parseDuration, parseDurationSec } from '../utils/parse-duration.js';
 import { AppError } from '../utils/app-error.js';
@@ -20,27 +20,56 @@ export class AuthService {
       throw new AppError(409, 'Email already registered');
     }
 
+    // Default to editor role if no roleId provided
+    let roleId = input.roleId;
+    if (!roleId) {
+      const [editorRole] = await db.select().from(roles).where(eq(roles.slug, 'editor')).limit(1);
+      if (!editorRole) throw new AppError(500, 'Default editor role not found');
+      roleId = editorRole.id;
+    } else {
+      // Verify role exists
+      const [role] = await db.select().from(roles).where(eq(roles.id, roleId)).limit(1);
+      if (!role) throw new AppError(400, 'Role not found');
+    }
+
     const hashedPassword = await bcrypt.hash(input.password, 12);
     const [user] = await db
       .insert(users)
-      .values({ email: input.email, password: hashedPassword, role: input.role ?? 'editor' })
-      .returning({ id: users.id, email: users.email, role: users.role, createdAt: users.createdAt });
+      .values({ email: input.email, password: hashedPassword, roleId })
+      .returning({ id: users.id, email: users.email, roleId: users.roleId, createdAt: users.createdAt });
 
     return user;
   }
 
   static async login(input: LoginInput): Promise<TokenPair> {
-    const [user] = await db.select().from(users).where(eq(users.email, input.email)).limit(1);
-    if (!user) {
+    const [row] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        password: users.password,
+        roleId: users.roleId,
+        permissions: roles.permissions,
+      })
+      .from(users)
+      .innerJoin(roles, eq(users.roleId, roles.id))
+      .where(eq(users.email, input.email))
+      .limit(1);
+
+    if (!row) {
       throw new AppError(401, 'Invalid credentials');
     }
 
-    const valid = await bcrypt.compare(input.password, user.password);
+    const valid = await bcrypt.compare(input.password, row.password);
     if (!valid) {
       throw new AppError(401, 'Invalid credentials');
     }
 
-    const payload: JwtPayload = { userId: user.id, email: user.email, role: user.role };
+    const payload: JwtPayload = {
+      userId: row.id,
+      email: row.email,
+      roleId: row.roleId,
+      permissions: row.permissions as string[],
+    };
     return this.generateTokens(payload, randomUUID());
   }
 
@@ -72,9 +101,20 @@ export class AuthService {
       throw new AppError(401, 'Refresh token expired');
     }
 
-    // Verify user still exists
-    const [user] = await db.select().from(users).where(eq(users.id, stored.userId)).limit(1);
-    if (!user) {
+    // Verify user still exists + JOIN roles for fresh permissions
+    const [row] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        roleId: users.roleId,
+        permissions: roles.permissions,
+      })
+      .from(users)
+      .innerJoin(roles, eq(users.roleId, roles.id))
+      .where(eq(users.id, stored.userId))
+      .limit(1);
+
+    if (!row) {
       throw new AppError(401, 'User not found');
     }
 
@@ -85,7 +125,12 @@ export class AuthService {
       .where(eq(refreshTokens.id, stored.id));
 
     // Issue new pair in the same family
-    const payload: JwtPayload = { userId: user.id, email: user.email, role: user.role };
+    const payload: JwtPayload = {
+      userId: row.id,
+      email: row.email,
+      roleId: row.roleId,
+      permissions: row.permissions as string[],
+    };
     return this.generateTokens(payload, stored.family);
   }
 
@@ -134,16 +179,33 @@ export class AuthService {
   }
 
   static async getUserFromToken(payload: JwtPayload) {
-    const [user] = await db
-      .select({ id: users.id, email: users.email, role: users.role, createdAt: users.createdAt, updatedAt: users.updatedAt })
+    const [row] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        roleId: users.roleId,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        roleName: roles.name,
+        roleSlug: roles.slug,
+        permissions: roles.permissions,
+      })
       .from(users)
+      .innerJoin(roles, eq(users.roleId, roles.id))
       .where(eq(users.id, payload.userId))
       .limit(1);
 
-    if (!user) {
+    if (!row) {
       throw new AppError(404, 'User not found');
     }
-    return user;
+    return {
+      id: row.id,
+      email: row.email,
+      roleId: row.roleId,
+      role: { name: row.roleName, slug: row.roleSlug, permissions: row.permissions },
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
   }
 
   private static async generateTokens(payload: JwtPayload, family: string): Promise<TokenPair> {

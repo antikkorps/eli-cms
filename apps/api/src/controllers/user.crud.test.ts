@@ -13,11 +13,9 @@ describe('Users CRUD', () => {
     it('200 returns the user without password', async () => {
       const api = agent();
 
-      // Register a user and get their id
       const regRes = await api.post('/api/v1/auth/register').send({
         email: 'target@test.local',
         password: 'password123',
-        role: 'editor',
       });
       const userId = regRes.body.data.id;
 
@@ -29,7 +27,7 @@ describe('Users CRUD', () => {
       expect(res.body.success).toBe(true);
       expect(res.body.data.id).toBe(userId);
       expect(res.body.data.email).toBe('target@test.local');
-      expect(res.body.data.role).toBe('editor');
+      expect(res.body.data.roleId).toBeDefined();
       expect(res.body.data).not.toHaveProperty('password');
     });
 
@@ -66,11 +64,9 @@ describe('Users CRUD', () => {
     it('204 deletes the user', async () => {
       const api = agent();
 
-      // Register a user to delete
       const regRes = await api.post('/api/v1/auth/register').send({
         email: 'deleteme@test.local',
         password: 'password123',
-        role: 'editor',
       });
       const userId = regRes.body.data.id;
 

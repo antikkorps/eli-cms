@@ -7,6 +7,7 @@ import { buildMeta } from '../utils/pagination.js';
 import { buildContentDataSchema } from '@eli-cms/shared';
 import { ContentVersionService } from './content-version.service.js';
 import type { CreateContentInput, UpdateContentInput, ContentListQuery } from '@eli-cms/shared';
+import { eventBus } from './event-bus.js';
 
 const sortColumns = {
   createdAt: contents.createdAt,
@@ -94,6 +95,12 @@ export class ContentService {
       .insert(contents)
       .values({ contentTypeId: input.contentTypeId, status: input.status ?? 'draft', data: dataResult.data })
       .returning();
+
+    eventBus.emit('content.created', { content });
+    if (content.status === 'published') {
+      eventBus.emit('content.published', { content });
+    }
+
     return content;
   }
 
@@ -116,11 +123,18 @@ export class ContentService {
     }
 
     const [content] = await db.update(contents).set(input).where(eq(contents.id, id)).returning();
+
+    eventBus.emit('content.updated', { content });
+    if (existing.status !== 'published' && content.status === 'published') {
+      eventBus.emit('content.published', { content });
+    }
+
     return content;
   }
 
   static async delete(id: string) {
-    await this.findById(id);
+    const content = await this.findById(id);
     await db.delete(contents).where(eq(contents.id, id));
+    eventBus.emit('content.deleted', { content });
   }
 }
