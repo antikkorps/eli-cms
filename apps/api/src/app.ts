@@ -18,6 +18,8 @@ import { docsRouter } from './routes/docs.js';
 import { rolesRouter } from './routes/roles.js';
 import { setupRouter } from './routes/setup.js';
 import { webhooksRouter } from './routes/webhooks.js';
+import { auditLogsRouter } from './routes/audit-logs.js';
+import { apiKeysRouter } from './routes/api-keys.js';
 
 export function createApp() {
   const app = new Koa();
@@ -38,7 +40,7 @@ export function createApp() {
       },
       credentials: true,
       allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
-      allowHeaders: ['Content-Type', 'Authorization'],
+      allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
       maxAge: 86400,
     }),
   );
@@ -75,6 +77,8 @@ export function createApp() {
   app.use(uploadsRouter.routes()).use(uploadsRouter.allowedMethods());
   app.use(settingsRouter.routes()).use(settingsRouter.allowedMethods());
   app.use(webhooksRouter.routes()).use(webhooksRouter.allowedMethods());
+  app.use(auditLogsRouter.routes()).use(auditLogsRouter.allowedMethods());
+  app.use(apiKeysRouter.routes()).use(apiKeysRouter.allowedMethods());
 
   return app;
 }

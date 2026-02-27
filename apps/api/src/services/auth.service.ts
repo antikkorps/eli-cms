@@ -8,13 +8,15 @@ import { env } from '../config/environment.js';
 import { parseDuration, parseDurationSec } from '../utils/parse-duration.js';
 import { AppError } from '../utils/app-error.js';
 import type { JwtPayload, TokenPair, RegisterInput, LoginInput, ChangePasswordInput } from '@eli-cms/shared';
+import { eventBus } from './event-bus.js';
+import type { Actor } from './content.service.js';
 
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }
 
 export class AuthService {
-  static async register(input: RegisterInput) {
+  static async register(input: RegisterInput, actor?: Actor) {
     const existing = await db.select().from(users).where(eq(users.email, input.email)).limit(1);
     if (existing.length > 0) {
       throw new AppError(409, 'Email already registered');
@@ -38,10 +40,13 @@ export class AuthService {
       .values({ email: input.email, password: hashedPassword, roleId })
       .returning({ id: users.id, email: users.email, roleId: users.roleId, createdAt: users.createdAt });
 
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : { actorId: user.id, actorType: 'user' as const };
+    eventBus.emit('auth.register', { userId: user.id, email: user.email, ...actorData });
+
     return user;
   }
 
-  static async login(input: LoginInput): Promise<TokenPair> {
+  static async login(input: LoginInput, actor?: Actor): Promise<TokenPair> {
     const [row] = await db
       .select({
         id: users.id,
@@ -70,7 +75,12 @@ export class AuthService {
       roleId: row.roleId,
       permissions: row.permissions as string[],
     };
-    return this.generateTokens(payload, randomUUID());
+
+    const tokens = await this.generateTokens(payload, randomUUID());
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : { actorId: row.id, actorType: 'user' as const };
+    eventBus.emit('auth.login', { userId: row.id, email: row.email, ...actorData });
+
+    return tokens;
   }
 
   static async refresh(rawRefreshToken: string): Promise<TokenPair> {
@@ -160,7 +170,7 @@ export class AuthService {
       .where(and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)));
   }
 
-  static async changePassword(userId: string, input: ChangePasswordInput): Promise<void> {
+  static async changePassword(userId: string, input: ChangePasswordInput, actor?: Actor): Promise<void> {
     const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
     if (!user) {
       throw new AppError(404, 'User not found');
@@ -176,6 +186,9 @@ export class AuthService {
 
     // Revoke all refresh tokens
     await this.logoutAll(userId);
+
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : { actorId: userId, actorType: 'user' as const };
+    eventBus.emit('auth.password_changed', { userId, ...actorData });
   }
 
   static async getUserFromToken(payload: JwtPayload) {

@@ -3,6 +3,7 @@ import { uploadListQuerySchema } from '@eli-cms/shared';
 import { UploadService } from '../services/upload.service.js';
 import { AppError } from '../utils/app-error.js';
 import { isAllowedMimeType } from '../utils/mime-types.js';
+import { extractActor } from '../utils/extract-actor.js';
 
 export class UploadController {
   static async upload(ctx: Context) {
@@ -17,7 +18,7 @@ export class UploadController {
     }
 
     const userId = ctx.state.user.userId as string;
-    const data = await UploadService.upload(file, userId);
+    const data = await UploadService.upload(file, userId, extractActor(ctx));
     ctx.status = 201;
     ctx.body = { success: true, data };
   }
@@ -37,7 +38,7 @@ export class UploadController {
   }
 
   static async delete(ctx: Context) {
-    await UploadService.delete(ctx.params.id);
+    await UploadService.delete(ctx.params.id, extractActor(ctx));
     ctx.status = 204;
   }
 

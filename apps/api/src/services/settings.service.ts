@@ -2,6 +2,8 @@ import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { settings } from '../db/schema/index.js';
 import type { StorageConfig } from '@eli-cms/shared';
+import { eventBus } from './event-bus.js';
+import type { Actor } from './content.service.js';
 
 const STORAGE_KEY = 'storage';
 
@@ -18,7 +20,7 @@ export class SettingsService {
     return row ? (row.value as StorageConfig) : DEFAULT_STORAGE_CONFIG;
   }
 
-  static async updateStorageConfig(config: StorageConfig): Promise<StorageConfig> {
+  static async updateStorageConfig(config: StorageConfig, actor?: Actor): Promise<StorageConfig> {
     const [row] = await db
       .insert(settings)
       .values({ key: STORAGE_KEY, value: config, updatedAt: new Date() })
@@ -28,6 +30,8 @@ export class SettingsService {
       })
       .returning();
 
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('settings.updated', { key: STORAGE_KEY, ...actorData });
     return row.value as StorageConfig;
   }
 }

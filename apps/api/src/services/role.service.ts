@@ -5,6 +5,8 @@ import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import { ALL_PERMISSIONS } from '@eli-cms/shared';
 import type { CreateRoleInput, UpdateRoleInput, RoleListQuery } from '@eli-cms/shared';
+import { eventBus } from './event-bus.js';
+import type { Actor } from './content.service.js';
 
 export class RoleService {
   static async findAll(query: RoleListQuery) {
@@ -42,7 +44,7 @@ export class RoleService {
     return role ?? null;
   }
 
-  static async create(input: CreateRoleInput) {
+  static async create(input: CreateRoleInput, actor?: Actor) {
     // Validate permissions against known set
     const invalid = input.permissions.filter((p) => !ALL_PERMISSIONS.includes(p as (typeof ALL_PERMISSIONS)[number]));
     if (invalid.length > 0) {
@@ -63,10 +65,12 @@ export class RoleService {
       })
       .returning();
 
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('role.created', { role, ...actorData });
     return role;
   }
 
-  static async update(id: string, input: UpdateRoleInput) {
+  static async update(id: string, input: UpdateRoleInput, actor?: Actor) {
     const existing = await this.findById(id);
 
     if (existing.isSystem) {
@@ -88,10 +92,12 @@ export class RoleService {
     }
 
     const [role] = await db.update(roles).set(input).where(eq(roles.id, id)).returning();
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('role.updated', { role, ...actorData });
     return role;
   }
 
-  static async delete(id: string) {
+  static async delete(id: string, actor?: Actor) {
     const existing = await this.findById(id);
 
     if (existing.isSystem) {
@@ -109,5 +115,7 @@ export class RoleService {
     }
 
     await db.delete(roles).where(eq(roles.id, id));
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('role.deleted', { role: existing, ...actorData });
   }
 }

@@ -6,8 +6,15 @@ import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import { buildContentDataSchema } from '@eli-cms/shared';
 import { ContentVersionService } from './content-version.service.js';
-import type { CreateContentInput, UpdateContentInput, ContentListQuery } from '@eli-cms/shared';
+import type { CreateContentInput, UpdateContentInput, ContentListQuery, ActorType } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
+
+export interface Actor {
+  id: string;
+  type: ActorType;
+  ip?: string;
+  userAgent?: string;
+}
 
 const sortColumns = {
   createdAt: contents.createdAt,
@@ -81,7 +88,7 @@ export class ContentService {
     return content;
   }
 
-  static async create(input: CreateContentInput) {
+  static async create(input: CreateContentInput, actor?: Actor) {
     const contentType = await ContentTypeService.findById(input.contentTypeId);
 
     // Dynamic validation
@@ -96,15 +103,16 @@ export class ContentService {
       .values({ contentTypeId: input.contentTypeId, status: input.status ?? 'draft', data: dataResult.data })
       .returning();
 
-    eventBus.emit('content.created', { content });
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('content.created', { content, ...actorData });
     if (content.status === 'published') {
-      eventBus.emit('content.published', { content });
+      eventBus.emit('content.published', { content, ...actorData });
     }
 
     return content;
   }
 
-  static async update(id: string, input: UpdateContentInput, userId?: string) {
+  static async update(id: string, input: UpdateContentInput, userId?: string, actor?: Actor) {
     const existing = await this.findById(id);
 
     // Snapshot current state before updating (if userId provided)
@@ -124,17 +132,19 @@ export class ContentService {
 
     const [content] = await db.update(contents).set(input).where(eq(contents.id, id)).returning();
 
-    eventBus.emit('content.updated', { content });
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('content.updated', { content, ...actorData });
     if (existing.status !== 'published' && content.status === 'published') {
-      eventBus.emit('content.published', { content });
+      eventBus.emit('content.published', { content, ...actorData });
     }
 
     return content;
   }
 
-  static async delete(id: string) {
+  static async delete(id: string, actor?: Actor) {
     const content = await this.findById(id);
     await db.delete(contents).where(eq(contents.id, id));
-    eventBus.emit('content.deleted', { content });
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('content.deleted', { content, ...actorData });
   }
 }

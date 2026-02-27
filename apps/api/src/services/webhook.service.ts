@@ -7,12 +7,15 @@ import { buildMeta } from '../utils/pagination.js';
 import { eventBus } from './event-bus.js';
 import type { CmsEvent } from './event-bus.js';
 import type { CreateWebhookInput, UpdateWebhookInput, WebhookListQuery, WebhookDeliveryListQuery, WebhookEvent } from '@eli-cms/shared';
+import type { Actor } from './content.service.js';
 
 const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAYS = [10_000, 60_000, 300_000]; // 10s, 60s, 5min
 const RETRY_POLL_INTERVAL = 30_000; // 30s
 
 let retryTimer: ReturnType<typeof setInterval> | null = null;
+// Track webhook-bound listeners so we can remove only them (not audit listeners)
+const webhookListeners: Array<{ event: string; listener: (...args: unknown[]) => void }> = [];
 
 export class WebhookService {
   static async findAll(query: WebhookListQuery) {
@@ -46,7 +49,7 @@ export class WebhookService {
     return webhook;
   }
 
-  static async create(input: CreateWebhookInput, userId: string) {
+  static async create(input: CreateWebhookInput, userId: string, actor?: Actor) {
     const [webhook] = await db
       .insert(webhooks)
       .values({
@@ -64,10 +67,12 @@ export class WebhookService {
       this.registerWebhookListeners(webhook);
     }
 
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('webhook.created', { webhook, ...actorData });
     return webhook;
   }
 
-  static async update(id: string, input: UpdateWebhookInput) {
+  static async update(id: string, input: UpdateWebhookInput, actor?: Actor) {
     await this.findById(id);
 
     const [webhook] = await db.update(webhooks).set(input).where(eq(webhooks.id, id)).returning();
@@ -75,14 +80,19 @@ export class WebhookService {
     // Re-initialize to pick up event changes
     await this.initialize();
 
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('webhook.updated', { webhook, ...actorData });
     return webhook;
   }
 
-  static async delete(id: string) {
-    await this.findById(id);
+  static async delete(id: string, actor?: Actor) {
+    const webhook = await this.findById(id);
     await db.delete(webhooks).where(eq(webhooks.id, id));
     // Re-initialize to remove listeners
     await this.initialize();
+
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('webhook.deleted', { webhook, ...actorData });
   }
 
   static async findDeliveries(webhookId: string, query: WebhookDeliveryListQuery) {
@@ -113,15 +123,11 @@ export class WebhookService {
   // ─── Initialization / Event Listeners ──────────────────
 
   static async initialize() {
-    // Remove all previous webhook listeners
-    const allEvents: WebhookEvent[] = [
-      'content.created', 'content.updated', 'content.deleted', 'content.published',
-      'content_type.created', 'content_type.updated', 'content_type.deleted',
-      'media.uploaded', 'media.deleted',
-    ];
-    for (const evt of allEvents) {
-      eventBus.removeAllListeners(evt);
+    // Remove only webhook-bound listeners (not audit listeners)
+    for (const { event, listener } of webhookListeners) {
+      eventBus.removeListener(event, listener);
     }
+    webhookListeners.length = 0;
 
     // Load active webhooks
     const activeWebhooks = await db
@@ -151,9 +157,11 @@ export class WebhookService {
 
   private static registerWebhookListeners(webhook: typeof webhooks.$inferSelect) {
     for (const evt of webhook.events) {
-      eventBus.on(evt, (cmsEvent: CmsEvent) => {
+      const listener = (cmsEvent: CmsEvent) => {
         this.deliver(webhook, cmsEvent).catch(console.error);
-      });
+      };
+      eventBus.on(evt, listener);
+      webhookListeners.push({ event: evt, listener: listener as (...args: unknown[]) => void });
     }
   }
 

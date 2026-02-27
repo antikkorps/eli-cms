@@ -5,6 +5,7 @@ import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import type { CreateContentTypeInput, UpdateContentTypeInput, ContentTypeListQuery } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
+import type { Actor } from './content.service.js';
 
 export class ContentTypeService {
   static async findAll(query: ContentTypeListQuery) {
@@ -48,16 +49,17 @@ export class ContentTypeService {
     return ct;
   }
 
-  static async create(input: CreateContentTypeInput) {
+  static async create(input: CreateContentTypeInput, actor?: Actor) {
     const existing = await this.findBySlug(input.slug);
     if (existing) throw new AppError(409, `Slug "${input.slug}" already exists`);
 
     const [ct] = await db.insert(contentTypes).values(input).returning();
-    eventBus.emit('content_type.created', { contentType: ct });
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('content_type.created', { contentType: ct, ...actorData });
     return ct;
   }
 
-  static async update(id: string, input: UpdateContentTypeInput) {
+  static async update(id: string, input: UpdateContentTypeInput, actor?: Actor) {
     await this.findById(id); // ensure exists
 
     if (input.slug) {
@@ -68,13 +70,15 @@ export class ContentTypeService {
     }
 
     const [ct] = await db.update(contentTypes).set(input).where(eq(contentTypes.id, id)).returning();
-    eventBus.emit('content_type.updated', { contentType: ct });
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('content_type.updated', { contentType: ct, ...actorData });
     return ct;
   }
 
-  static async delete(id: string) {
+  static async delete(id: string, actor?: Actor) {
     const ct = await this.findById(id);
     await db.delete(contentTypes).where(eq(contentTypes.id, id));
-    eventBus.emit('content_type.deleted', { contentType: ct });
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('content_type.deleted', { contentType: ct, ...actorData });
   }
 }

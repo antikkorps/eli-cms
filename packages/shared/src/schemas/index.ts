@@ -241,6 +241,36 @@ export const webhookDeliveryListQuerySchema = paginationSchema.extend({
   status: z.enum(['pending', 'success', 'failed']).optional(),
 });
 
+// ─── Audit Log schemas ──────────────────────────────────
+export const auditLogListQuerySchema = paginationSchema.extend({
+  actorId: z.string().max(255).optional(),
+  action: z.string().max(255).optional(),
+  resourceType: z.string().max(255).optional(),
+  from: z.string().datetime({ offset: true }).optional(),
+  to: z.string().datetime({ offset: true }).optional(),
+});
+
+// ─── API Key schemas ────────────────────────────────────
+export const createApiKeySchema = z.object({
+  name: safeString(255).pipe(z.string().min(1)),
+  permissions: z.array(permissionEnum).min(1),
+  expiresAt: z.string().datetime({ offset: true }).optional(),
+});
+
+export const updateApiKeySchema = z.object({
+  name: safeString(255).pipe(z.string().min(1)).optional(),
+  permissions: z.array(permissionEnum).min(1).optional(),
+  isActive: z.boolean().optional(),
+  expiresAt: z.string().datetime({ offset: true }).nullable().optional(),
+});
+
+export const apiKeyListQuerySchema = paginationSchema.extend({
+  isActive: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .optional(),
+});
+
 // ─── Setup schema ───────────────────────────────────────
 export const setupSchema = z
   .object({
@@ -284,3 +314,8 @@ export type WebhookListQuery = z.infer<typeof webhookListQuerySchema>;
 export type WebhookDeliveryListQuery = z.infer<typeof webhookDeliveryListQuerySchema>;
 
 export type SetupInput = z.infer<typeof setupSchema>;
+
+export type AuditLogListQuery = z.infer<typeof auditLogListQuerySchema>;
+export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;
+export type UpdateApiKeyInput = z.infer<typeof updateApiKeySchema>;
+export type ApiKeyListQuery = z.infer<typeof apiKeyListQuerySchema>;

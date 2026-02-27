@@ -2,6 +2,7 @@ import type { Context } from 'koa';
 import { createContentTypeSchema, updateContentTypeSchema, contentTypeListQuerySchema } from '@eli-cms/shared';
 import { ContentTypeService } from '../services/content-type.service.js';
 import { AppError } from '../utils/app-error.js';
+import { extractActor } from '../utils/extract-actor.js';
 
 export class ContentTypeController {
   static async list(ctx: Context) {
@@ -23,7 +24,7 @@ export class ContentTypeController {
     if (!result.success) {
       throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
     }
-    const data = await ContentTypeService.create(result.data);
+    const data = await ContentTypeService.create(result.data, extractActor(ctx));
     ctx.status = 201;
     ctx.body = { success: true, data };
   }
@@ -33,12 +34,12 @@ export class ContentTypeController {
     if (!result.success) {
       throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
     }
-    const data = await ContentTypeService.update(ctx.params.id, result.data);
+    const data = await ContentTypeService.update(ctx.params.id, result.data, extractActor(ctx));
     ctx.body = { success: true, data };
   }
 
   static async delete(ctx: Context) {
-    await ContentTypeService.delete(ctx.params.id);
+    await ContentTypeService.delete(ctx.params.id, extractActor(ctx));
     ctx.status = 204;
   }
 }

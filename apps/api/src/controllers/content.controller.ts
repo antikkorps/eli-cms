@@ -2,6 +2,7 @@ import type { Context } from 'koa';
 import { createContentSchema, updateContentSchema, contentListQuerySchema } from '@eli-cms/shared';
 import { ContentService } from '../services/content.service.js';
 import { AppError } from '../utils/app-error.js';
+import { extractActor } from '../utils/extract-actor.js';
 
 export class ContentController {
   static async list(ctx: Context) {
@@ -23,7 +24,7 @@ export class ContentController {
     if (!result.success) {
       throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
     }
-    const data = await ContentService.create(result.data);
+    const data = await ContentService.create(result.data, extractActor(ctx));
     ctx.status = 201;
     ctx.body = { success: true, data };
   }
@@ -34,12 +35,12 @@ export class ContentController {
       throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
     }
     const userId = ctx.state.user.userId as string;
-    const data = await ContentService.update(ctx.params.id, result.data, userId);
+    const data = await ContentService.update(ctx.params.id, result.data, userId, extractActor(ctx));
     ctx.body = { success: true, data };
   }
 
   static async delete(ctx: Context) {
-    await ContentService.delete(ctx.params.id);
+    await ContentService.delete(ctx.params.id, extractActor(ctx));
     ctx.status = 204;
   }
 }

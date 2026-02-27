@@ -1,5 +1,5 @@
 import { pgTable, uuid, varchar, jsonb, timestamp, index, integer, uniqueIndex, boolean } from 'drizzle-orm/pg-core';
-import type { FieldDefinition, RelationType, WebhookEvent, WebhookDeliveryStatus } from '@eli-cms/shared';
+import type { FieldDefinition, RelationType, WebhookEvent, WebhookDeliveryStatus, ActorType } from '@eli-cms/shared';
 
 // ─── Roles ─────────────────────────────────────────────
 export const roles = pgTable('roles', {
@@ -143,4 +143,42 @@ export const webhookDeliveries = pgTable('webhook_deliveries', {
   index('idx_webhook_deliveries_webhook').on(table.webhookId),
   index('idx_webhook_deliveries_status').on(table.status),
   index('idx_webhook_deliveries_next_retry').on(table.nextRetryAt),
+]);
+
+// ─── Audit Logs ─────────────────────────────────────────
+export const auditLogs = pgTable('audit_logs', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  actorId: varchar('actor_id', { length: 255 }).notNull(),
+  actorType: varchar('actor_type', { length: 20 }).notNull().$type<ActorType>(),
+  action: varchar('action', { length: 255 }).notNull(),
+  resourceType: varchar('resource_type', { length: 255 }).notNull(),
+  resourceId: varchar('resource_id', { length: 255 }),
+  metadata: jsonb('metadata').$type<Record<string, unknown>>(),
+  ipAddress: varchar('ip_address', { length: 45 }),
+  userAgent: varchar('user_agent', { length: 500 }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('idx_audit_logs_actor_id').on(table.actorId),
+  index('idx_audit_logs_action').on(table.action),
+  index('idx_audit_logs_resource_type').on(table.resourceType),
+  index('idx_audit_logs_created_at').on(table.createdAt),
+]);
+
+// ─── API Keys ───────────────────────────────────────────
+export const apiKeys = pgTable('api_keys', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  keyHash: varchar('key_hash', { length: 64 }).notNull(),
+  keyPrefix: varchar('key_prefix', { length: 12 }).notNull(),
+  permissions: jsonb('permissions').notNull().$type<string[]>(),
+  createdBy: uuid('created_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  expiresAt: timestamp('expires_at', { withTimezone: true }),
+  lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+}, (table) => [
+  uniqueIndex('idx_api_keys_key_hash').on(table.keyHash),
+  index('idx_api_keys_created_by').on(table.createdBy),
+  index('idx_api_keys_is_active').on(table.isActive),
 ]);

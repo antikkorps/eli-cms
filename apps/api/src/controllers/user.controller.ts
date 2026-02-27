@@ -2,6 +2,7 @@ import type { Context } from 'koa';
 import { userListQuerySchema } from '@eli-cms/shared';
 import { UserService } from '../services/user.service.js';
 import { AppError } from '../utils/app-error.js';
+import { extractActor } from '../utils/extract-actor.js';
 
 export class UserController {
   static async list(ctx: Context) {
@@ -19,7 +20,7 @@ export class UserController {
   }
 
   static async delete(ctx: Context) {
-    await UserService.delete(ctx.params.id);
+    await UserService.delete(ctx.params.id, extractActor(ctx));
     ctx.status = 204;
   }
 }
