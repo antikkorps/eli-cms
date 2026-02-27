@@ -79,6 +79,14 @@ export class RoleService {
       }
     }
 
+    // Prevent users from modifying permissions of their own role (self-lock protection)
+    if (input.permissions && actor?.id) {
+      const [actorUser] = await db.select().from(users).where(eq(users.id, actor.id)).limit(1);
+      if (actorUser && actorUser.roleId === id) {
+        throw new AppError(403, 'Cannot modify permissions of your own role');
+      }
+    }
+
     if (input.permissions) {
       const invalid = input.permissions.filter((p) => !ALL_PERMISSIONS.includes(p as (typeof ALL_PERMISSIONS)[number]));
       if (invalid.length > 0) {

@@ -8,7 +8,7 @@ export function requirePermission(...requiredPermissions: string[]) {
       throw new AppError(403, 'Insufficient permissions');
     }
 
-    const hasAll = requiredPermissions.every((p) => user.permissions.includes(p));
+    const hasAll = user.permissions.includes('*') || requiredPermissions.every((p) => user.permissions.includes(p));
     if (!hasAll) {
       throw new AppError(403, 'Insufficient permissions');
     }
