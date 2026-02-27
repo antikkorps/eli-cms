@@ -1,16 +1,18 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHmac, randomBytes } from 'node:crypto';
 import { eq, and, count as drizzleCount } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { apiKeys } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
+import { env } from '../config/environment.js';
 import type { CreateApiKeyInput, UpdateApiKeyInput, ApiKeyListQuery } from '@eli-cms/shared';
 
 const PREFIX = 'eli_';
 const DEBOUNCE_MS = 5 * 60 * 1000; // 5 min
 
+/** HMAC-SHA256 keyed hash — prevents brute-force even if DB is leaked. */
 function hashKey(raw: string): string {
-  return createHash('sha256').update(raw).digest('hex');
+  return createHmac('sha256', env.JWT_SECRET).update(raw).digest('hex');
 }
 
 export class ApiKeyService {
