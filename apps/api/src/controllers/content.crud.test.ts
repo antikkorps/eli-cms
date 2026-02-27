@@ -11,7 +11,7 @@ describe('Contents CRUD', () => {
 
     // Create a blog content type for content tests
     const ctRes = await agent()
-      .post('/api/content-types')
+      .post('/api/v1/content-types')
       .set('Authorization', `Bearer ${token}`)
       .send(buildBlogContentType());
     contentTypeId = ctRes.body.data.id;
@@ -21,7 +21,7 @@ describe('Contents CRUD', () => {
   describe('POST /api/contents', () => {
     it('201 creates a draft content by default', async () => {
       const res = await agent()
-        .post('/api/contents')
+        .post('/api/v1/contents')
         .set('Authorization', `Bearer ${token}`)
         .send({ contentTypeId, data: buildBlogData() });
 
@@ -35,7 +35,7 @@ describe('Contents CRUD', () => {
 
     it('201 creates a published content', async () => {
       const res = await agent()
-        .post('/api/contents')
+        .post('/api/v1/contents')
         .set('Authorization', `Bearer ${token}`)
         .send({ contentTypeId, status: 'published', data: buildBlogData() });
 
@@ -45,7 +45,7 @@ describe('Contents CRUD', () => {
 
     it('400 rejects missing contentTypeId', async () => {
       const res = await agent()
-        .post('/api/contents')
+        .post('/api/v1/contents')
         .set('Authorization', `Bearer ${token}`)
         .send({ data: buildBlogData() });
 
@@ -55,7 +55,7 @@ describe('Contents CRUD', () => {
 
     it('400 rejects missing required field in data', async () => {
       const res = await agent()
-        .post('/api/contents')
+        .post('/api/v1/contents')
         .set('Authorization', `Bearer ${token}`)
         .send({ contentTypeId, data: { title: 'No body field' } });
 
@@ -65,7 +65,7 @@ describe('Contents CRUD', () => {
 
     it('400 rejects wrong field type in data', async () => {
       const res = await agent()
-        .post('/api/contents')
+        .post('/api/v1/contents')
         .set('Authorization', `Bearer ${token}`)
         .send({ contentTypeId, data: { title: 123, body: 'valid' } });
 
@@ -75,7 +75,7 @@ describe('Contents CRUD', () => {
 
     it('400 rejects invalid UUID for contentTypeId', async () => {
       const res = await agent()
-        .post('/api/contents')
+        .post('/api/v1/contents')
         .set('Authorization', `Bearer ${token}`)
         .send({ contentTypeId: 'not-a-uuid', data: buildBlogData() });
 
@@ -85,7 +85,7 @@ describe('Contents CRUD', () => {
 
     it('401 rejects without token', async () => {
       const res = await agent()
-        .post('/api/contents')
+        .post('/api/v1/contents')
         .send({ contentTypeId, data: buildBlogData() });
 
       expect(res.status).toBe(401);
@@ -98,12 +98,12 @@ describe('Contents CRUD', () => {
     it('200 returns the content', async () => {
       const api = agent();
       const created = await api
-        .post('/api/contents')
+        .post('/api/v1/contents')
         .set('Authorization', `Bearer ${token}`)
         .send({ contentTypeId, data: buildBlogData() });
 
       const res = await api
-        .get(`/api/contents/${created.body.data.id}`)
+        .get(`/api/v1/contents/${created.body.data.id}`)
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
@@ -118,7 +118,7 @@ describe('Contents CRUD', () => {
 
     it('404 for non-existent id', async () => {
       const res = await agent()
-        .get('/api/contents/00000000-0000-0000-0000-000000000000')
+        .get('/api/v1/contents/00000000-0000-0000-0000-000000000000')
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(404);
@@ -126,7 +126,7 @@ describe('Contents CRUD', () => {
     });
 
     it('401 without token', async () => {
-      const res = await agent().get('/api/contents/00000000-0000-0000-0000-000000000000');
+      const res = await agent().get('/api/v1/contents/00000000-0000-0000-0000-000000000000');
 
       expect(res.status).toBe(401);
       expect(res.body.success).toBe(false);
@@ -138,12 +138,12 @@ describe('Contents CRUD', () => {
     it('200 updates status from draft to published', async () => {
       const api = agent();
       const created = await api
-        .post('/api/contents')
+        .post('/api/v1/contents')
         .set('Authorization', `Bearer ${token}`)
         .send({ contentTypeId, data: buildBlogData() });
 
       const res = await api
-        .put(`/api/contents/${created.body.data.id}`)
+        .put(`/api/v1/contents/${created.body.data.id}`)
         .set('Authorization', `Bearer ${token}`)
         .send({ status: 'published' });
 
@@ -155,12 +155,12 @@ describe('Contents CRUD', () => {
     it('200 updates the data', async () => {
       const api = agent();
       const created = await api
-        .post('/api/contents')
+        .post('/api/v1/contents')
         .set('Authorization', `Bearer ${token}`)
         .send({ contentTypeId, data: buildBlogData() });
 
       const res = await api
-        .put(`/api/contents/${created.body.data.id}`)
+        .put(`/api/v1/contents/${created.body.data.id}`)
         .set('Authorization', `Bearer ${token}`)
         .send({ data: buildBlogData({ title: 'Updated Title', body: 'Updated body' }) });
 
@@ -172,12 +172,12 @@ describe('Contents CRUD', () => {
     it('400 rejects invalid data per dynamic schema', async () => {
       const api = agent();
       const created = await api
-        .post('/api/contents')
+        .post('/api/v1/contents')
         .set('Authorization', `Bearer ${token}`)
         .send({ contentTypeId, data: buildBlogData() });
 
       const res = await api
-        .put(`/api/contents/${created.body.data.id}`)
+        .put(`/api/v1/contents/${created.body.data.id}`)
         .set('Authorization', `Bearer ${token}`)
         .send({ data: { title: 123, body: 'valid' } });
 
@@ -187,7 +187,7 @@ describe('Contents CRUD', () => {
 
     it('404 for non-existent id', async () => {
       const res = await agent()
-        .put('/api/contents/00000000-0000-0000-0000-000000000000')
+        .put('/api/v1/contents/00000000-0000-0000-0000-000000000000')
         .set('Authorization', `Bearer ${token}`)
         .send({ status: 'published' });
 
@@ -197,7 +197,7 @@ describe('Contents CRUD', () => {
 
     it('401 without token', async () => {
       const res = await agent()
-        .put('/api/contents/00000000-0000-0000-0000-000000000000')
+        .put('/api/v1/contents/00000000-0000-0000-0000-000000000000')
         .send({ status: 'published' });
 
       expect(res.status).toBe(401);
@@ -210,26 +210,26 @@ describe('Contents CRUD', () => {
     it('204 deletes the content', async () => {
       const api = agent();
       const created = await api
-        .post('/api/contents')
+        .post('/api/v1/contents')
         .set('Authorization', `Bearer ${token}`)
         .send({ contentTypeId, data: buildBlogData() });
 
       const res = await api
-        .delete(`/api/contents/${created.body.data.id}`)
+        .delete(`/api/v1/contents/${created.body.data.id}`)
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(204);
 
       // Verify it's gone
       const getRes = await api
-        .get(`/api/contents/${created.body.data.id}`)
+        .get(`/api/v1/contents/${created.body.data.id}`)
         .set('Authorization', `Bearer ${token}`);
       expect(getRes.status).toBe(404);
     });
 
     it('404 for non-existent id', async () => {
       const res = await agent()
-        .delete('/api/contents/00000000-0000-0000-0000-000000000000')
+        .delete('/api/v1/contents/00000000-0000-0000-0000-000000000000')
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(404);
@@ -237,7 +237,7 @@ describe('Contents CRUD', () => {
     });
 
     it('401 without token', async () => {
-      const res = await agent().delete('/api/contents/00000000-0000-0000-0000-000000000000');
+      const res = await agent().delete('/api/v1/contents/00000000-0000-0000-0000-000000000000');
 
       expect(res.status).toBe(401);
       expect(res.body.success).toBe(false);

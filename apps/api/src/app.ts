@@ -12,6 +12,9 @@ import { contentsRouter } from './routes/contents.js';
 import { usersRouter } from './routes/users.js';
 import { uploadsRouter } from './routes/uploads.js';
 import { settingsRouter } from './routes/settings.js';
+import { contentRelationsRouter } from './routes/content-relations.js';
+import { contentVersionsRouter } from './routes/content-versions.js';
+import { docsRouter } from './routes/docs.js';
 
 export function createApp() {
   const app = new Koa();
@@ -47,6 +50,9 @@ export function createApp() {
     await next();
   });
 
+  // Docs (no auth, blocked in production by guard in docs router)
+  app.use(docsRouter.routes()).use(docsRouter.allowedMethods());
+
   // Public routes (no auth)
   app.use(publicRouter.routes()).use(publicRouter.allowedMethods());
 
@@ -56,6 +62,8 @@ export function createApp() {
   // Protected routes
   app.use(contentTypesRouter.routes()).use(contentTypesRouter.allowedMethods());
   app.use(contentsRouter.routes()).use(contentsRouter.allowedMethods());
+  app.use(contentRelationsRouter.routes()).use(contentRelationsRouter.allowedMethods());
+  app.use(contentVersionsRouter.routes()).use(contentVersionsRouter.allowedMethods());
   app.use(usersRouter.routes()).use(usersRouter.allowedMethods());
   app.use(uploadsRouter.routes()).use(uploadsRouter.allowedMethods());
   app.use(settingsRouter.routes()).use(settingsRouter.allowedMethods());

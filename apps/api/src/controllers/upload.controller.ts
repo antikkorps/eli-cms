@@ -2,12 +2,18 @@ import type { Context } from 'koa';
 import { uploadListQuerySchema } from '@eli-cms/shared';
 import { UploadService } from '../services/upload.service.js';
 import { AppError } from '../utils/app-error.js';
+import { isAllowedMimeType } from '../utils/mime-types.js';
 
 export class UploadController {
   static async upload(ctx: Context) {
     const file = ctx.file as Express.Multer.File | undefined;
     if (!file) {
-      throw new AppError(400, 'No file provided');
+      throw new AppError(400, 'No file provided. The file type may not be allowed.');
+    }
+
+    // Defense-in-depth: validate MIME type even after multer fileFilter
+    if (!isAllowedMimeType(file.mimetype)) {
+      throw new AppError(400, `File type "${file.mimetype}" is not allowed`);
     }
 
     const userId = ctx.state.user.userId as string;

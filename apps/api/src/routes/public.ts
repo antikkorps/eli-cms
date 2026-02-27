@@ -2,7 +2,7 @@ import Router from '@koa/router';
 import { PublicController } from '../controllers/public.controller.js';
 import { publicRateLimit } from '../middleware/rate-limiter.js';
 
-export const publicRouter = new Router({ prefix: '/api/public' });
+export const publicRouter = new Router({ prefix: '/api/v1/public' });
 
 publicRouter.use(publicRateLimit);
 

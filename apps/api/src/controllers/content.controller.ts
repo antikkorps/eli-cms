@@ -33,7 +33,8 @@ export class ContentController {
     if (!result.success) {
       throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
     }
-    const data = await ContentService.update(ctx.params.id, result.data);
+    const userId = ctx.state.user.userId as string;
+    const data = await ContentService.update(ctx.params.id, result.data, userId);
     ctx.body = { success: true, data };
   }
 

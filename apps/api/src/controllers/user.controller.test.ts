@@ -10,25 +10,25 @@ describe('GET /api/users', () => {
 
   // ─── Auth & Authz ─────────────────────────────────────
   it('returns 401 without token', async () => {
-    const res = await agent().get('/api/users');
+    const res = await agent().get('/api/v1/users');
     expect(res.status).toBe(401);
   });
 
   it('returns 403 for editor role', async () => {
     const editorToken = await getEditorToken();
-    const res = await agent().get('/api/users').set('Authorization', `Bearer ${editorToken}`);
+    const res = await agent().get('/api/v1/users').set('Authorization', `Bearer ${editorToken}`);
     expect(res.status).toBe(403);
   });
 
   it('returns 200 for admin role', async () => {
-    const res = await agent().get('/api/users').set('Authorization', `Bearer ${adminToken}`);
+    const res = await agent().get('/api/v1/users').set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
   });
 
   // ─── Pagination defaults ──────────────────────────────
   it('returns default pagination meta', async () => {
-    const res = await agent().get('/api/users').set('Authorization', `Bearer ${adminToken}`);
+    const res = await agent().get('/api/v1/users').set('Authorization', `Bearer ${adminToken}`);
     // 2 users exist (admin + editor would need to be created; only admin here from getAdminToken)
     expect(res.body.meta.page).toBe(1);
     expect(res.body.meta.limit).toBe(20);
@@ -39,7 +39,7 @@ describe('GET /api/users', () => {
     const api = agent();
     // register extra users (admin already exists from getAdminToken)
     for (let i = 0; i < 4; i++) {
-      await api.post('/api/auth/register').send({
+      await api.post('/api/v1/auth/register').send({
         email: `user${i}@test.local`,
         password: 'password123',
         role: 'editor',
@@ -47,7 +47,7 @@ describe('GET /api/users', () => {
     }
 
     const res = await api
-      .get('/api/users')
+      .get('/api/v1/users')
       .query({ page: 1, limit: 2 })
       .set('Authorization', `Bearer ${adminToken}`);
 
@@ -58,14 +58,14 @@ describe('GET /api/users', () => {
   // ─── Filter: role ─────────────────────────────────────
   it('filters by role=editor', async () => {
     const api = agent();
-    await api.post('/api/auth/register').send({
+    await api.post('/api/v1/auth/register').send({
       email: 'editor1@test.local',
       password: 'password123',
       role: 'editor',
     });
 
     const res = await api
-      .get('/api/users')
+      .get('/api/v1/users')
       .query({ role: 'editor' })
       .set('Authorization', `Bearer ${adminToken}`);
 
@@ -75,14 +75,14 @@ describe('GET /api/users', () => {
 
   it('filters by role=admin', async () => {
     const api = agent();
-    await api.post('/api/auth/register').send({
+    await api.post('/api/v1/auth/register').send({
       email: 'editor1@test.local',
       password: 'password123',
       role: 'editor',
     });
 
     const res = await api
-      .get('/api/users')
+      .get('/api/v1/users')
       .query({ role: 'admin' })
       .set('Authorization', `Bearer ${adminToken}`);
 
@@ -92,14 +92,14 @@ describe('GET /api/users', () => {
   // ─── Search ───────────────────────────────────────────
   it('searches by email (ILIKE)', async () => {
     const api = agent();
-    await api.post('/api/auth/register').send({
+    await api.post('/api/v1/auth/register').send({
       email: 'findme@test.local',
       password: 'password123',
       role: 'editor',
     });
 
     const res = await api
-      .get('/api/users')
+      .get('/api/v1/users')
       .query({ search: 'findme' })
       .set('Authorization', `Bearer ${adminToken}`);
 
@@ -111,7 +111,7 @@ describe('GET /api/users', () => {
   it('combines role + search + pagination', async () => {
     const api = agent();
     for (let i = 0; i < 5; i++) {
-      await api.post('/api/auth/register').send({
+      await api.post('/api/v1/auth/register').send({
         email: `dev${i}@test.local`,
         password: 'password123',
         role: 'editor',
@@ -119,7 +119,7 @@ describe('GET /api/users', () => {
     }
 
     const res = await api
-      .get('/api/users')
+      .get('/api/v1/users')
       .query({ role: 'editor', search: 'dev', page: 1, limit: 2 })
       .set('Authorization', `Bearer ${adminToken}`);
 
@@ -130,7 +130,7 @@ describe('GET /api/users', () => {
 
   // ─── Shape: no password ───────────────────────────────
   it('does not expose password in response', async () => {
-    const res = await agent().get('/api/users').set('Authorization', `Bearer ${adminToken}`);
+    const res = await agent().get('/api/v1/users').set('Authorization', `Bearer ${adminToken}`);
     for (const user of res.body.data) {
       expect(user).not.toHaveProperty('password');
     }
@@ -139,7 +139,7 @@ describe('GET /api/users', () => {
   // ─── Validation ───────────────────────────────────────
   it('returns 400 for page=0', async () => {
     const res = await agent()
-      .get('/api/users')
+      .get('/api/v1/users')
       .query({ page: 0 })
       .set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(400);
@@ -147,7 +147,7 @@ describe('GET /api/users', () => {
 
   it('returns 400 for limit>100', async () => {
     const res = await agent()
-      .get('/api/users')
+      .get('/api/v1/users')
       .query({ limit: 101 })
       .set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(400);
@@ -155,7 +155,7 @@ describe('GET /api/users', () => {
 
   it('returns 400 for invalid role value', async () => {
     const res = await agent()
-      .get('/api/users')
+      .get('/api/v1/users')
       .query({ role: 'superadmin' })
       .set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(400);

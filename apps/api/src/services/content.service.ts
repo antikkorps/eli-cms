@@ -5,6 +5,7 @@ import { ContentTypeService } from './content-type.service.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import { buildContentDataSchema } from '@eli-cms/shared';
+import { ContentVersionService } from './content-version.service.js';
 import type { CreateContentInput, UpdateContentInput, ContentListQuery } from '@eli-cms/shared';
 
 const sortColumns = {
@@ -96,8 +97,13 @@ export class ContentService {
     return content;
   }
 
-  static async update(id: string, input: UpdateContentInput) {
+  static async update(id: string, input: UpdateContentInput, userId?: string) {
     const existing = await this.findById(id);
+
+    // Snapshot current state before updating (if userId provided)
+    if (userId) {
+      await ContentVersionService.snapshot(id, userId);
+    }
 
     if (input.data) {
       const contentType = await ContentTypeService.findById(existing.contentTypeId);

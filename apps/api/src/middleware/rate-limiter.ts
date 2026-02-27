@@ -21,6 +21,21 @@ export const authRateLimit = isTest
       throw: false,
     });
 
+const uploadDb = new Map();
+
+/** 20 requests per minute per IP — for file uploads */
+export const uploadRateLimit = isTest
+  ? noop
+  : ratelimit({
+      driver: 'memory',
+      db: uploadDb,
+      duration: 60 * 1000,
+      max: 20,
+      id: (ctx) => ctx.ip,
+      errorMessage: 'Too many upload requests, please try again later',
+      throw: false,
+    });
+
 /** 100 requests per minute per IP — for public API */
 export const publicRateLimit = isTest
   ? noop

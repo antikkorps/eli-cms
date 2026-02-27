@@ -3,7 +3,7 @@ import { UserController } from '../controllers/user.controller.js';
 import { authenticate } from '../middleware/auth.js';
 import { requireRole } from '../middleware/role-guard.js';
 
-export const usersRouter = new Router({ prefix: '/api/users' });
+export const usersRouter = new Router({ prefix: '/api/v1/users' });
 
 usersRouter.get('/', authenticate, requireRole('admin'), UserController.list);
 usersRouter.get('/:id', authenticate, requireRole('admin'), UserController.get);

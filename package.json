@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev:api": "pnpm --filter @eli-cms/api dev",
+    "dev:api": "pnpm build:shared && pnpm --filter @eli-cms/api dev",
     "dev:web": "pnpm --filter @eli-cms/web dev",
     "build:shared": "pnpm --filter @eli-cms/shared build",
     "build:api": "pnpm --filter @eli-cms/api build",

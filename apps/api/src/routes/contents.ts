@@ -2,7 +2,7 @@ import Router from '@koa/router';
 import { ContentController } from '../controllers/content.controller.js';
 import { authenticate } from '../middleware/auth.js';
 
-export const contentsRouter = new Router({ prefix: '/api/contents' });
+export const contentsRouter = new Router({ prefix: '/api/v1/contents' });
 
 contentsRouter.get('/', authenticate, ContentController.list);
 contentsRouter.get('/:id', authenticate, ContentController.get);

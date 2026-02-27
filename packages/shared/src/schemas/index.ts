@@ -155,6 +155,23 @@ export const uploadListQuerySchema = paginationSchema.extend({
   createdBy: z.string().uuid().optional(),
 });
 
+// ─── Content Relations schemas ──────────────────────────
+export const createContentRelationSchema = z.object({
+  targetId: z.string().uuid(),
+  relationType: z.enum(['reference', 'parent', 'related']),
+});
+
+export const contentRelationListQuerySchema = paginationSchema.extend({
+  relationType: z.enum(['reference', 'parent', 'related']).optional(),
+});
+
+// ─── Content Versions schemas ───────────────────────────
+export const contentVersionListQuerySchema = paginationSchema;
+
+export type CreateContentRelationInput = z.infer<typeof createContentRelationSchema>;
+export type ContentRelationListQuery = z.infer<typeof contentRelationListQuerySchema>;
+export type ContentVersionListQuery = z.infer<typeof contentVersionListQuerySchema>;
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type CreateContentTypeInput = z.infer<typeof createContentTypeSchema>;
