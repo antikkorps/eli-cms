@@ -73,6 +73,28 @@ export interface TokenPair {
   refreshToken: string;
 }
 
+// ─── Content Relations ──────────────────────────────────
+export type RelationType = 'reference' | 'parent' | 'related';
+
+export interface ContentRelation {
+  id: string;
+  sourceId: string;
+  targetId: string;
+  relationType: RelationType;
+  createdAt: Date;
+}
+
+// ─── Content Versions ───────────────────────────────────
+export interface ContentVersion {
+  id: string;
+  contentId: string;
+  versionNumber: number;
+  data: Record<string, unknown>;
+  status: string;
+  editedBy: string;
+  createdAt: Date;
+}
+
 // ─── Storage / Media ────────────────────────────────────
 export type StorageType = 'local' | 's3';
 

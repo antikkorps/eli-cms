@@ -10,7 +10,7 @@ describe('Public API — full-text search', () => {
     token = await getAdminToken();
     const api = agent();
     const ctRes = await api
-      .post('/api/content-types')
+      .post('/api/v1/content-types')
       .set('Authorization', `Bearer ${token}`)
       .send(buildBlogContentType());
     ctId = ctRes.body.data.id;
@@ -18,7 +18,7 @@ describe('Public API — full-text search', () => {
 
   async function seedPublished(data: Record<string, unknown>) {
     await agent()
-      .post('/api/contents')
+      .post('/api/v1/contents')
       .set('Authorization', `Bearer ${token}`)
       .send({ contentTypeId: ctId, status: 'published', data: buildBlogData(data) });
   }
@@ -27,7 +27,7 @@ describe('Public API — full-text search', () => {
     await seedPublished({ title: 'Rust Ownership', body: 'Borrowing rules' });
     await seedPublished({ title: 'Go Concurrency', body: 'Goroutines explained' });
 
-    const res = await agent().get('/api/public/contents').query({ search: 'Rust' });
+    const res = await agent().get('/api/v1/public/contents').query({ search: 'Rust' });
 
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
@@ -39,7 +39,7 @@ describe('Public API — full-text search', () => {
     await seedPublished({ title: 'Kubernetes Intro', body: 'Orchestration overview' });
 
     const res = await agent()
-      .get('/api/public/contents/by-type/blog')
+      .get('/api/v1/public/contents/by-type/blog')
       .query({ search: 'Docker' });
 
     expect(res.status).toBe(200);
@@ -50,7 +50,7 @@ describe('Public API — full-text search', () => {
   it('search with no match returns empty array', async () => {
     await seedPublished({ title: 'Some Article', body: 'Content here' });
 
-    const res = await agent().get('/api/public/contents').query({ search: 'zzzznotfound' });
+    const res = await agent().get('/api/v1/public/contents').query({ search: 'zzzznotfound' });
 
     expect(res.body.data).toHaveLength(0);
     expect(res.body.meta.total).toBe(0);

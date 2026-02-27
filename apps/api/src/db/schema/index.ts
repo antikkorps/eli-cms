@@ -1,5 +1,5 @@
-import { pgTable, uuid, varchar, jsonb, timestamp, index, integer } from 'drizzle-orm/pg-core';
-import type { FieldDefinition } from '@eli-cms/shared';
+import { pgTable, uuid, varchar, jsonb, timestamp, index, integer, uniqueIndex } from 'drizzle-orm/pg-core';
+import type { FieldDefinition, RelationType } from '@eli-cms/shared';
 
 // ─── Users ──────────────────────────────────────────────
 export const users = pgTable('users', {
@@ -45,6 +45,34 @@ export const contents = pgTable('contents', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
+
+// ─── Content Relations ──────────────────────────────────
+export const contentRelations = pgTable('content_relations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  sourceId: uuid('source_id').notNull().references(() => contents.id, { onDelete: 'cascade' }),
+  targetId: uuid('target_id').notNull().references(() => contents.id, { onDelete: 'cascade' }),
+  relationType: varchar('relation_type', { length: 50 }).notNull().$type<RelationType>(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('idx_content_relations_source').on(table.sourceId),
+  index('idx_content_relations_target').on(table.targetId),
+  index('idx_content_relations_type').on(table.relationType),
+  uniqueIndex('uq_content_relations').on(table.sourceId, table.targetId, table.relationType),
+]);
+
+// ─── Content Versions ───────────────────────────────────
+export const contentVersions = pgTable('content_versions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  contentId: uuid('content_id').notNull().references(() => contents.id, { onDelete: 'cascade' }),
+  versionNumber: integer('version_number').notNull(),
+  data: jsonb('data').notNull().$type<Record<string, unknown>>(),
+  status: varchar('status', { length: 20 }).notNull(),
+  editedBy: uuid('edited_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('idx_content_versions_content').on(table.contentId),
+  uniqueIndex('uq_content_versions').on(table.contentId, table.versionNumber),
+]);
 
 // ─── Settings ───────────────────────────────────────────
 export const settings = pgTable('settings', {

@@ -14,7 +14,7 @@ describe('Users CRUD', () => {
       const api = agent();
 
       // Register a user and get their id
-      const regRes = await api.post('/api/auth/register').send({
+      const regRes = await api.post('/api/v1/auth/register').send({
         email: 'target@test.local',
         password: 'password123',
         role: 'editor',
@@ -22,7 +22,7 @@ describe('Users CRUD', () => {
       const userId = regRes.body.data.id;
 
       const res = await api
-        .get(`/api/users/${userId}`)
+        .get(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(200);
@@ -35,7 +35,7 @@ describe('Users CRUD', () => {
 
     it('404 for non-existent id', async () => {
       const res = await agent()
-        .get('/api/users/00000000-0000-0000-0000-000000000000')
+        .get('/api/v1/users/00000000-0000-0000-0000-000000000000')
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(404);
@@ -46,7 +46,7 @@ describe('Users CRUD', () => {
       const editorToken = await getEditorToken();
 
       const res = await agent()
-        .get('/api/users/00000000-0000-0000-0000-000000000000')
+        .get('/api/v1/users/00000000-0000-0000-0000-000000000000')
         .set('Authorization', `Bearer ${editorToken}`);
 
       expect(res.status).toBe(403);
@@ -54,7 +54,7 @@ describe('Users CRUD', () => {
     });
 
     it('401 without token', async () => {
-      const res = await agent().get('/api/users/00000000-0000-0000-0000-000000000000');
+      const res = await agent().get('/api/v1/users/00000000-0000-0000-0000-000000000000');
 
       expect(res.status).toBe(401);
       expect(res.body.success).toBe(false);
@@ -67,7 +67,7 @@ describe('Users CRUD', () => {
       const api = agent();
 
       // Register a user to delete
-      const regRes = await api.post('/api/auth/register').send({
+      const regRes = await api.post('/api/v1/auth/register').send({
         email: 'deleteme@test.local',
         password: 'password123',
         role: 'editor',
@@ -75,21 +75,21 @@ describe('Users CRUD', () => {
       const userId = regRes.body.data.id;
 
       const res = await api
-        .delete(`/api/users/${userId}`)
+        .delete(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(204);
 
       // Verify it's gone
       const getRes = await api
-        .get(`/api/users/${userId}`)
+        .get(`/api/v1/users/${userId}`)
         .set('Authorization', `Bearer ${adminToken}`);
       expect(getRes.status).toBe(404);
     });
 
     it('404 for non-existent id', async () => {
       const res = await agent()
-        .delete('/api/users/00000000-0000-0000-0000-000000000000')
+        .delete('/api/v1/users/00000000-0000-0000-0000-000000000000')
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(404);
@@ -100,7 +100,7 @@ describe('Users CRUD', () => {
       const editorToken = await getEditorToken();
 
       const res = await agent()
-        .delete('/api/users/00000000-0000-0000-0000-000000000000')
+        .delete('/api/v1/users/00000000-0000-0000-0000-000000000000')
         .set('Authorization', `Bearer ${editorToken}`);
 
       expect(res.status).toBe(403);
@@ -108,7 +108,7 @@ describe('Users CRUD', () => {
     });
 
     it('401 without token', async () => {
-      const res = await agent().delete('/api/users/00000000-0000-0000-0000-000000000000');
+      const res = await agent().delete('/api/v1/users/00000000-0000-0000-0000-000000000000');
 
       expect(res.status).toBe(401);
       expect(res.body.success).toBe(false);

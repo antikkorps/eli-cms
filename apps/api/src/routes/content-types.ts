@@ -3,7 +3,7 @@ import { ContentTypeController } from '../controllers/content-type.controller.js
 import { authenticate } from '../middleware/auth.js';
 import { requireRole } from '../middleware/role-guard.js';
 
-export const contentTypesRouter = new Router({ prefix: '/api/content-types' });
+export const contentTypesRouter = new Router({ prefix: '/api/v1/content-types' });
 
 contentTypesRouter.get('/', authenticate, ContentTypeController.list);
 contentTypesRouter.get('/:id', authenticate, ContentTypeController.get);
