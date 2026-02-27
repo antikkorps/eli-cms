@@ -41,27 +41,31 @@ const navigation = computed(() => {
 
 <template>
   <UDashboardGroup>
-    <UDashboardSidebar mode="slideover" collapsible :toggle="false">
-      <template #header>
-        <div class="flex items-center gap-2.5">
-          <div class="flex size-8 items-center justify-center rounded-md bg-primary font-bold text-white text-sm">
+    <UDashboardSidebar collapsible toggle-side="right" :default-size="20" :ui="{ root: 'transition-[width] duration-200 ease-in-out' }">
+      <template #header="{ collapsed }">
+        <UButton to="/admin" variant="ghost" :class="collapsed ? 'w-full justify-center' : 'w-full justify-start gap-2.5'">
+          <div
+            class="flex size-8 items-center justify-center rounded-md bg-primary font-bold text-white text-sm shrink-0"
+          >
             E
           </div>
-          <span class="font-semibold text-lg">{{ $t('common.appName') }}</span>
-        </div>
+          <span v-if="!collapsed" class="font-semibold text-lg">{{ $t('common.appName') }}</span>
+        </UButton>
       </template>
 
-      <UNavigationMenu :items="navigation" orientation="vertical" />
+      <template #default="{ collapsed }">
+        <UNavigationMenu :items="navigation" orientation="vertical" :collapsed="collapsed" />
+      </template>
 
-      <template #footer>
-        <SidebarUserMenu />
+      <template #footer="{ collapsed }">
+        <SidebarUserMenu :collapsed="collapsed" />
       </template>
     </UDashboardSidebar>
 
     <div class="flex flex-col flex-1 min-w-0">
-      <UDashboardNavbar class="lg:hidden">
-        <template #left>
-          <UDashboardSidebarToggle />
+      <UDashboardNavbar :toggle="{ class: 'lg:hidden' }">
+        <template #leading>
+          <UDashboardSidebarCollapse class="hidden lg:flex" />
         </template>
         <template #right>
           <LocaleSwitcher />
