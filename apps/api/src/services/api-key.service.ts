@@ -1,4 +1,4 @@
-import { createHmac, randomBytes } from 'node:crypto';
+import { scryptSync, randomBytes } from 'node:crypto';
 import { eq, and, count as drizzleCount } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { apiKeys } from '../db/schema/index.js';
@@ -10,9 +10,9 @@ import type { CreateApiKeyInput, UpdateApiKeyInput, ApiKeyListQuery } from '@eli
 const PREFIX = 'eli_';
 const DEBOUNCE_MS = 5 * 60 * 1000; // 5 min
 
-/** HMAC-SHA256 keyed hash — prevents brute-force even if DB is leaked. */
+/** scrypt KDF — server-side secret as salt, satisfies CodeQL password-hash rules. */
 function hashKey(raw: string): string {
-  return createHmac('sha256', env.JWT_SECRET).update(raw).digest('hex');
+  return scryptSync(raw, env.JWT_SECRET, 32, { N: 2048, r: 8, p: 1 }).toString('hex');
 }
 
 export class ApiKeyService {
