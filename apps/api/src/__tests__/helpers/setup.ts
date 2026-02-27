@@ -13,7 +13,7 @@ export function agent() {
 }
 
 export async function truncateAll() {
-  await db.execute(sql`TRUNCATE TABLE webhook_deliveries, webhooks, content_versions, content_relations, media, settings, contents, content_types, refresh_tokens, users, roles RESTART IDENTITY CASCADE`);
+  await db.execute(sql`TRUNCATE TABLE audit_logs, api_keys, webhook_deliveries, webhooks, content_versions, content_relations, media, settings, contents, content_types, refresh_tokens, users, roles RESTART IDENTITY CASCADE`);
 }
 
 export async function ensureRoles() {

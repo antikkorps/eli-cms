@@ -77,6 +77,7 @@ export interface JwtPayload {
   email: string;
   roleId: string;
   permissions: string[];
+  apiKeyId?: string;
 }
 
 export interface TokenPair {
@@ -170,4 +171,34 @@ export interface WebhookDelivery {
   attempts: number;
   nextRetryAt: Date | null;
   createdAt: Date;
+}
+
+// ─── Audit Logs ─────────────────────────────────────────
+export type ActorType = 'user' | 'api_key' | 'system';
+
+export interface AuditLog {
+  id: string;
+  actorId: string;
+  actorType: ActorType;
+  action: string;
+  resourceType: string;
+  resourceId: string | null;
+  metadata: Record<string, unknown> | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: Date;
+}
+
+// ─── API Keys ───────────────────────────────────────────
+export interface ApiKey {
+  id: string;
+  name: string;
+  keyPrefix: string;
+  permissions: string[];
+  createdBy: string;
+  expiresAt: Date | null;
+  lastUsedAt: Date | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }

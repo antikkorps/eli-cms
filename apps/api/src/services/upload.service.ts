@@ -11,9 +11,10 @@ import { buildMeta } from '../utils/pagination.js';
 import { sanitizeFilename } from '@eli-cms/shared';
 import type { UploadListQuery } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
+import type { Actor } from './content.service.js';
 
 export class UploadService {
-  static async upload(file: { buffer: Buffer; originalname: string; mimetype: string; size: number }, userId: string) {
+  static async upload(file: { buffer: Buffer; originalname: string; mimetype: string; size: number }, userId: string, actor?: Actor) {
     const safeName = sanitizeFilename(file.originalname);
     const ext = extname(safeName);
     const filename = `${randomUUID()}${ext}`;
@@ -37,7 +38,8 @@ export class UploadService {
       })
       .returning();
 
-    eventBus.emit('media.uploaded', { media: record });
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('media.uploaded', { media: record, ...actorData });
     return record;
   }
 
@@ -73,7 +75,7 @@ export class UploadService {
     return record;
   }
 
-  static async delete(id: string) {
+  static async delete(id: string, actor?: Actor) {
     const record = await this.findById(id);
 
     // Resolve the correct provider based on the record's storageType
@@ -91,7 +93,8 @@ export class UploadService {
     }
 
     await db.delete(media).where(eq(media.id, id));
-    eventBus.emit('media.deleted', { media: record });
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('media.deleted', { media: record, ...actorData });
   }
 
   static async getFileStream(id: string): Promise<{ stream: Readable; mimeType: string; filename: string }> {

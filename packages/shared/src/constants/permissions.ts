@@ -22,6 +22,9 @@ export const WEBHOOKS_MANAGE = 'webhooks:manage';
 export const ROLES_READ = 'roles:read';
 export const ROLES_MANAGE = 'roles:manage';
 
+export const AUDIT_LOGS_READ = 'audit-logs:read';
+export const API_KEYS_MANAGE = 'api-keys:manage';
+
 export const ALL_PERMISSIONS = [
   CONTENT_CREATE,
   CONTENT_READ,
@@ -39,6 +42,8 @@ export const ALL_PERMISSIONS = [
   WEBHOOKS_MANAGE,
   ROLES_READ,
   ROLES_MANAGE,
+  AUDIT_LOGS_READ,
+  API_KEYS_MANAGE,
 ] as const;
 
 export type Permission = (typeof ALL_PERMISSIONS)[number];

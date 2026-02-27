@@ -3,6 +3,7 @@ import { storageConfigSchema } from '@eli-cms/shared';
 import { SettingsService } from '../services/settings.service.js';
 import { invalidateStorageCache } from '../services/storage/index.js';
 import { AppError } from '../utils/app-error.js';
+import { extractActor } from '../utils/extract-actor.js';
 
 const MASK = '••••••••';
 
@@ -29,7 +30,7 @@ export class SettingsController {
       throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
 
-    const saved = await SettingsService.updateStorageConfig(result.data);
+    const saved = await SettingsService.updateStorageConfig(result.data, extractActor(ctx));
     invalidateStorageCache();
 
     ctx.body = { success: true, data: maskSecrets(saved as unknown as Record<string, unknown>) };

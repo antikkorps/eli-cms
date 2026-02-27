@@ -2,6 +2,7 @@ import type { Context } from 'koa';
 import { createWebhookSchema, updateWebhookSchema, webhookListQuerySchema, webhookDeliveryListQuerySchema } from '@eli-cms/shared';
 import { WebhookService } from '../services/webhook.service.js';
 import { AppError } from '../utils/app-error.js';
+import { extractActor } from '../utils/extract-actor.js';
 
 export class WebhookController {
   static async list(ctx: Context) {
@@ -23,7 +24,7 @@ export class WebhookController {
     if (!result.success) {
       throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
-    const webhook = await WebhookService.create(result.data, ctx.state.user.userId);
+    const webhook = await WebhookService.create(result.data, ctx.state.user.userId, extractActor(ctx));
     ctx.status = 201;
     ctx.body = { success: true, data: webhook };
   }
@@ -33,12 +34,12 @@ export class WebhookController {
     if (!result.success) {
       throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
-    const webhook = await WebhookService.update(ctx.params.id, result.data);
+    const webhook = await WebhookService.update(ctx.params.id, result.data, extractActor(ctx));
     ctx.body = { success: true, data: webhook };
   }
 
   static async delete(ctx: Context) {
-    await WebhookService.delete(ctx.params.id);
+    await WebhookService.delete(ctx.params.id, extractActor(ctx));
     ctx.body = { success: true };
   }
 

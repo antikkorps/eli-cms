@@ -4,6 +4,8 @@ import { users, roles } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import type { UserListQuery } from '@eli-cms/shared';
+import { eventBus } from './event-bus.js';
+import type { Actor } from './content.service.js';
 
 export class UserService {
   static async findAll(query: UserListQuery) {
@@ -60,8 +62,10 @@ export class UserService {
     return user;
   }
 
-  static async delete(id: string) {
+  static async delete(id: string, actor?: Actor) {
     await this.findById(id);
     await db.delete(users).where(eq(users.id, id));
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('user.deleted', { userId: id, ...actorData });
   }
 }

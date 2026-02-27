@@ -5,6 +5,7 @@ import { AuthService } from '../services/auth.service.js';
 import { AppError } from '../utils/app-error.js';
 import { env } from '../config/environment.js';
 import { parseDuration } from '../utils/parse-duration.js';
+import type { Actor } from '../services/content.service.js';
 
 const COOKIE_ACCESS = 'eli_access';
 const COOKIE_REFRESH = 'eli_refresh';
@@ -45,7 +46,8 @@ export class AuthController {
       throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
     }
 
-    const user = await AuthService.register(result.data);
+    const actor: Actor = { id: 'anonymous', type: 'user', ip: ctx.ip, userAgent: ctx.get('user-agent') || undefined };
+    const user = await AuthService.register(result.data, actor);
     ctx.status = 201;
     ctx.body = { success: true, data: user };
   }
@@ -56,7 +58,8 @@ export class AuthController {
       throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
     }
 
-    const tokens = await AuthService.login(result.data);
+    const actor: Actor = { id: 'anonymous', type: 'user', ip: ctx.ip, userAgent: ctx.get('user-agent') || undefined };
+    const tokens = await AuthService.login(result.data, actor);
     setAuthCookies(ctx, tokens);
     ctx.body = { success: true, data: tokens };
   }
@@ -105,7 +108,8 @@ export class AuthController {
       throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
     }
 
-    await AuthService.changePassword(ctx.state.user.userId, result.data);
+    const actor: Actor = { id: ctx.state.user.userId, type: ctx.state.user.apiKeyId ? 'api_key' : 'user', ip: ctx.ip, userAgent: ctx.get('user-agent') || undefined };
+    await AuthService.changePassword(ctx.state.user.userId, result.data, actor);
     clearAuthCookies(ctx);
     ctx.body = { success: true };
   }
