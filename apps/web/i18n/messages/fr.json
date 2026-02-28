@@ -155,7 +155,10 @@
     "fieldRequired": "Requis",
     "fieldOptions": "Options (une par ligne)",
     "fieldOptionsPlaceholder": "option1\noption2\noption3",
-    "duplicateName": "Ce nom de champ existe déjà"
+    "duplicateName": "Ce nom de champ existe déjà",
+    "fieldMultiple": "Multiple",
+    "fieldAccept": "Types acceptés",
+    "fieldAcceptPlaceholder": "image/*, application/pdf"
   },
   "contents": {
     "title": "Contenus",
@@ -300,6 +303,18 @@
       "delete": "Supprimer",
       "publish": "Publier"
     }
+  },
+  "mediaPicker": {
+    "title": "Sélectionner un média",
+    "selectMedia": "Sélectionner un média",
+    "noMedia": "Aucun média disponible",
+    "change": "Changer",
+    "remove": "Retirer",
+    "dropHere": "Déposez un fichier ici pour téléverser",
+    "dropHereHint": "ou cliquez pour parcourir",
+    "addMedia": "Ajouter un média",
+    "confirm": "Confirmer",
+    "acceptedTypes": "Types acceptés"
   },
   "apiKeysNew": {
     "back": "Retour aux clés API",

@@ -7,6 +7,8 @@ interface FieldDefinition {
   required: boolean;
   label: string;
   options?: string[];
+  multiple?: boolean;
+  accept?: string[];
 }
 
 const model = defineModel<FieldDefinition[]>({ default: () => [] });
@@ -20,6 +22,8 @@ const fieldTypes = [
   { label: 'Email', value: 'email' },
   { label: 'URL', value: 'url' },
   { label: 'Select', value: 'select' },
+  { label: 'Media', value: 'media' },
+  { label: 'Rich Text', value: 'richtext' },
 ];
 
 function addField() {
@@ -35,21 +39,31 @@ function removeField(index: number) {
 
 function updateField(index: number, key: keyof FieldDefinition, value: unknown) {
   const updated = [...model.value];
-  (updated[index] as Record<string, unknown>)[key] = value;
+  (updated[index] as unknown as Record<string, unknown>)[key] = value;
   model.value = updated;
 }
 
 function updateOptions(index: number, raw: string) {
   const updated = [...model.value];
-  updated[index] = {
-    ...updated[index],
+  updated[index] = Object.assign({}, updated[index], {
     options: raw.split('\n').map((s) => s.trim()).filter(Boolean),
-  };
+  });
   model.value = updated;
 }
 
 function getOptionsRaw(index: number): string {
   return model.value[index]?.options?.join('\n') ?? '';
+}
+
+function getAcceptRaw(index: number): string {
+  return model.value[index]?.accept?.join(', ') ?? '';
+}
+
+function updateAccept(index: number, raw: string) {
+  const updated = [...model.value];
+  const parsed = raw.split(',').map((s) => s.trim()).filter(Boolean);
+  updated[index] = Object.assign({}, updated[index], { accept: parsed.length > 0 ? parsed : undefined });
+  model.value = updated;
 }
 
 function isDuplicate(index: number): boolean {
@@ -122,6 +136,23 @@ function isDuplicate(index: number): boolean {
           @update:model-value="(v: string) => updateOptions(index, v)"
         />
       </UFormField>
+
+      <div v-if="field.type === 'media'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <UFormField :label="$t('fieldBuilder.fieldMultiple')">
+          <USwitch
+            :model-value="field.multiple ?? false"
+            @update:model-value="(v: boolean) => updateField(index, 'multiple', v)"
+          />
+        </UFormField>
+        <UFormField :label="$t('fieldBuilder.fieldAccept')">
+          <UInput
+            :model-value="getAcceptRaw(index)"
+            :placeholder="$t('fieldBuilder.fieldAcceptPlaceholder')"
+            class="w-full"
+            @update:model-value="(v: string) => updateAccept(index, v)"
+          />
+        </UFormField>
+      </div>
     </div>
 
     <UButton variant="outline" icon="i-lucide-plus" @click="addField">

@@ -6,7 +6,7 @@ definePageMeta({
   middleware: ['auth'],
 });
 
-const { apiFetch } = useApi();
+const { apiFetch, baseURL } = useApi();
 const { t, locale } = useI18n();
 const { hasPermission } = useAuth();
 
@@ -20,10 +20,19 @@ interface ContentItem {
   updatedAt: string;
 }
 
+interface FieldDefinition {
+  name: string;
+  type: string;
+  required: boolean;
+  label: string;
+  multiple?: boolean;
+}
+
 interface ContentTypeOption {
   id: string;
   name: string;
   slug: string;
+  fields?: FieldDefinition[];
 }
 
 const search = ref('');
@@ -75,6 +84,17 @@ function getPreviewText(data: Record<string, unknown>): string {
   return JSON.stringify(data).substring(0, 60) + '...';
 }
 
+function getMediaPreviewId(item: ContentItem): string | null {
+  const ct = contentTypeOptions.value.find((c) => c.id === item.contentTypeId);
+  if (!ct?.fields) return null;
+  const mediaField = ct.fields.find((f) => f.type === 'media');
+  if (!mediaField) return null;
+  const value = item.data[mediaField.name];
+  if (mediaField.multiple && Array.isArray(value) && value.length > 0) return value[0] as string;
+  if (typeof value === 'string' && value.length > 0) return value;
+  return null;
+}
+
 const UBadge = resolveComponent('UBadge');
 const UButton = resolveComponent('UButton');
 
@@ -82,7 +102,21 @@ const columns = computed(() => [
   {
     accessorKey: 'data',
     header: t('contents.columnTitle'),
-    cell: ({ row }: { row: { original: ContentItem } }) => getPreviewText(row.original.data),
+    cell: ({ row }: { row: { original: ContentItem } }) => {
+      const mediaId = getMediaPreviewId(row.original);
+      const text = getPreviewText(row.original.data);
+      if (mediaId) {
+        return h('div', { class: 'flex items-center gap-2' }, [
+          h('img', {
+            src: `${baseURL}/uploads/${mediaId}/serve`,
+            class: 'size-8 rounded object-cover shrink-0',
+            alt: '',
+          }),
+          h('span', text),
+        ]);
+      }
+      return text;
+    },
   },
   {
     accessorKey: 'contentType',
@@ -156,7 +190,15 @@ onMounted(fetchContentTypes);
       <USelect v-model="statusFilter" nullable :items="statusFilterItems" :placeholder="$t('contents.allStatuses')" class="w-48" />
     </div>
 
-    <UTable :data="contents" :columns="columns" :loading="loading" />
+    <div v-if="loading && !contents.length" class="space-y-3">
+      <USkeleton class="h-10 w-full rounded" />
+      <USkeleton v-for="i in 5" :key="i" class="h-14 w-full rounded" />
+    </div>
+    <div v-else-if="!loading && !contents.length" class="flex flex-col items-center justify-center py-16">
+      <UIcon name="i-lucide-file-text" class="size-12 text-muted" />
+      <p class="mt-3 text-sm text-muted">{{ $t('common.noResults') }}</p>
+    </div>
+    <UTable v-else :data="contents" :columns="columns" :loading="loading" />
 
     <div v-if="totalPages > 1" class="flex items-center justify-between">
       <p class="text-sm text-muted">

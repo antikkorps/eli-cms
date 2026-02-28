@@ -167,8 +167,8 @@ describe('Upload API', () => {
     });
   });
 
-  // ─── GET /api/uploads/:id/file ─────────────────────────
-  describe('GET /api/uploads/:id/file', () => {
+  // ─── GET /api/uploads/:id/serve ─────────────────────────
+  describe('GET /api/uploads/:id/serve', () => {
     it('serves file content (public, no auth)', async () => {
       const upload = await agent()
         .post('/api/v1/uploads')
@@ -179,7 +179,7 @@ describe('Upload API', () => {
         });
 
       const id = upload.body.data.id;
-      const res = await agent().get(`/api/v1/uploads/${id}/file`);
+      const res = await agent().get(`/api/v1/uploads/${id}/serve`);
 
       expect(res.status).toBe(200);
       expect(res.headers['content-type']).toMatch(/application\/pdf/);

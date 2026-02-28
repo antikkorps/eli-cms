@@ -76,8 +76,14 @@ function formatDate(date: string) {
       <p class="text-sm text-muted mt-1">{{ $t('dashboard.subtitle') }}</p>
     </div>
 
-    <div v-if="loading" class="flex justify-center py-12">
-      <UIcon name="i-lucide-loader-circle" class="size-8 animate-spin text-muted" />
+    <div v-if="loading" class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <USkeleton v-for="i in 3" :key="i" class="h-24 w-full rounded-lg" />
+      </div>
+      <USkeleton class="h-8 w-48 rounded" />
+      <div class="space-y-3">
+        <USkeleton v-for="i in 5" :key="i" class="h-12 w-full rounded" />
+      </div>
     </div>
 
     <template v-else>

@@ -116,7 +116,15 @@ const columns = computed(() => [
       </UButton>
     </div>
 
-    <UTable :data="roles" :columns="columns" :loading="loading" />
+    <div v-if="loading && !roles.length" class="space-y-3">
+      <USkeleton class="h-10 w-full rounded" />
+      <USkeleton v-for="i in 5" :key="i" class="h-14 w-full rounded" />
+    </div>
+    <div v-else-if="!loading && !roles.length" class="flex flex-col items-center justify-center py-16">
+      <UIcon name="i-lucide-shield" class="size-12 text-muted" />
+      <p class="mt-3 text-sm text-muted">{{ $t('common.noResults') }}</p>
+    </div>
+    <UTable v-else :data="roles" :columns="columns" :loading="loading" />
 
     <div v-if="totalPages > 1" class="flex items-center justify-between">
       <p class="text-sm text-muted">

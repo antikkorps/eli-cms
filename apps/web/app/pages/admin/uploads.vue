@@ -39,6 +39,7 @@ const {
 const canUpload = computed(() => hasPermission('uploads:create'));
 const canDelete = computed(() => hasPermission('uploads:delete'));
 const uploading = ref(false);
+const dragging = ref(false);
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return bytes + ' B';
@@ -69,6 +70,32 @@ async function handleUpload(event: Event) {
   } finally {
     uploading.value = false;
     input.value = '';
+  }
+}
+
+function onDragOver(e: DragEvent) {
+  e.preventDefault();
+  dragging.value = true;
+}
+
+function onDragLeave() {
+  dragging.value = false;
+}
+
+async function onDrop(e: DragEvent) {
+  e.preventDefault();
+  dragging.value = false;
+  const file = e.dataTransfer?.files?.[0];
+  if (!file || !canUpload.value) return;
+  uploading.value = true;
+  try {
+    await uploadFile('/uploads', file);
+    toast.add({ title: t('uploads.uploaded'), color: 'success' });
+    await fetchItems();
+  } catch {
+    toast.add({ title: t('common.error'), color: 'error' });
+  } finally {
+    uploading.value = false;
   }
 }
 
@@ -150,7 +177,30 @@ const columns = computed(() => [
       </div>
     </div>
 
-    <UTable :data="uploads" :columns="columns" :loading="loading" />
+    <div
+      v-if="canUpload"
+      class="flex items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors"
+      :class="dragging ? 'border-primary bg-primary/5' : 'border-muted'"
+      @dragover="onDragOver"
+      @dragenter="onDragOver"
+      @dragleave="onDragLeave"
+      @drop="onDrop"
+    >
+      <div class="text-center">
+        <UIcon name="i-lucide-upload-cloud" class="size-8 text-muted mb-2" />
+        <p class="text-sm text-muted">{{ $t('uploads.dropzone') }}</p>
+      </div>
+    </div>
+
+    <div v-if="loading && !uploads.length" class="space-y-3">
+      <USkeleton class="h-10 w-full rounded" />
+      <USkeleton v-for="i in 5" :key="i" class="h-14 w-full rounded" />
+    </div>
+    <div v-else-if="!loading && !uploads.length" class="flex flex-col items-center justify-center py-16">
+      <UIcon name="i-lucide-image" class="size-12 text-muted" />
+      <p class="mt-3 text-sm text-muted">{{ $t('common.noResults') }}</p>
+    </div>
+    <UTable v-else :data="uploads" :columns="columns" :loading="loading" />
 
     <div v-if="totalPages > 1" class="flex items-center justify-between">
       <p class="text-sm text-muted">

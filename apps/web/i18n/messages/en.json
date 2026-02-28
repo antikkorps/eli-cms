@@ -155,7 +155,10 @@
     "fieldRequired": "Required",
     "fieldOptions": "Options (one per line)",
     "fieldOptionsPlaceholder": "option1\noption2\noption3",
-    "duplicateName": "Field name already exists"
+    "duplicateName": "Field name already exists",
+    "fieldMultiple": "Multiple",
+    "fieldAccept": "Accepted types",
+    "fieldAcceptPlaceholder": "image/*, application/pdf"
   },
   "contents": {
     "title": "Contents",
@@ -300,6 +303,18 @@
       "delete": "Delete",
       "publish": "Publish"
     }
+  },
+  "mediaPicker": {
+    "title": "Select Media",
+    "selectMedia": "Select a media",
+    "noMedia": "No media available",
+    "change": "Change",
+    "remove": "Remove",
+    "dropHere": "Drop a file here to upload",
+    "dropHereHint": "or click to browse",
+    "addMedia": "Add media",
+    "confirm": "Confirm",
+    "acceptedTypes": "Accepted types"
   },
   "apiKeysNew": {
     "back": "Back to API Keys",

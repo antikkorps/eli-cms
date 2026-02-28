@@ -18,7 +18,7 @@ const upload = multer({
 export const uploadsRouter = new Router({ prefix: '/api/v1/uploads' });
 
 // Public — serve file
-uploadsRouter.get('/:id/file', UploadController.serve);
+uploadsRouter.get('/:id/serve', UploadController.serve);
 
 // Authenticated
 uploadsRouter.get('/', authenticate, requirePermission(UPLOADS_READ), UploadController.list);

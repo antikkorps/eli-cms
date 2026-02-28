@@ -18,7 +18,7 @@ export interface User {
   updatedAt: Date;
 }
 
-export type FieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'email' | 'url' | 'select';
+export type FieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'email' | 'url' | 'select' | 'media' | 'richtext';
 
 export interface FieldDefinition {
   name: string;
@@ -26,6 +26,8 @@ export interface FieldDefinition {
   required: boolean;
   label: string;
   options?: string[]; // for select type
+  multiple?: boolean; // for media type
+  accept?: string[]; // MIME filter for media type (e.g. ['image/*', 'application/pdf'])
 }
 
 export interface ContentType {

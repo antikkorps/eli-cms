@@ -201,7 +201,16 @@ const totalPages = computed(() => Math.ceil(total.value / limit));
       </UButton>
     </div>
 
+    <div v-if="loading && !keys.length" class="space-y-3">
+      <USkeleton class="h-10 w-full rounded" />
+      <USkeleton v-for="i in 5" :key="i" class="h-14 w-full rounded" />
+    </div>
+    <div v-else-if="!loading && !keys.length" class="flex flex-col items-center justify-center py-16">
+      <UIcon name="i-lucide-key" class="size-12 text-muted" />
+      <p class="mt-3 text-sm text-muted">{{ $t('common.noResults') }}</p>
+    </div>
     <UTable
+      v-else
       :data="keys"
       :columns="columns"
       :loading="loading"

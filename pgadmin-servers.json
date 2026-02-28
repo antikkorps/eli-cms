@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Eli CMS",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "eli_cms",
+      "Username": "eli",
+      "SSLMode": "prefer"
+    }
+  }
+}
