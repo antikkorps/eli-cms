@@ -18,7 +18,7 @@ export interface User {
   updatedAt: Date;
 }
 
-export type FieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'email' | 'url' | 'select';
+export type FieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'email' | 'url' | 'select' | 'media';
 
 export interface FieldDefinition {
   name: string;

@@ -34,7 +34,7 @@ export const changePasswordSchema = z.object({
 // Content Type schemas
 const fieldDefinitionSchema = z.object({
   name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
-  type: z.enum(['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select']),
+  type: z.enum(['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media']),
   required: z.boolean(),
   label: safeString(255).pipe(z.string().min(1)),
   options: z.array(safeString(255)).optional(),
@@ -98,6 +98,9 @@ export function buildContentDataSchema(fields: FieldDefinition[]): z.ZodObject<R
         } else {
           fieldSchema = z.string();
         }
+        break;
+      case 'media':
+        fieldSchema = z.string().uuid();
         break;
       default:
         fieldSchema = z.unknown();

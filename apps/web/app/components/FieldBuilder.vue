@@ -20,6 +20,7 @@ const fieldTypes = [
   { label: 'Email', value: 'email' },
   { label: 'URL', value: 'url' },
   { label: 'Select', value: 'select' },
+  { label: 'Media', value: 'media' },
 ];
 
 function addField() {
