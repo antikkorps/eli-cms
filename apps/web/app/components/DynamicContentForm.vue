@@ -5,6 +5,8 @@ interface FieldDefinition {
   required: boolean;
   label: string;
   options?: string[];
+  multiple?: boolean;
+  accept?: string[];
 }
 
 const props = defineProps<{
@@ -83,8 +85,19 @@ function getSelectItems(field: FieldDefinition) {
 
       <MediaPicker
         v-else-if="field.type === 'media'"
-        :model-value="(model[field.name] as string) ?? null"
-        @update:model-value="(v: string | null) => updateValue(field.name, v)"
+        :model-value="field.multiple ? ((model[field.name] as string[]) ?? []) : ((model[field.name] as string) ?? null)"
+        :multiple="field.multiple"
+        :accept="field.accept"
+        @update:model-value="(v: any) => updateValue(field.name, v)"
+      />
+
+      <UEditor
+        v-else-if="field.type === 'richtext'"
+        :model-value="(model[field.name] as string) ?? ''"
+        content-type="html"
+        :placeholder="field.label"
+        class="w-full min-h-48"
+        @update:model-value="(v: string) => updateValue(field.name, v)"
       />
     </UFormField>
   </div>
