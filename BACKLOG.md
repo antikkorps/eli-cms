@@ -2,15 +2,15 @@
 
 ## High Priority
 
-- [ ] Server-side validation of media UUIDs (verify the referenced media exists when saving content)
-- [ ] Multiple media field support (allow selecting more than one file per field)
-- [ ] MIME type filtering in MediaPicker (restrict by image/video/document per field config)
-- [ ] Media preview column in contents list pages
-- [ ] Drag-and-drop upload in MediaPicker and uploads page
+- [x] Server-side validation of media UUIDs (verify the referenced media exists when saving content)
+- [x] Multiple media field support (allow selecting more than one file per field)
+- [x] MIME type filtering in MediaPicker (restrict by image/video/document per field config)
+- [x] Media preview column in contents list pages
+- [x] Drag-and-drop upload in MediaPicker and uploads page
 
 ## Medium Priority
 
-- [ ] Rich text editor field type (WYSIWYG)
+- [x] Rich text editor field type (WYSIWYG)
 - [ ] Auto-generate slug from name in content types and contents
 - [ ] Bulk actions on list pages (delete, publish, unpublish)
 - [ ] Search result highlighting
