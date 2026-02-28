@@ -301,6 +301,13 @@
       "publish": "Publier"
     }
   },
+  "mediaPicker": {
+    "title": "Sélectionner un média",
+    "selectMedia": "Sélectionner un média",
+    "noMedia": "Aucun média disponible",
+    "change": "Changer",
+    "remove": "Retirer"
+  },
   "apiKeysNew": {
     "back": "Retour aux clés API",
     "title": "Créer une clé API",

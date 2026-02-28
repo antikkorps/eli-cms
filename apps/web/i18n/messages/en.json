@@ -301,6 +301,13 @@
       "publish": "Publish"
     }
   },
+  "mediaPicker": {
+    "title": "Select Media",
+    "selectMedia": "Select a media",
+    "noMedia": "No media available",
+    "change": "Change",
+    "remove": "Remove"
+  },
   "apiKeysNew": {
     "back": "Back to API Keys",
     "title": "Create API Key",

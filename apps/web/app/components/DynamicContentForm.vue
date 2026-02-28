@@ -80,6 +80,12 @@ function getSelectItems(field: FieldDefinition) {
         class="w-full"
         @update:model-value="(v: string) => updateValue(field.name, v)"
       />
+
+      <MediaPicker
+        v-else-if="field.type === 'media'"
+        :model-value="(model[field.name] as string) ?? null"
+        @update:model-value="(v: string | null) => updateValue(field.name, v)"
+      />
     </UFormField>
   </div>
 </template>
