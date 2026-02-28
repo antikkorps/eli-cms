@@ -34,10 +34,12 @@ export const changePasswordSchema = z.object({
 // Content Type schemas
 const fieldDefinitionSchema = z.object({
   name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
-  type: z.enum(['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media']),
+  type: z.enum(['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media', 'richtext']),
   required: z.boolean(),
   label: safeString(255).pipe(z.string().min(1)),
   options: z.array(safeString(255)).optional(),
+  multiple: z.boolean().optional(),
+  accept: z.array(z.string()).optional(),
 });
 
 export const createContentTypeSchema = z.object({
@@ -100,7 +102,10 @@ export function buildContentDataSchema(fields: FieldDefinition[]): z.ZodObject<R
         }
         break;
       case 'media':
-        fieldSchema = z.string().uuid();
+        fieldSchema = field.multiple ? z.array(z.string().uuid()) : z.string().uuid();
+        break;
+      case 'richtext':
+        fieldSchema = z.string().max(200000).transform(sanitize);
         break;
       default:
         fieldSchema = z.unknown();
