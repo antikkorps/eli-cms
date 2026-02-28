@@ -6,8 +6,9 @@ import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import { buildContentDataSchema } from '@eli-cms/shared';
 import { ContentVersionService } from './content-version.service.js';
-import type { CreateContentInput, UpdateContentInput, ContentListQuery, ActorType } from '@eli-cms/shared';
+import type { CreateContentInput, UpdateContentInput, ContentListQuery, ActorType, FieldDefinition } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
+import { UploadService } from './upload.service.js';
 
 export interface Actor {
   id: string;
@@ -88,6 +89,30 @@ export class ContentService {
     return content;
   }
 
+  private static async validateMediaFields(fields: FieldDefinition[], data: Record<string, unknown>) {
+    const mediaFields = fields.filter((f) => f.type === 'media');
+    for (const field of mediaFields) {
+      const value = data[field.name];
+      if (value === undefined || value === null) continue;
+
+      if (field.multiple && Array.isArray(value)) {
+        for (const uuid of value) {
+          try {
+            await UploadService.findById(uuid as string);
+          } catch {
+            throw new AppError(400, `Media not found for field "${field.name}"`);
+          }
+        }
+      } else if (typeof value === 'string') {
+        try {
+          await UploadService.findById(value);
+        } catch {
+          throw new AppError(400, `Media not found for field "${field.name}"`);
+        }
+      }
+    }
+  }
+
   static async create(input: CreateContentInput, actor?: Actor) {
     const contentType = await ContentTypeService.findById(input.contentTypeId);
 
@@ -97,6 +122,8 @@ export class ContentService {
     if (!dataResult.success) {
       throw new AppError(400, `Data validation: ${dataResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')}`);
     }
+
+    await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>);
 
     const [content] = await db
       .insert(contents)
@@ -127,6 +154,7 @@ export class ContentService {
       if (!dataResult.success) {
         throw new AppError(400, `Data validation: ${dataResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')}`);
       }
+      await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>);
       input.data = dataResult.data as Record<string, unknown>;
     }
 
