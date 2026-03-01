@@ -281,8 +281,6 @@ onMounted(fetchContent);
         </div>
       </form>
 
-      <ScheduleModal v-model:open="scheduleOpen" @confirm="handleSchedule" />
-
       <!-- Versions tab -->
       <div v-else-if="activeTab === 'versions'" class="space-y-4">
         <!-- Diff view -->
@@ -351,6 +349,8 @@ onMounted(fetchContent);
           <UButton icon="i-lucide-trash-2" variant="ghost" color="error" size="sm" @click="removeRelation(rel.id)" />
         </div>
       </div>
+
+      <ScheduleModal v-model:open="scheduleOpen" @confirm="handleSchedule" />
     </div>
   </div>
 </template>
