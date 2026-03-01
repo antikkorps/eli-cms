@@ -8,6 +8,7 @@ const { apiFetch } = useApi();
 const { t } = useI18n();
 const toast = useToast();
 const router = useRouter();
+const { invalidate: invalidateContentTypes } = useContentTypes();
 
 interface FieldDefinition {
   name: string;
@@ -45,10 +46,12 @@ async function submit() {
         fields: form.fields,
       },
     });
+    invalidateContentTypes();
     toast.add({ title: t('common.created'), color: 'success' });
     router.push('/admin/content-types');
-  } catch {
-    toast.add({ title: t('common.error'), color: 'error' });
+  } catch (err: unknown) {
+    const msg = (err as { data?: { error?: string } })?.data?.error || t('common.error');
+    toast.add({ title: msg, color: 'error' });
   } finally {
     saving.value = false;
   }
@@ -83,7 +86,7 @@ async function submit() {
         <UButton to="/admin/content-types" variant="ghost" color="neutral">
           {{ $t('common.cancel') }}
         </UButton>
-        <UButton type="submit" :loading="saving" :disabled="!form.name || !form.slug || !form.fields.length">
+        <UButton type="submit" :loading="saving" :disabled="!form.name || !form.slug || !form.fields.length || form.fields.some(f => !f.name || !f.label || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(f.name))">
           {{ $t('common.create') }}
         </UButton>
       </div>

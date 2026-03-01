@@ -1,24 +1,70 @@
 <script setup lang="ts">
 const { hasPermission } = useAuth();
 const { t } = useI18n();
+const router = useRouter();
+const { items: contentTypeItems, fetch: fetchContentTypes } = useContentTypes();
+
+const MAX_SIDEBAR_TYPES = 7;
+
+// Command palette
+const commandPaletteOpen = ref(false);
+
+defineShortcuts({
+  meta_k: {
+    handler: () => { commandPaletteOpen.value = !commandPaletteOpen.value; },
+  },
+  meta_n: {
+    handler: () => { router.push('/admin/contents/new'); },
+  },
+});
 
 // Defer permission-based filtering to client to avoid SSR hydration mismatch
 // (server doesn't have auth state → fewer items → mismatch with client)
 const mounted = ref(false);
-onMounted(() => { mounted.value = true; });
+onMounted(() => {
+  mounted.value = true;
+  if (hasPermission('content:read')) {
+    fetchContentTypes();
+  }
+});
 
 const navigation = computed(() => {
-  const items: Array<{ label: string; icon: string; to: string }> = [
+  const items: Array<Record<string, unknown>> = [
     { label: t('nav.dashboard'), icon: 'i-lucide-layout-dashboard', to: '/admin' },
   ];
 
   if (!mounted.value) return items;
 
+  if (hasPermission('content:read')) {
+    const children: Array<Record<string, unknown>> = [
+      { label: t('nav.allContents'), to: '/admin/contents' },
+    ];
+
+    const types = contentTypeItems.value;
+    const visibleTypes = types.slice(0, MAX_SIDEBAR_TYPES);
+
+    for (const ct of visibleTypes) {
+      children.push({
+        label: ct.name,
+        to: `/admin/contents?type=${ct.slug}`,
+        badge: ct.contentCount != null ? String(ct.contentCount) : undefined,
+      });
+    }
+
+    if (types.length > MAX_SIDEBAR_TYPES) {
+      children.push({ label: t('nav.seeAllTypes'), to: '/admin/content-types' });
+    }
+
+    items.push({
+      label: t('nav.content'),
+      icon: 'i-lucide-file-text',
+      defaultOpen: true,
+      children,
+    });
+  }
+
   if (hasPermission('content-types:read') || hasPermission('content-types:create')) {
     items.push({ label: t('nav.contentTypes'), icon: 'i-lucide-blocks', to: '/admin/content-types' });
-  }
-  if (hasPermission('content:read')) {
-    items.push({ label: t('nav.contents'), icon: 'i-lucide-file-text', to: '/admin/contents' });
   }
   if (hasPermission('uploads:read')) {
     items.push({ label: t('nav.uploads'), icon: 'i-lucide-upload', to: '/admin/uploads' });
@@ -69,7 +115,7 @@ const navigation = computed(() => {
       </template>
     </UDashboardSidebar>
 
-    <div class="flex flex-col flex-1 min-w-0">
+    <div class="flex flex-col flex-1 min-w-0 min-h-0 h-dvh">
       <UDashboardNavbar :toggle="{ class: 'lg:hidden' }">
         <template #leading>
           <UDashboardSidebarCollapse class="hidden lg:flex" />
@@ -80,9 +126,11 @@ const navigation = computed(() => {
         </template>
       </UDashboardNavbar>
 
-      <UDashboardPanel class="overflow-y-auto">
+      <UDashboardPanel class="flex-1 min-h-0 overflow-y-auto">
         <slot />
       </UDashboardPanel>
     </div>
+
+    <CommandPalette v-model:open="commandPaletteOpen" />
   </UDashboardGroup>
 </template>
