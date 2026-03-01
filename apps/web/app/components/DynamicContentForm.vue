@@ -91,6 +91,12 @@ function getSelectItems(field: FieldDefinition) {
         @update:model-value="(v: any) => updateValue(field.name, v)"
       />
 
+      <AuthorPicker
+        v-else-if="field.type === 'author'"
+        :model-value="(model[field.name] as string) ?? null"
+        @update:model-value="(v: string | null) => updateValue(field.name, v)"
+      />
+
       <UEditor
         v-else-if="field.type === 'richtext'"
         :model-value="(model[field.name] as string) ?? ''"

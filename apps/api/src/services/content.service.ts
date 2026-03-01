@@ -9,6 +9,7 @@ import { ContentVersionService } from './content-version.service.js';
 import type { CreateContentInput, UpdateContentInput, ContentListQuery, PublicContentListQuery, ActorType, FieldDefinition } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
 import { UploadService } from './upload.service.js';
+import { UserService } from './user.service.js';
 import { WorkflowService } from './workflow.service.js';
 
 export interface Actor {
@@ -220,6 +221,21 @@ export class ContentService {
     }
   }
 
+  private static async validateAuthorFields(fields: FieldDefinition[], data: Record<string, unknown>) {
+    const authorFields = fields.filter((f) => f.type === 'author');
+    for (const field of authorFields) {
+      const value = data[field.name];
+      if (value === undefined || value === null) continue;
+      if (typeof value === 'string') {
+        try {
+          await UserService.findById(value);
+        } catch {
+          throw new AppError(400, `User not found for field "${field.name}"`);
+        }
+      }
+    }
+  }
+
   static async findBySlug(slug: string, contentTypeId: string) {
     const [content] = await db
       .select()
@@ -251,6 +267,7 @@ export class ContentService {
     }
 
     await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>);
+    await this.validateAuthorFields(contentType.fields, dataResult.data as Record<string, unknown>);
 
     // Auto-generate slug from first text field if not provided
     let slug = (input as Record<string, unknown>).slug as string | undefined;
@@ -297,6 +314,7 @@ export class ContentService {
         throw new AppError(400, `Data validation: ${dataResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')}`);
       }
       await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>);
+      await this.validateAuthorFields(contentType.fields, dataResult.data as Record<string, unknown>);
       input.data = dataResult.data as Record<string, unknown>;
     }
 

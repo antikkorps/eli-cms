@@ -13,6 +13,11 @@ export const openApiSpec = {
         scheme: 'bearer',
         bearerFormat: 'JWT',
       },
+      apiKeyAuth: {
+        type: 'apiKey' as const,
+        in: 'header' as const,
+        name: 'X-API-Key',
+      },
     },
     schemas: {
       ApiResponse: {
@@ -38,7 +43,7 @@ export const openApiSpec = {
         properties: {
           id: { type: 'string' as const, format: 'uuid' },
           email: { type: 'string' as const, format: 'email' },
-          role: { type: 'string' as const, enum: ['admin', 'editor'] },
+          roleId: { type: 'string' as const, format: 'uuid' },
           createdAt: { type: 'string' as const, format: 'date-time' },
           updatedAt: { type: 'string' as const, format: 'date-time' },
         },
@@ -54,10 +59,12 @@ export const openApiSpec = {
         type: 'object' as const,
         properties: {
           name: { type: 'string' as const },
-          type: { type: 'string' as const, enum: ['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select'] },
+          type: { type: 'string' as const, enum: ['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media', 'richtext', 'author'] },
           required: { type: 'boolean' as const },
           label: { type: 'string' as const },
           options: { type: 'array' as const, items: { type: 'string' as const } },
+          multiple: { type: 'boolean' as const },
+          accept: { type: 'array' as const, items: { type: 'string' as const } },
         },
         required: ['name', 'type', 'required', 'label'],
       },
@@ -77,8 +84,11 @@ export const openApiSpec = {
         properties: {
           id: { type: 'string' as const, format: 'uuid' },
           contentTypeId: { type: 'string' as const, format: 'uuid' },
-          status: { type: 'string' as const, enum: ['draft', 'published'] },
+          slug: { type: 'string' as const, nullable: true },
+          status: { type: 'string' as const, enum: ['draft', 'in-review', 'approved', 'scheduled', 'published'] },
           data: { type: 'object' as const },
+          publishedAt: { type: 'string' as const, format: 'date-time', nullable: true },
+          editedBy: { type: 'string' as const, format: 'uuid', nullable: true },
           createdAt: { type: 'string' as const, format: 'date-time' },
           updatedAt: { type: 'string' as const, format: 'date-time' },
         },
@@ -133,6 +143,77 @@ export const openApiSpec = {
               endpoint: { type: 'string' as const },
             },
           },
+        },
+      },
+      Role: {
+        type: 'object' as const,
+        properties: {
+          id: { type: 'string' as const, format: 'uuid' },
+          name: { type: 'string' as const },
+          slug: { type: 'string' as const },
+          description: { type: 'string' as const, nullable: true },
+          permissions: { type: 'array' as const, items: { type: 'string' as const } },
+          isSystem: { type: 'boolean' as const },
+          createdAt: { type: 'string' as const, format: 'date-time' },
+          updatedAt: { type: 'string' as const, format: 'date-time' },
+        },
+      },
+      Webhook: {
+        type: 'object' as const,
+        properties: {
+          id: { type: 'string' as const, format: 'uuid' },
+          name: { type: 'string' as const },
+          url: { type: 'string' as const, format: 'uri' },
+          secret: { type: 'string' as const },
+          events: { type: 'array' as const, items: { type: 'string' as const } },
+          isActive: { type: 'boolean' as const },
+          createdBy: { type: 'string' as const, format: 'uuid' },
+          createdAt: { type: 'string' as const, format: 'date-time' },
+          updatedAt: { type: 'string' as const, format: 'date-time' },
+        },
+      },
+      WebhookDelivery: {
+        type: 'object' as const,
+        properties: {
+          id: { type: 'string' as const, format: 'uuid' },
+          webhookId: { type: 'string' as const, format: 'uuid' },
+          event: { type: 'string' as const },
+          payload: { type: 'object' as const },
+          status: { type: 'string' as const, enum: ['pending', 'success', 'failed'] },
+          responseStatus: { type: 'integer' as const, nullable: true },
+          attempts: { type: 'integer' as const },
+          nextRetryAt: { type: 'string' as const, format: 'date-time', nullable: true },
+          createdAt: { type: 'string' as const, format: 'date-time' },
+        },
+      },
+      AuditLog: {
+        type: 'object' as const,
+        properties: {
+          id: { type: 'string' as const, format: 'uuid' },
+          actorId: { type: 'string' as const },
+          actorType: { type: 'string' as const, enum: ['user', 'api_key', 'system'] },
+          action: { type: 'string' as const },
+          resourceType: { type: 'string' as const },
+          resourceId: { type: 'string' as const, nullable: true },
+          metadata: { type: 'object' as const, nullable: true },
+          ipAddress: { type: 'string' as const, nullable: true },
+          userAgent: { type: 'string' as const, nullable: true },
+          createdAt: { type: 'string' as const, format: 'date-time' },
+        },
+      },
+      ApiKey: {
+        type: 'object' as const,
+        properties: {
+          id: { type: 'string' as const, format: 'uuid' },
+          name: { type: 'string' as const },
+          keyPrefix: { type: 'string' as const },
+          permissions: { type: 'array' as const, items: { type: 'string' as const } },
+          createdBy: { type: 'string' as const, format: 'uuid' },
+          expiresAt: { type: 'string' as const, format: 'date-time', nullable: true },
+          lastUsedAt: { type: 'string' as const, format: 'date-time', nullable: true },
+          isActive: { type: 'boolean' as const },
+          createdAt: { type: 'string' as const, format: 'date-time' },
+          updatedAt: { type: 'string' as const, format: 'date-time' },
         },
       },
     },
@@ -217,7 +298,7 @@ export const openApiSpec = {
         parameters: [
           { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
           { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
-          { name: 'role', in: 'query' as const, schema: { type: 'string' as const, enum: ['admin', 'editor'] } },
+          { name: 'roleId', in: 'query' as const, schema: { type: 'string' as const, format: 'uuid' } },
           { name: 'search', in: 'query' as const, schema: { type: 'string' as const } },
         ],
         responses: { '200': { description: 'Paginated user list' }, '403': { description: 'Not admin' } },
@@ -301,9 +382,9 @@ export const openApiSpec = {
           { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
           { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
           { name: 'contentTypeId', in: 'query' as const, schema: { type: 'string' as const, format: 'uuid' } },
-          { name: 'status', in: 'query' as const, schema: { type: 'string' as const, enum: ['draft', 'published'] } },
+          { name: 'status', in: 'query' as const, schema: { type: 'string' as const, enum: ['draft', 'in-review', 'approved', 'scheduled', 'published'] } },
           { name: 'search', in: 'query' as const, schema: { type: 'string' as const } },
-          { name: 'sortBy', in: 'query' as const, schema: { type: 'string' as const, enum: ['createdAt', 'updatedAt', 'status', 'relevance'], default: 'createdAt' } },
+          { name: 'sortBy', in: 'query' as const, schema: { type: 'string' as const, enum: ['createdAt', 'updatedAt', 'status', 'slug', 'relevance'], default: 'createdAt' } },
           { name: 'sortOrder', in: 'query' as const, schema: { type: 'string' as const, enum: ['asc', 'desc'], default: 'desc' } },
         ],
         responses: { '200': { description: 'Paginated content list' } },
@@ -314,7 +395,7 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object' as const, required: ['contentTypeId', 'data'], properties: { contentTypeId: { type: 'string' as const, format: 'uuid' }, status: { type: 'string' as const, enum: ['draft', 'published'], default: 'draft' }, data: { type: 'object' as const } } } } },
+          content: { 'application/json': { schema: { type: 'object' as const, required: ['contentTypeId', 'data'], properties: { contentTypeId: { type: 'string' as const, format: 'uuid' }, slug: { type: 'string' as const }, status: { type: 'string' as const, enum: ['draft', 'in-review', 'approved', 'scheduled', 'published'], default: 'draft' }, data: { type: 'object' as const }, publishedAt: { type: 'string' as const, format: 'date-time' } } } } },
         },
         responses: { '201': { description: 'Created' }, '400': { description: 'Validation error' } },
       },
@@ -333,7 +414,7 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
         requestBody: {
-          content: { 'application/json': { schema: { type: 'object' as const, properties: { status: { type: 'string' as const, enum: ['draft', 'published'] }, data: { type: 'object' as const } } } } },
+          content: { 'application/json': { schema: { type: 'object' as const, properties: { slug: { type: 'string' as const, nullable: true }, status: { type: 'string' as const, enum: ['draft', 'in-review', 'approved', 'scheduled', 'published'] }, data: { type: 'object' as const }, publishedAt: { type: 'string' as const, format: 'date-time', nullable: true } } } } },
         },
         responses: { '200': { description: 'Updated' }, '404': { description: 'Not found' } },
       },
@@ -494,6 +575,253 @@ export const openApiSpec = {
       },
     },
 
+    // ── Setup ──────────────────────────────────────────────
+    '/api/v1/setup/status': {
+      get: {
+        tags: ['Setup'],
+        summary: 'Check if initial setup is needed',
+        responses: { '200': { description: 'Setup status' } },
+      },
+    },
+    '/api/v1/setup': {
+      post: {
+        tags: ['Setup'],
+        summary: 'Initialize CMS with first admin account',
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { type: 'object' as const, required: ['email', 'password', 'confirmPassword'], properties: { email: { type: 'string' as const, format: 'email' }, password: { type: 'string' as const, minLength: 6 }, confirmPassword: { type: 'string' as const } } } } },
+        },
+        responses: { '201': { description: 'Admin account created, tokens returned' }, '400': { description: 'Validation error or setup already completed' } },
+      },
+    },
+
+    // ── Roles ─────────────────────────────────────────────
+    '/api/v1/roles': {
+      get: {
+        tags: ['Roles'],
+        summary: 'List roles',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
+          { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
+          { name: 'search', in: 'query' as const, schema: { type: 'string' as const } },
+        ],
+        responses: { '200': { description: 'Paginated role list' } },
+      },
+      post: {
+        tags: ['Roles'],
+        summary: 'Create role',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { type: 'object' as const, required: ['name', 'slug', 'permissions'], properties: { name: { type: 'string' as const }, slug: { type: 'string' as const }, description: { type: 'string' as const, nullable: true }, permissions: { type: 'array' as const, items: { type: 'string' as const } } } } } },
+        },
+        responses: { '201': { description: 'Created' }, '409': { description: 'Slug exists' } },
+      },
+    },
+    '/api/v1/roles/{id}': {
+      get: {
+        tags: ['Roles'],
+        summary: 'Get role by ID',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        responses: { '200': { description: 'Role details' }, '404': { description: 'Not found' } },
+      },
+      put: {
+        tags: ['Roles'],
+        summary: 'Update role',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        requestBody: {
+          content: { 'application/json': { schema: { type: 'object' as const, properties: { name: { type: 'string' as const }, slug: { type: 'string' as const }, description: { type: 'string' as const, nullable: true }, permissions: { type: 'array' as const, items: { type: 'string' as const } } } } } },
+        },
+        responses: { '200': { description: 'Updated' }, '404': { description: 'Not found' } },
+      },
+      delete: {
+        tags: ['Roles'],
+        summary: 'Delete role',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        responses: { '204': { description: 'Deleted' }, '404': { description: 'Not found' } },
+      },
+    },
+
+    // ── Webhooks ──────────────────────────────────────────
+    '/api/v1/webhooks': {
+      get: {
+        tags: ['Webhooks'],
+        summary: 'List webhooks',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
+          { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
+          { name: 'isActive', in: 'query' as const, schema: { type: 'string' as const, enum: ['true', 'false'] } },
+        ],
+        responses: { '200': { description: 'Paginated webhook list' } },
+      },
+      post: {
+        tags: ['Webhooks'],
+        summary: 'Create webhook',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { type: 'object' as const, required: ['name', 'url', 'secret', 'events'], properties: { name: { type: 'string' as const }, url: { type: 'string' as const, format: 'uri' }, secret: { type: 'string' as const, minLength: 16 }, events: { type: 'array' as const, items: { type: 'string' as const } }, isActive: { type: 'boolean' as const, default: true } } } } },
+        },
+        responses: { '201': { description: 'Created' } },
+      },
+    },
+    '/api/v1/webhooks/{id}': {
+      get: {
+        tags: ['Webhooks'],
+        summary: 'Get webhook by ID',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        responses: { '200': { description: 'Webhook details' }, '404': { description: 'Not found' } },
+      },
+      put: {
+        tags: ['Webhooks'],
+        summary: 'Update webhook',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        requestBody: {
+          content: { 'application/json': { schema: { type: 'object' as const, properties: { name: { type: 'string' as const }, url: { type: 'string' as const, format: 'uri' }, secret: { type: 'string' as const, minLength: 16 }, events: { type: 'array' as const, items: { type: 'string' as const } }, isActive: { type: 'boolean' as const } } } } },
+        },
+        responses: { '200': { description: 'Updated' }, '404': { description: 'Not found' } },
+      },
+      delete: {
+        tags: ['Webhooks'],
+        summary: 'Delete webhook',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        responses: { '204': { description: 'Deleted' }, '404': { description: 'Not found' } },
+      },
+    },
+    '/api/v1/webhooks/{id}/deliveries': {
+      get: {
+        tags: ['Webhooks'],
+        summary: 'List deliveries for a webhook',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+          { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
+          { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
+          { name: 'status', in: 'query' as const, schema: { type: 'string' as const, enum: ['pending', 'success', 'failed'] } },
+        ],
+        responses: { '200': { description: 'Paginated delivery list' } },
+      },
+    },
+
+    // ── Audit Logs ────────────────────────────────────────
+    '/api/v1/audit-logs': {
+      get: {
+        tags: ['Audit Logs'],
+        summary: 'List audit logs',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
+          { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
+          { name: 'actorId', in: 'query' as const, schema: { type: 'string' as const } },
+          { name: 'action', in: 'query' as const, schema: { type: 'string' as const } },
+          { name: 'resourceType', in: 'query' as const, schema: { type: 'string' as const } },
+          { name: 'from', in: 'query' as const, schema: { type: 'string' as const, format: 'date-time' } },
+          { name: 'to', in: 'query' as const, schema: { type: 'string' as const, format: 'date-time' } },
+        ],
+        responses: { '200': { description: 'Paginated audit log list' } },
+      },
+    },
+
+    // ── API Keys ──────────────────────────────────────────
+    '/api/v1/api-keys': {
+      get: {
+        tags: ['API Keys'],
+        summary: 'List API keys',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
+          { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
+          { name: 'isActive', in: 'query' as const, schema: { type: 'string' as const, enum: ['true', 'false'] } },
+        ],
+        responses: { '200': { description: 'Paginated API key list' } },
+      },
+      post: {
+        tags: ['API Keys'],
+        summary: 'Create API key',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { type: 'object' as const, required: ['name', 'permissions'], properties: { name: { type: 'string' as const }, permissions: { type: 'array' as const, items: { type: 'string' as const } }, expiresAt: { type: 'string' as const, format: 'date-time' } } } } },
+        },
+        responses: { '201': { description: 'API key created, raw key returned' } },
+      },
+    },
+    '/api/v1/api-keys/{id}': {
+      get: {
+        tags: ['API Keys'],
+        summary: 'Get API key by ID',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        responses: { '200': { description: 'API key details' }, '404': { description: 'Not found' } },
+      },
+      put: {
+        tags: ['API Keys'],
+        summary: 'Update API key',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        requestBody: {
+          content: { 'application/json': { schema: { type: 'object' as const, properties: { name: { type: 'string' as const }, permissions: { type: 'array' as const, items: { type: 'string' as const } }, isActive: { type: 'boolean' as const }, expiresAt: { type: 'string' as const, format: 'date-time', nullable: true } } } } },
+        },
+        responses: { '200': { description: 'Updated' }, '404': { description: 'Not found' } },
+      },
+      delete: {
+        tags: ['API Keys'],
+        summary: 'Delete API key',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        responses: { '204': { description: 'Deleted' }, '404': { description: 'Not found' } },
+      },
+    },
+
+    // ── Bulk Action ───────────────────────────────────────
+    '/api/v1/contents/bulk-action': {
+      post: {
+        tags: ['Contents'],
+        summary: 'Perform bulk action on contents',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { type: 'object' as const, required: ['ids', 'action'], properties: { ids: { type: 'array' as const, items: { type: 'string' as const, format: 'uuid' }, minItems: 1, maxItems: 100 }, action: { type: 'string' as const, enum: ['delete', 'publish', 'unpublish'] } } } } },
+        },
+        responses: { '200': { description: 'Bulk action result' } },
+      },
+    },
+
+    // ── Export/Import ─────────────────────────────────────
+    '/api/v1/contents/export': {
+      get: {
+        tags: ['Contents'],
+        summary: 'Export contents for a content type',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'contentTypeId', in: 'query' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+          { name: 'format', in: 'query' as const, schema: { type: 'string' as const, enum: ['json', 'csv', 'xml'], default: 'json' } },
+          { name: 'status', in: 'query' as const, schema: { type: 'string' as const, enum: ['draft', 'in-review', 'approved', 'scheduled', 'published'] } },
+        ],
+        responses: { '200': { description: 'File download' } },
+      },
+    },
+    '/api/v1/contents/import': {
+      post: {
+        tags: ['Contents'],
+        summary: 'Import contents from file',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: { 'multipart/form-data': { schema: { type: 'object' as const, required: ['file', 'contentTypeId'], properties: { file: { type: 'string' as const, format: 'binary' }, contentTypeId: { type: 'string' as const, format: 'uuid' } } } } },
+        },
+        responses: { '200': { description: 'Import result with imported/failed counts' }, '400': { description: 'Invalid file or missing content type' } },
+      },
+    },
+
     // ── Public ────────────────────────────────────────────
     '/api/v1/public/content-types': {
       get: {
@@ -517,13 +845,17 @@ export const openApiSpec = {
     '/api/v1/public/contents': {
       get: {
         tags: ['Public'],
-        summary: 'List published contents (public)',
+        summary: 'List published contents (public, rate limited)',
         parameters: [
           { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
           { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
           { name: 'search', in: 'query' as const, schema: { type: 'string' as const } },
-          { name: 'sortBy', in: 'query' as const, schema: { type: 'string' as const, enum: ['createdAt', 'updatedAt', 'relevance'] } },
+          { name: 'sortBy', in: 'query' as const, schema: { type: 'string' as const, enum: ['createdAt', 'updatedAt', 'publishedAt', 'relevance'] } },
           { name: 'sortOrder', in: 'query' as const, schema: { type: 'string' as const, enum: ['asc', 'desc'] } },
+          { name: 'filter', in: 'query' as const, description: 'JSON-encoded filter object', schema: { type: 'string' as const } },
+          { name: 'fields', in: 'query' as const, description: 'Comma-separated field names to include', schema: { type: 'string' as const } },
+          { name: 'populate', in: 'query' as const, schema: { type: 'string' as const, enum: ['relations'] } },
+          { name: 'preview', in: 'query' as const, description: 'Include non-published content (requires API key)', schema: { type: 'string' as const, enum: ['true', 'false'] } },
         ],
         responses: { '200': { description: 'Published contents' } },
       },
@@ -536,6 +868,13 @@ export const openApiSpec = {
           { name: 'slug', in: 'path' as const, required: true, schema: { type: 'string' as const } },
           { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
           { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
+          { name: 'search', in: 'query' as const, schema: { type: 'string' as const } },
+          { name: 'sortBy', in: 'query' as const, schema: { type: 'string' as const, enum: ['createdAt', 'updatedAt', 'publishedAt', 'relevance'] } },
+          { name: 'sortOrder', in: 'query' as const, schema: { type: 'string' as const, enum: ['asc', 'desc'] } },
+          { name: 'filter', in: 'query' as const, description: 'JSON-encoded filter object', schema: { type: 'string' as const } },
+          { name: 'fields', in: 'query' as const, description: 'Comma-separated field names to include', schema: { type: 'string' as const } },
+          { name: 'populate', in: 'query' as const, schema: { type: 'string' as const, enum: ['relations'] } },
+          { name: 'preview', in: 'query' as const, schema: { type: 'string' as const, enum: ['true', 'false'] } },
         ],
         responses: { '200': { description: 'Contents for type' } },
       },
@@ -544,20 +883,29 @@ export const openApiSpec = {
       get: {
         tags: ['Public'],
         summary: 'Get published content by ID (public)',
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+          { name: 'fields', in: 'query' as const, schema: { type: 'string' as const } },
+          { name: 'populate', in: 'query' as const, schema: { type: 'string' as const, enum: ['relations'] } },
+        ],
         responses: { '200': { description: 'Content' }, '404': { description: 'Not found' } },
       },
     },
   },
   tags: [
+    { name: 'Setup', description: 'Initial CMS setup' },
     { name: 'Auth', description: 'Authentication & user session' },
-    { name: 'Users', description: 'User management (admin)' },
+    { name: 'Users', description: 'User management' },
+    { name: 'Roles', description: 'Role & permission management' },
     { name: 'Content Types', description: 'CPT definitions' },
-    { name: 'Contents', description: 'Content entries' },
+    { name: 'Contents', description: 'Content entries, bulk actions, export/import' },
     { name: 'Relations', description: 'Content-to-content relations' },
     { name: 'Versions', description: 'Content version history' },
     { name: 'Uploads', description: 'File uploads & media' },
     { name: 'Settings', description: 'System settings' },
-    { name: 'Public', description: 'Public read-only API' },
+    { name: 'Webhooks', description: 'Webhook management & deliveries' },
+    { name: 'Audit Logs', description: 'Action audit trail' },
+    { name: 'API Keys', description: 'Programmatic API access' },
+    { name: 'Public', description: 'Public read-only API (rate limited)' },
   ],
 };

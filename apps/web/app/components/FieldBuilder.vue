@@ -24,6 +24,7 @@ const fieldTypes = [
   { label: 'Select', value: 'select' },
   { label: 'Media', value: 'media' },
   { label: 'Rich Text', value: 'richtext' },
+  { label: 'Author', value: 'author' },
 ];
 
 function addField() {
@@ -88,6 +89,13 @@ function isDuplicate(index: number): boolean {
   if (!name) return false;
   return model.value.some((f, i) => i !== index && f.name === name);
 }
+
+function nameError(index: number): string | undefined {
+  if (isDuplicate(index)) return t('fieldBuilder.duplicateName');
+  const name = model.value[index]?.name;
+  if (name && !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) return t('fieldBuilder.invalidName');
+  return undefined;
+}
 </script>
 
 <template>
@@ -99,10 +107,11 @@ function isDuplicate(index: number): boolean {
     >
       <div class="flex items-start gap-3">
         <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <UFormField :label="$t('fieldBuilder.fieldName')" :error="isDuplicate(index) ? $t('fieldBuilder.duplicateName') : undefined">
+          <UFormField :label="$t('fieldBuilder.fieldName')" :error="nameError(index)">
             <UInput
               :model-value="field.name"
               :placeholder="$t('fieldBuilder.fieldNamePlaceholder')"
+              required
               class="w-full"
               @update:model-value="(v: string) => updateField(index, 'name', v)"
             />
@@ -112,6 +121,7 @@ function isDuplicate(index: number): boolean {
             <UInput
               :model-value="field.label"
               :placeholder="$t('fieldBuilder.fieldLabelPlaceholder')"
+              required
               class="w-full"
               @update:model-value="(v: string) => updateField(index, 'label', v)"
             />
