@@ -9,36 +9,20 @@ const { t } = useI18n();
 const toast = useToast();
 const router = useRouter();
 const route = useRoute();
+const { items: contentTypeItems, fetch: fetchContentTypes, loading: loadingTypes, invalidate: invalidateContentTypes } = useContentTypes();
 
-interface FieldDefinition {
-  name: string;
-  type: string;
-  required: boolean;
-  label: string;
-  options?: string[];
-}
-
-interface ContentTypeOption {
-  id: string;
-  name: string;
-  slug: string;
-  fields: FieldDefinition[];
-}
-
-const contentTypes = ref<ContentTypeOption[]>([]);
 const selectedTypeId = ref('');
 const slug = ref('');
 const status = ref<'draft' | 'published'>('draft');
 const data = ref<Record<string, unknown>>({});
 const saving = ref(false);
-const loadingTypes = ref(true);
 
 const selectedType = computed(() =>
-  contentTypes.value.find((ct) => ct.id === selectedTypeId.value),
+  contentTypeItems.value.find((ct) => ct.id === selectedTypeId.value),
 );
 
 const typeItems = computed(() =>
-  contentTypes.value.map((ct) => ({ label: ct.name, value: ct.id })),
+  contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })),
 );
 
 const statusItems = [
@@ -49,18 +33,6 @@ const statusItems = [
 watch(selectedTypeId, () => {
   if (!route.query.duplicate) data.value = {};
 });
-
-async function fetchContentTypes() {
-  loadingTypes.value = true;
-  try {
-    const res = await apiFetch<{ success: boolean; data: ContentTypeOption[] }>('/content-types?limit=100');
-    contentTypes.value = res.data;
-  } catch {
-    // ignore
-  } finally {
-    loadingTypes.value = false;
-  }
-}
 
 async function loadDuplicate() {
   const duplicateId = route.query.duplicate as string | undefined;
@@ -90,17 +62,34 @@ async function submit() {
         data: data.value,
       },
     });
+    invalidateContentTypes();
     toast.add({ title: t('common.created'), color: 'success' });
     router.push('/admin/contents');
-  } catch {
-    toast.add({ title: t('common.error'), color: 'error' });
+  } catch (err: unknown) {
+    const msg = (err as { data?: { error?: string } })?.data?.error || t('common.error');
+    toast.add({ title: msg, color: 'error' });
   } finally {
     saving.value = false;
   }
 }
 
+defineShortcuts({
+  meta_s: {
+    usingInput: true,
+    handler: () => {
+      if (selectedTypeId.value && !saving.value) submit();
+    },
+  },
+});
+
 onMounted(async () => {
   await fetchContentTypes();
+  // Pre-select type from URL ?type=slug
+  const typeSlug = route.query.type as string | undefined;
+  if (typeSlug && !route.query.duplicate) {
+    const ct = contentTypeItems.value.find((c) => c.slug === typeSlug);
+    if (ct) selectedTypeId.value = ct.id;
+  }
   await loadDuplicate();
 });
 </script>
@@ -137,7 +126,7 @@ onMounted(async () => {
       </UFormField>
 
       <template v-if="selectedType">
-        <DynamicContentForm v-model="data" :fields="selectedType.fields" />
+        <DynamicContentForm v-model="data" :fields="selectedType.fields ?? []" />
       </template>
 
       <div class="flex justify-end gap-2">

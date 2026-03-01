@@ -70,7 +70,7 @@ async function handleSubmit() {
       <template #header>
         <div class="text-center">
           <h1 class="text-2xl font-bold">{{ $t('common.appName') }}</h1>
-          <p class="text-sm text-gray-500 mt-1">{{ $t('setup.subtitle') }}</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ $t('setup.subtitle') }}</p>
         </div>
       </template>
 

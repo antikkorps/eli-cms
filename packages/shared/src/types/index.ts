@@ -18,7 +18,7 @@ export interface User {
   updatedAt: Date;
 }
 
-export type FieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'email' | 'url' | 'select' | 'media' | 'richtext';
+export type FieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'email' | 'url' | 'select' | 'media' | 'richtext' | 'author';
 
 export interface FieldDefinition {
   name: string;
@@ -99,6 +99,12 @@ export interface ContentRelation {
   targetId: string;
   relationType: RelationType;
   createdAt: Date;
+}
+
+export interface PopulatedRelation {
+  id: string;
+  relationType: RelationType;
+  target: Content;
 }
 
 // ─── Content Versions ───────────────────────────────────

@@ -1,6 +1,6 @@
-import { eq, ilike, or, count as drizzleCount } from 'drizzle-orm';
+import { eq, ilike, or, count as drizzleCount, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { contentTypes } from '../db/schema/index.js';
+import { contentTypes, contents } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import type { CreateContentTypeInput, UpdateContentTypeInput, ContentTypeListQuery } from '@eli-cms/shared';
@@ -9,7 +9,7 @@ import type { Actor } from './content.service.js';
 
 export class ContentTypeService {
   static async findAll(query: ContentTypeListQuery) {
-    const { page, limit, search } = query;
+    const { page, limit, search, includeCounts } = query;
     const offset = (page - 1) * limit;
 
     const conditions = search
@@ -20,6 +20,36 @@ export class ContentTypeService {
       .select({ total: drizzleCount() })
       .from(contentTypes)
       .where(conditions);
+
+    if (includeCounts) {
+      const countSubquery = db
+        .select({
+          contentTypeId: contents.contentTypeId,
+          contentCount: drizzleCount().as('content_count'),
+        })
+        .from(contents)
+        .groupBy(contents.contentTypeId)
+        .as('counts');
+
+      const data = await db
+        .select({
+          id: contentTypes.id,
+          slug: contentTypes.slug,
+          name: contentTypes.name,
+          fields: contentTypes.fields,
+          createdAt: contentTypes.createdAt,
+          updatedAt: contentTypes.updatedAt,
+          contentCount: sql<number>`coalesce(${countSubquery.contentCount}, 0)`.mapWith(Number),
+        })
+        .from(contentTypes)
+        .leftJoin(countSubquery, eq(contentTypes.id, countSubquery.contentTypeId))
+        .where(conditions)
+        .orderBy(contentTypes.createdAt)
+        .limit(limit)
+        .offset(offset);
+
+      return { data, meta: buildMeta(total, page, limit) };
+    }
 
     const data = await db
       .select()

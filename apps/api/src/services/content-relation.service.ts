@@ -1,9 +1,9 @@
-import { eq, and, count as drizzleCount } from 'drizzle-orm';
+import { eq, and, count as drizzleCount, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { contents, contentRelations } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
-import type { CreateContentRelationInput, ContentRelationListQuery } from '@eli-cms/shared';
+import type { CreateContentRelationInput, ContentRelationListQuery, PopulatedRelation } from '@eli-cms/shared';
 
 export class ContentRelationService {
   static async create(sourceId: string, input: CreateContentRelationInput) {
@@ -63,6 +63,58 @@ export class ContentRelationService {
       .offset(offset);
 
     return { data, meta: buildMeta(total, page, limit) };
+  }
+
+  /**
+   * Batch-populate relations for multiple content items (2 queries, never N+1).
+   * Depth limited to 1 — populated targets do NOT have their own relations resolved.
+   */
+  static async populateRelations(
+    contentIds: string[],
+    options?: { onlyPublished?: boolean },
+  ): Promise<Map<string, PopulatedRelation[]>> {
+    const result = new Map<string, PopulatedRelation[]>();
+    if (contentIds.length === 0) return result;
+
+    // Query 1: fetch all relations for given source IDs
+    const relations = await db
+      .select()
+      .from(contentRelations)
+      .where(inArray(contentRelations.sourceId, contentIds));
+
+    if (relations.length === 0) return result;
+
+    // Query 2: fetch all target contents
+    const targetIds = [...new Set(relations.map(r => r.targetId))];
+    let targetQuery = db.select().from(contents).where(inArray(contents.id, targetIds));
+    if (options?.onlyPublished) {
+      targetQuery = db.select().from(contents).where(
+        and(inArray(contents.id, targetIds), eq(contents.status, 'published')),
+      );
+    }
+    const targets = await targetQuery;
+    const targetMap = new Map(targets.map(t => [t.id, t]));
+
+    // Build the result map
+    for (const rel of relations) {
+      const target = targetMap.get(rel.targetId);
+      if (!target) continue; // target filtered out (e.g. not published)
+
+      const populated: PopulatedRelation = {
+        id: rel.id,
+        relationType: rel.relationType,
+        target,
+      };
+
+      const existing = result.get(rel.sourceId);
+      if (existing) {
+        existing.push(populated);
+      } else {
+        result.set(rel.sourceId, [populated]);
+      }
+    }
+
+    return result;
   }
 
   static async delete(sourceId: string, relationId: string) {

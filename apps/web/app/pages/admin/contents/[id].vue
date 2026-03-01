@@ -9,6 +9,7 @@ const { apiFetch } = useApi();
 const { t, locale } = useI18n();
 const toast = useToast();
 const router = useRouter();
+const { invalidate: invalidateContentTypes } = useContentTypes();
 
 interface FieldDefinition {
   name: string;
@@ -221,8 +222,9 @@ async function submit() {
     });
     toast.add({ title: t('common.updated'), color: 'success' });
     router.push('/admin/contents');
-  } catch {
-    toast.add({ title: t('common.error'), color: 'error' });
+  } catch (err: unknown) {
+    const msg = (err as { data?: { error?: string } })?.data?.error || t('common.error');
+    toast.add({ title: msg, color: 'error' });
   } finally {
     saving.value = false;
   }
@@ -234,6 +236,15 @@ function getRelationPreview(relation: ContentRelation): string {
   const first = Object.values(data).find((v) => typeof v === 'string' && v.length > 0);
   return typeof first === 'string' ? (first.length > 50 ? first.substring(0, 50) + '...' : first) : relation.targetId;
 }
+
+defineShortcuts({
+  meta_s: {
+    usingInput: true,
+    handler: () => {
+      if (activeTab.value === 'content' && !saving.value) submit();
+    },
+  },
+});
 
 watch(activeTab, (tab) => {
   if (tab === 'versions' && !versions.value.length) fetchVersions();

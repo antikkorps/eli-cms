@@ -34,7 +34,7 @@ export const changePasswordSchema = z.object({
 // Content Type schemas
 const fieldDefinitionSchema = z.object({
   name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
-  type: z.enum(['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media', 'richtext']),
+  type: z.enum(['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media', 'richtext', 'author']),
   required: z.boolean(),
   label: safeString(255).pipe(z.string().min(1)),
   options: z.array(safeString(255)).optional(),
@@ -113,6 +113,9 @@ export function buildContentDataSchema(fields: FieldDefinition[]): z.ZodObject<R
       case 'richtext':
         fieldSchema = z.string().max(200000).transform(sanitize);
         break;
+      case 'author':
+        fieldSchema = z.string().uuid();
+        break;
       default:
         fieldSchema = z.unknown();
     }
@@ -131,6 +134,15 @@ export const bulkContentActionSchema = z.object({
 
 export type BulkContentActionInput = z.infer<typeof bulkContentActionSchema>;
 
+// ─── Content Export/Import schemas ─────────────────────
+export const exportContentQuerySchema = z.object({
+  contentTypeId: z.string().uuid(),
+  format: z.enum(['json', 'csv', 'xml']).default('json'),
+  status: z.enum(CONTENT_STATUSES).optional(),
+});
+
+export type ExportContentQuery = z.infer<typeof exportContentQuerySchema>;
+
 // ─── Pagination & Query schemas ────────────────────────
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -139,6 +151,7 @@ export const paginationSchema = z.object({
 
 export const contentTypeListQuerySchema = paginationSchema.extend({
   search: z.string().max(200).optional(),
+  includeCounts: z.enum(['true', 'false']).transform(v => v === 'true').optional(),
 });
 
 export const contentListQuerySchema = paginationSchema.extend({
@@ -149,10 +162,31 @@ export const contentListQuerySchema = paginationSchema.extend({
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
+const publicFilterSchema = z.object({
+  contentTypeId: z.string().uuid().optional(),
+  slug: z.string().max(255).optional(),
+  createdAt: z.object({
+    gte: z.string().datetime({ offset: true }).optional(),
+    lte: z.string().datetime({ offset: true }).optional(),
+  }).optional(),
+  publishedAt: z.object({
+    gte: z.string().datetime({ offset: true }).optional(),
+    lte: z.string().datetime({ offset: true }).optional(),
+  }).optional(),
+  data: z.record(
+    z.string().regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Invalid field name'),
+    z.union([z.string(), z.object({ like: z.string().max(200) })]),
+  ).optional(),
+}).optional();
+
 export const publicContentListQuerySchema = paginationSchema.extend({
   search: z.string().max(200).optional(),
-  sortBy: z.enum(['createdAt', 'updatedAt', 'relevance']).default('createdAt'),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'publishedAt', 'relevance']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  filter: publicFilterSchema,
+  fields: z.string().max(500).optional(),
+  populate: z.enum(['relations']).optional(),
+  preview: z.enum(['true', 'false']).transform(v => v === 'true').optional(),
 });
 
 export const userListQuerySchema = paginationSchema.extend({

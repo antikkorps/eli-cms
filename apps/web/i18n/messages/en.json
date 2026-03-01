@@ -39,6 +39,9 @@
     "settings": "Settings",
     "auditLogs": "Audit Logs",
     "apiKeys": "API Keys",
+    "content": "Content",
+    "allContents": "All Contents",
+    "seeAllTypes": "See all types...",
     "logout": "Log out"
   },
   "login": {
@@ -156,6 +159,7 @@
     "fieldOptions": "Options (one per line)",
     "fieldOptionsPlaceholder": "option1\noption2\noption3",
     "duplicateName": "Field name already exists",
+    "invalidName": "No spaces — use underscores (e.g. my_field)",
     "fieldMultiple": "Multiple",
     "fieldAccept": "Accepted types",
     "fieldAcceptPlaceholder": "All types accepted",
@@ -346,6 +350,27 @@
       "review": "Review",
       "manage": "Manage"
     }
+  },
+  "export": {
+    "export": "Export",
+    "import": "Import",
+    "selectTypeFirst": "Select a content type to export",
+    "format": "Format",
+    "importTitle": "Import Contents",
+    "importResult": "Import Result",
+    "importSuccess": "{count} item(s) imported successfully",
+    "imported": "Imported",
+    "failed": "Failed",
+    "errors": "Errors",
+    "file": "File"
+  },
+  "commandPalette": {
+    "placeholder": "Search for a page...",
+    "noResults": "No results found",
+    "navigation": "Navigation"
+  },
+  "authorPicker": {
+    "selectAuthor": "Select an author"
   },
   "mediaPicker": {
     "title": "Select Media",

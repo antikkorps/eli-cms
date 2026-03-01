@@ -9,6 +9,9 @@ definePageMeta({
 const { apiFetch, baseURL } = useApi();
 const { t, locale } = useI18n();
 const { hasPermission } = useAuth();
+const route = useRoute();
+const router = useRouter();
+const { items: contentTypeItems, fetch: fetchContentTypes, invalidate: invalidateContentTypes } = useContentTypes();
 
 interface ContentItem {
   id: string;
@@ -29,17 +32,9 @@ interface FieldDefinition {
   multiple?: boolean;
 }
 
-interface ContentTypeOption {
-  id: string;
-  name: string;
-  slug: string;
-  fields?: FieldDefinition[];
-}
-
 const search = ref('');
 const contentTypeFilter = ref<string | null>(null);
 const statusFilter = ref<string | null>(null);
-const contentTypeOptions = ref<ContentTypeOption[]>([]);
 const bulkOpen = ref(false);
 const bulkActionType = ref('');
 
@@ -72,17 +67,42 @@ const canCreate = computed(() => hasPermission('content:create'));
 const canDelete = computed(() => hasPermission('content:delete'));
 const canUpdate = computed(() => hasPermission('content:update'));
 
-async function fetchContentTypes() {
+// Export/Import
+const exportFormat = ref<'json' | 'csv' | 'xml'>('json');
+const importOpen = ref(false);
+
+const exportFormatItems = [
+  { label: 'JSON', value: 'json' },
+  { label: 'CSV', value: 'csv' },
+  { label: 'XML', value: 'xml' },
+];
+
+async function handleExport() {
+  if (!contentTypeFilter.value) return;
   try {
-    const res = await apiFetch<{ success: boolean; data: ContentTypeOption[] }>('/content-types?limit=100');
-    contentTypeOptions.value = res.data;
+    const params = new URLSearchParams({
+      contentTypeId: contentTypeFilter.value,
+      format: exportFormat.value,
+    });
+    if (statusFilter.value) params.set('status', statusFilter.value);
+
+    const data = await apiFetch<Blob>(`/contents/export?${params}`, {
+      responseType: 'blob',
+    });
+    const blob = data instanceof Blob ? data : new Blob([JSON.stringify(data)]);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `export.${exportFormat.value}`;
+    a.click();
+    URL.revokeObjectURL(url);
   } catch {
     // ignore
   }
 }
 
 const typeFilterItems = computed(() =>
-  contentTypeOptions.value.map((ct) => ({ label: ct.name, value: ct.id })),
+  contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })),
 );
 
 const statusFilterItems = [
@@ -100,7 +120,7 @@ function getPreviewText(data: Record<string, unknown>): string {
 }
 
 function getMediaPreviewId(item: ContentItem): string | null {
-  const ct = contentTypeOptions.value.find((c) => c.id === item.contentTypeId);
+  const ct = contentTypeItems.value.find((c) => c.id === item.contentTypeId);
   if (!ct?.fields) return null;
   const mediaField = ct.fields.find((f) => f.type === 'media');
   if (!mediaField) return null;
@@ -255,25 +275,84 @@ const columns = computed(() => [
   },
 ]);
 
-onMounted(fetchContentTypes);
+// Invalidate content type counts after delete/bulk actions
+watch(deleteOpen, (open, wasOpen) => {
+  if (wasOpen && !open) invalidateContentTypes();
+});
+
+// Track whether the filter change originates from URL (avoid circular updates)
+let syncingFromUrl = false;
+
+// URL → filter: watch route.query.type and resolve slug → ID
+watch(
+  () => route.query.type as string | undefined,
+  (slug) => {
+    if (!contentTypeItems.value.length) return;
+    syncingFromUrl = true;
+    if (slug) {
+      const ct = contentTypeItems.value.find((c) => c.slug === slug);
+      contentTypeFilter.value = ct ? ct.id : null;
+    } else {
+      contentTypeFilter.value = null;
+    }
+    nextTick(() => { syncingFromUrl = false; });
+  },
+);
+
+// Filter → URL: sync contentTypeFilter changes back to query params
+watch(contentTypeFilter, (id) => {
+  if (syncingFromUrl) return;
+  const ct = id ? contentTypeItems.value.find((c) => c.id === id) : null;
+  const query = { ...route.query };
+  if (ct) {
+    query.type = ct.slug;
+  } else {
+    delete query.type;
+  }
+  router.replace({ query });
+});
+
+onMounted(async () => {
+  await fetchContentTypes();
+  // Resolve initial ?type=slug from URL
+  const typeSlug = route.query.type as string | undefined;
+  if (typeSlug) {
+    const ct = contentTypeItems.value.find((c) => c.slug === typeSlug);
+    if (ct) contentTypeFilter.value = ct.id;
+  }
+});
 </script>
 
 <template>
   <div class="p-6 space-y-6">
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold">{{ $t('contents.title') }}</h1>
+        <h1 class="text-2xl font-bold">
+          {{ contentTypeFilter ? contentTypeItems.find(c => c.id === contentTypeFilter)?.name ?? $t('contents.title') : $t('contents.title') }}
+        </h1>
         <p class="text-sm text-muted mt-1">{{ $t('contents.subtitle') }}</p>
       </div>
-      <UButton v-if="canCreate" to="/admin/contents/new" icon="i-lucide-plus">
-        {{ $t('contents.create') }}
-      </UButton>
+      <div class="flex gap-2">
+        <UButton v-if="canCreate" variant="outline" icon="i-lucide-upload" @click="importOpen = true">
+          {{ $t('export.import') }}
+        </UButton>
+        <UButton v-if="canCreate" to="/admin/contents/new" icon="i-lucide-plus">
+          {{ $t('contents.create') }}
+        </UButton>
+      </div>
     </div>
 
     <div class="flex flex-wrap gap-3 items-center">
       <UInput v-model="search" :placeholder="$t('common.search')" icon="i-lucide-search" class="w-64" />
       <USelect v-model="contentTypeFilter" nullable :items="typeFilterItems" :placeholder="$t('contents.allTypes')" class="w-48" />
       <USelect v-model="statusFilter" nullable :items="statusFilterItems" :placeholder="$t('contents.allStatuses')" class="w-48" />
+
+      <template v-if="contentTypeFilter">
+        <USelect v-model="exportFormat" :items="exportFormatItems" class="w-24" />
+        <UButton size="sm" variant="outline" icon="i-lucide-download" @click="handleExport">
+          {{ $t('export.export') }}
+        </UButton>
+      </template>
 
       <template v-if="selectedIds.size > 0">
         <span class="text-sm text-muted">{{ $t('contents.selected', { count: selectedIds.size }) }}</span>
@@ -343,5 +422,8 @@ onMounted(fetchContentTypes);
         </div>
       </template>
     </UModal>
+
+    <!-- Import modal -->
+    <ImportModal v-model:open="importOpen" :content-types="contentTypeItems" @imported="page = 1" />
   </div>
 </template>

@@ -39,6 +39,9 @@
     "settings": "Paramètres",
     "auditLogs": "Journal d'audit",
     "apiKeys": "Clés API",
+    "content": "Contenu",
+    "allContents": "Tous les contenus",
+    "seeAllTypes": "Voir tous les types...",
     "logout": "Déconnexion"
   },
   "login": {
@@ -156,6 +159,7 @@
     "fieldOptions": "Options (une par ligne)",
     "fieldOptionsPlaceholder": "option1\noption2\noption3",
     "duplicateName": "Ce nom de champ existe déjà",
+    "invalidName": "Sans espaces — utilisez des underscores (ex. mon_champ)",
     "fieldMultiple": "Multiple",
     "fieldAccept": "Types acceptés",
     "fieldAcceptPlaceholder": "Tous les types acceptés",
@@ -346,6 +350,27 @@
       "review": "Réviser",
       "manage": "Gérer"
     }
+  },
+  "export": {
+    "export": "Exporter",
+    "import": "Importer",
+    "selectTypeFirst": "Sélectionnez un type de contenu pour exporter",
+    "format": "Format",
+    "importTitle": "Importer des contenus",
+    "importResult": "Résultat de l'import",
+    "importSuccess": "{count} élément(s) importé(s) avec succès",
+    "imported": "Importés",
+    "failed": "Échoués",
+    "errors": "Erreurs",
+    "file": "Fichier"
+  },
+  "commandPalette": {
+    "placeholder": "Rechercher une page...",
+    "noResults": "Aucun résultat",
+    "navigation": "Navigation"
+  },
+  "authorPicker": {
+    "selectAuthor": "Sélectionner un auteur"
   },
   "mediaPicker": {
     "title": "Sélectionner un média",
