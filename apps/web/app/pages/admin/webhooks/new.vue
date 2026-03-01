@@ -76,7 +76,7 @@ async function submit() {
         <UInput v-model="form.name" :placeholder="$t('webhooks.namePlaceholder')" required class="w-full" />
       </UFormField>
 
-      <UFormField :label="$t('webhooks.urlLabel')">
+      <UFormField :label="$t('webhooks.urlLabel')" :hint="$t('webhooks.urlHint')">
         <UInput v-model="form.url" :placeholder="$t('webhooks.urlPlaceholder')" type="url" required class="w-full" />
       </UFormField>
 

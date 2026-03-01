@@ -158,7 +158,8 @@
     "duplicateName": "Field name already exists",
     "fieldMultiple": "Multiple",
     "fieldAccept": "Accepted types",
-    "fieldAcceptPlaceholder": "image/*, application/pdf"
+    "fieldAcceptPlaceholder": "All types accepted",
+    "fieldAcceptHint": "Leave empty to accept all file types"
   },
   "contents": {
     "title": "Contents",
@@ -256,7 +257,8 @@
     "nameLabel": "Name",
     "namePlaceholder": "e.g. Notify on publish",
     "urlLabel": "URL",
-    "urlPlaceholder": "https://example.com/webhook",
+    "urlPlaceholder": "https://your-server.com/api/webhooks",
+    "urlHint": "Endpoint that will receive POST requests with event data (JSON)",
     "secretLabel": "Secret",
     "secretPlaceholder": "Min 16 characters",
     "generateSecret": "Generate",
