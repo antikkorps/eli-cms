@@ -1,4 +1,4 @@
-import { eq, and, count as drizzleCount, asc, desc, sql, inArray } from 'drizzle-orm';
+import { eq, and, count as drizzleCount, asc, desc, sql, inArray, gte, lte } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { contents } from '../db/schema/index.js';
 import { ContentTypeService } from './content-type.service.js';
@@ -6,7 +6,7 @@ import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import { buildContentDataSchema } from '@eli-cms/shared';
 import { ContentVersionService } from './content-version.service.js';
-import type { CreateContentInput, UpdateContentInput, ContentListQuery, ActorType, FieldDefinition } from '@eli-cms/shared';
+import type { CreateContentInput, UpdateContentInput, ContentListQuery, PublicContentListQuery, ActorType, FieldDefinition } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
 import { UploadService } from './upload.service.js';
 import { WorkflowService } from './workflow.service.js';
@@ -21,6 +21,7 @@ export interface Actor {
 const sortColumns = {
   createdAt: contents.createdAt,
   updatedAt: contents.updatedAt,
+  publishedAt: contents.publishedAt,
   status: contents.status,
   slug: contents.slug,
 } as const;
@@ -73,6 +74,79 @@ export class ContentService {
     if (contentTypeId) filters.push(eq(contents.contentTypeId, contentTypeId));
     if (status) filters.push(eq(contents.status, status));
 
+    const tsquery = search ? sanitizeSearchTerms(search) : null;
+    if (tsquery) {
+      filters.push(sql`search_vector @@ to_tsquery('simple', ${tsquery})`);
+    }
+
+    const where = filters.length > 0 ? and(...filters) : undefined;
+
+    const [{ total }] = await db
+      .select({ total: drizzleCount() })
+      .from(contents)
+      .where(where);
+
+    // Determine ordering
+    let orderByClause;
+    if (sortBy === 'relevance' && tsquery) {
+      orderByClause = sql`ts_rank(search_vector, to_tsquery('simple', ${tsquery})) DESC`;
+    } else {
+      const orderFn = sortOrder === 'asc' ? asc : desc;
+      const orderCol = sortBy === 'relevance' ? contents.createdAt : sortColumns[sortBy];
+      orderByClause = orderFn(orderCol);
+    }
+
+    const data = await db
+      .select()
+      .from(contents)
+      .where(where)
+      .orderBy(orderByClause)
+      .limit(limit)
+      .offset(offset);
+
+    return { data, meta: buildMeta(total, page, limit) };
+  }
+
+  static async findPublic(query: PublicContentListQuery, options?: { isPreview?: boolean; contentTypeId?: string }) {
+    const { page, limit, search, sortBy, sortOrder, filter } = query;
+    const offset = (page - 1) * limit;
+    const isPreview = options?.isPreview ?? false;
+
+    const filters = [];
+
+    // Status filter — only published unless preview mode
+    if (!isPreview) {
+      filters.push(eq(contents.status, 'published'));
+    }
+
+    // Content type — from route param or filter
+    const ctId = options?.contentTypeId ?? filter?.contentTypeId;
+    if (ctId) filters.push(eq(contents.contentTypeId, ctId));
+
+    // Slug exact match
+    if (filter?.slug) filters.push(eq(contents.slug, filter.slug));
+
+    // Date range filters
+    if (filter?.createdAt?.gte) filters.push(gte(contents.createdAt, new Date(filter.createdAt.gte)));
+    if (filter?.createdAt?.lte) filters.push(lte(contents.createdAt, new Date(filter.createdAt.lte)));
+    if (filter?.publishedAt?.gte) filters.push(gte(contents.publishedAt, new Date(filter.publishedAt.gte)));
+    if (filter?.publishedAt?.lte) filters.push(lte(contents.publishedAt, new Date(filter.publishedAt.lte)));
+
+    // JSONB data filters (max 5)
+    if (filter?.data) {
+      const dataEntries = Object.entries(filter.data).slice(0, 5);
+      for (const [fieldName, value] of dataEntries) {
+        if (typeof value === 'string') {
+          // Exact match via containment operator
+          filters.push(sql`${contents.data} @> ${JSON.stringify({ [fieldName]: value })}::jsonb`);
+        } else if (typeof value === 'object' && value !== null && 'like' in value) {
+          // ILIKE on extracted text value
+          filters.push(sql`${contents.data}->>${sql.raw(`'${fieldName}'`)} ILIKE ${'%' + value.like + '%'}`);
+        }
+      }
+    }
+
+    // Full-text search
     const tsquery = search ? sanitizeSearchTerms(search) : null;
     if (tsquery) {
       filters.push(sql`search_vector @@ to_tsquery('simple', ${tsquery})`);

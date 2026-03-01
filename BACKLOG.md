@@ -15,7 +15,7 @@
 
 - [ ] Author/User field type (dropdown to select a user as author — new `user` field type in FieldBuilder, user picker in content form, API validation)
 - [x] Rich text editor field type (WYSIWYG)
-- [ ] Public API improvements (preview mode, advanced filters, field selection, populate relations)
+- [x] Public API improvements (preview mode, advanced filters, field selection, populate relations)
 - [x] Auto-generate slug from name in content types and contents
 - [x] Bulk actions on list pages (delete, publish, unpublish)
 - [ ] Search result highlighting

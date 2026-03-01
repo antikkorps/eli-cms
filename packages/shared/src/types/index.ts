@@ -101,6 +101,12 @@ export interface ContentRelation {
   createdAt: Date;
 }
 
+export interface PopulatedRelation {
+  id: string;
+  relationType: RelationType;
+  target: Content;
+}
+
 // ─── Content Versions ───────────────────────────────────
 export interface ContentVersion {
   id: string;

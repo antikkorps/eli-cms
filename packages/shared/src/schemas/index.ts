@@ -149,10 +149,31 @@ export const contentListQuerySchema = paginationSchema.extend({
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
+const publicFilterSchema = z.object({
+  contentTypeId: z.string().uuid().optional(),
+  slug: z.string().max(255).optional(),
+  createdAt: z.object({
+    gte: z.string().datetime({ offset: true }).optional(),
+    lte: z.string().datetime({ offset: true }).optional(),
+  }).optional(),
+  publishedAt: z.object({
+    gte: z.string().datetime({ offset: true }).optional(),
+    lte: z.string().datetime({ offset: true }).optional(),
+  }).optional(),
+  data: z.record(
+    z.string().regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Invalid field name'),
+    z.union([z.string(), z.object({ like: z.string().max(200) })]),
+  ).optional(),
+}).optional();
+
 export const publicContentListQuerySchema = paginationSchema.extend({
   search: z.string().max(200).optional(),
-  sortBy: z.enum(['createdAt', 'updatedAt', 'relevance']).default('createdAt'),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'publishedAt', 'relevance']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  filter: publicFilterSchema,
+  fields: z.string().max(500).optional(),
+  populate: z.enum(['relations']).optional(),
+  preview: z.enum(['true', 'false']).transform(v => v === 'true').optional(),
 });
 
 export const userListQuerySchema = paginationSchema.extend({
