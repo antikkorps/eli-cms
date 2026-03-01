@@ -39,13 +39,16 @@ export interface ContentType {
   updatedAt: Date;
 }
 
-export type ContentStatus = 'draft' | 'published';
+export type ContentStatus = 'draft' | 'in-review' | 'approved' | 'scheduled' | 'published';
 
 export interface Content {
   id: string;
   contentTypeId: string;
+  slug: string | null;
   status: ContentStatus;
   data: Record<string, unknown>;
+  publishedAt: Date | null;
+  editedBy: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -143,6 +146,10 @@ export type WebhookEvent =
   | 'content.updated'
   | 'content.deleted'
   | 'content.published'
+  | 'content.review-requested'
+  | 'content.approved'
+  | 'content.rejected'
+  | 'content.scheduled'
   | 'content_type.created'
   | 'content_type.updated'
   | 'content_type.deleted'

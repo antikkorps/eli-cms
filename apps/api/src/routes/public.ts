@@ -11,3 +11,4 @@ publicRouter.get('/content-types/:slug', PublicController.getContentTypeBySlug);
 publicRouter.get('/contents', PublicController.listContents);
 publicRouter.get('/contents/by-type/:slug', PublicController.listContentsByType);
 publicRouter.get('/contents/:id', PublicController.getContentById);
+publicRouter.get('/content-types/:slug/contents/:contentSlug', PublicController.getContentBySlug);

@@ -51,15 +51,21 @@ export const createContentTypeSchema = z.object({
 export const updateContentTypeSchema = createContentTypeSchema.partial();
 
 // Content schemas
+export const CONTENT_STATUSES = ['draft', 'in-review', 'approved', 'scheduled', 'published'] as const;
+
 export const createContentSchema = z.object({
   contentTypeId: z.string().uuid(),
-  status: z.enum(['draft', 'published']).default('draft'),
+  slug: z.string().max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case').optional(),
+  status: z.enum(CONTENT_STATUSES).default('draft'),
   data: z.record(z.unknown()),
+  publishedAt: z.string().datetime({ offset: true }).optional(),
 });
 
 export const updateContentSchema = z.object({
-  status: z.enum(['draft', 'published']).optional(),
+  slug: z.string().max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case').nullable().optional(),
+  status: z.enum(CONTENT_STATUSES).optional(),
   data: z.record(z.unknown()).optional(),
+  publishedAt: z.string().datetime({ offset: true }).nullable().optional(),
 });
 
 /**
@@ -117,6 +123,14 @@ export function buildContentDataSchema(fields: FieldDefinition[]): z.ZodObject<R
   return z.object(shape);
 }
 
+// ─── Bulk action schema ────────────────────────────────
+export const bulkContentActionSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1).max(100),
+  action: z.enum(['delete', 'publish', 'unpublish']),
+});
+
+export type BulkContentActionInput = z.infer<typeof bulkContentActionSchema>;
+
 // ─── Pagination & Query schemas ────────────────────────
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -129,9 +143,9 @@ export const contentTypeListQuerySchema = paginationSchema.extend({
 
 export const contentListQuerySchema = paginationSchema.extend({
   contentTypeId: z.string().uuid().optional(),
-  status: z.enum(['draft', 'published']).optional(),
+  status: z.enum(CONTENT_STATUSES).optional(),
   search: z.string().max(200).optional(),
-  sortBy: z.enum(['createdAt', 'updatedAt', 'status', 'relevance']).default('createdAt'),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'status', 'slug', 'relevance']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
@@ -215,6 +229,10 @@ const webhookEventEnum = z.enum([
   'content.updated',
   'content.deleted',
   'content.published',
+  'content.review-requested',
+  'content.approved',
+  'content.rejected',
+  'content.scheduled',
   'content_type.created',
   'content_type.updated',
   'content_type.deleted',

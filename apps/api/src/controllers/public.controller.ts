@@ -57,4 +57,10 @@ export class PublicController {
     });
     ctx.body = { success: true, data, meta };
   }
+
+  static async getContentBySlug(ctx: Context) {
+    const contentType = await ContentTypeService.findBySlugOrFail(ctx.params.slug);
+    const data = await ContentService.findPublishedBySlug(ctx.params.contentSlug, contentType.id);
+    ctx.body = { success: true, data };
+  }
 }

@@ -13,6 +13,7 @@ const { hasPermission } = useAuth();
 interface ContentItem {
   id: string;
   contentTypeId: string;
+  slug: string | null;
   status: string;
   data: Record<string, unknown>;
   contentType?: { name: string; slug: string };
@@ -39,6 +40,8 @@ const search = ref('');
 const contentTypeFilter = ref<string | null>(null);
 const statusFilter = ref<string | null>(null);
 const contentTypeOptions = ref<ContentTypeOption[]>([]);
+const bulkOpen = ref(false);
+const bulkActionType = ref('');
 
 const {
   items: contents,
@@ -52,6 +55,14 @@ const {
   deleting,
   confirmDelete,
   handleDelete,
+  sortBy,
+  sortOrder,
+  toggleSort,
+  selectedIds,
+  allSelected,
+  toggleSelect,
+  selectAll,
+  bulkAction,
 } = useCrudList<ContentItem>({
   endpoint: '/contents',
   filters: { search, contentTypeId: contentTypeFilter, status: statusFilter },
@@ -59,6 +70,7 @@ const {
 
 const canCreate = computed(() => hasPermission('content:create'));
 const canDelete = computed(() => hasPermission('content:delete'));
+const canUpdate = computed(() => hasPermission('content:update'));
 
 async function fetchContentTypes() {
   try {
@@ -75,6 +87,9 @@ const typeFilterItems = computed(() =>
 
 const statusFilterItems = [
   { label: t('contents.draft'), value: 'draft' },
+  { label: t('contents.inReview'), value: 'in-review' },
+  { label: t('contents.approved'), value: 'approved' },
+  { label: t('contents.scheduled'), value: 'scheduled' },
   { label: t('contents.published'), value: 'published' },
 ];
 
@@ -95,13 +110,45 @@ function getMediaPreviewId(item: ContentItem): string | null {
   return null;
 }
 
+function sortIcon(col: string): string {
+  if (sortBy.value !== col) return 'i-lucide-arrow-up-down';
+  return sortOrder.value === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down';
+}
+
+function confirmBulk(action: string) {
+  bulkActionType.value = action;
+  bulkOpen.value = true;
+}
+
+async function executeBulk() {
+  bulkOpen.value = false;
+  await bulkAction(bulkActionType.value);
+}
+
 const UBadge = resolveComponent('UBadge');
 const UButton = resolveComponent('UButton');
+const UCheckbox = resolveComponent('UCheckbox');
 
 const columns = computed(() => [
   {
+    accessorKey: 'select',
+    header: () =>
+      h(UCheckbox as ReturnType<typeof resolveComponent>, {
+        modelValue: allSelected.value,
+        'onUpdate:modelValue': () => selectAll(),
+      }),
+    cell: ({ row }: { row: { original: ContentItem } }) =>
+      h(UCheckbox as ReturnType<typeof resolveComponent>, {
+        modelValue: selectedIds.value.has(row.original.id),
+        'onUpdate:modelValue': () => toggleSelect(row.original.id),
+      }),
+  },
+  {
     accessorKey: 'data',
-    header: t('contents.columnTitle'),
+    header: () =>
+      h('button', { class: 'flex items-center gap-1 font-medium', onClick: () => toggleSort('createdAt') }, [
+        t('contents.columnTitle'),
+      ]),
     cell: ({ row }: { row: { original: ContentItem } }) => {
       const mediaId = getMediaPreviewId(row.original);
       const text = getPreviewText(row.original.data);
@@ -119,6 +166,18 @@ const columns = computed(() => [
     },
   },
   {
+    accessorKey: 'slug',
+    header: () =>
+      h('button', { class: 'flex items-center gap-1 font-medium', onClick: () => toggleSort('slug') }, [
+        t('contents.columnSlug'),
+        h('span', { class: `${sortBy.value === 'slug' ? 'opacity-100' : 'opacity-40'} i-lucide-${sortBy.value === 'slug' ? (sortOrder.value === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size-3.5` }),
+      ]),
+    cell: ({ row }: { row: { original: ContentItem } }) =>
+      row.original.slug
+        ? h('code', { class: 'text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded' }, row.original.slug)
+        : h('span', { class: 'text-muted text-xs' }, '—'),
+  },
+  {
     accessorKey: 'contentType',
     header: t('contents.columnType'),
     cell: ({ row }: { row: { original: ContentItem } }) => {
@@ -128,23 +187,50 @@ const columns = computed(() => [
   },
   {
     accessorKey: 'status',
-    header: t('contents.columnStatus'),
+    header: () =>
+      h('button', { class: 'flex items-center gap-1 font-medium', onClick: () => toggleSort('status') }, [
+        t('contents.columnStatus'),
+        h('span', { class: `${sortBy.value === 'status' ? 'opacity-100' : 'opacity-40'} i-lucide-${sortBy.value === 'status' ? (sortOrder.value === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size-3.5` }),
+      ]),
     cell: ({ row }: { row: { original: ContentItem } }) => {
-      const color = row.original.status === 'published' ? 'success' : 'warning';
-      const label = row.original.status === 'published' ? t('contents.published') : t('contents.draft');
-      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color, size: 'sm' }, () => label);
+      const statusMap: Record<string, { color: string; label: string }> = {
+        draft: { color: 'neutral', label: t('contents.draft') },
+        'in-review': { color: 'warning', label: t('contents.inReview') },
+        approved: { color: 'info', label: t('contents.approved') },
+        scheduled: { color: 'primary', label: t('contents.scheduled') },
+        published: { color: 'success', label: t('contents.published') },
+      };
+      const cfg = statusMap[row.original.status] ?? statusMap.draft;
+      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: cfg.color, size: 'sm' }, () => cfg.label);
     },
   },
   {
     accessorKey: 'updatedAt',
-    header: t('contents.columnUpdated'),
+    header: () =>
+      h('button', { class: 'flex items-center gap-1 font-medium', onClick: () => toggleSort('updatedAt') }, [
+        t('contents.columnUpdated'),
+        h('span', { class: `${sortBy.value === 'updatedAt' ? 'opacity-100' : 'opacity-40'} i-lucide-${sortBy.value === 'updatedAt' ? (sortOrder.value === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size-3.5` }),
+      ]),
     cell: ({ row }: { row: { original: ContentItem } }) => new Date(row.original.updatedAt).toLocaleDateString(locale.value),
   },
   {
     accessorKey: 'actions',
     header: '',
     cell: ({ row }: { row: { original: ContentItem } }) => {
-      const buttons = [
+      const buttons = [];
+      if (canCreate.value) {
+        buttons.push(
+          h(UButton as ReturnType<typeof resolveComponent>, {
+            icon: 'i-lucide-copy',
+            variant: 'ghost',
+            color: 'neutral',
+            size: 'sm',
+            title: t('contents.duplicate'),
+            to: `/admin/contents/new?duplicate=${row.original.id}`,
+          }),
+        );
+      }
+      buttons.push(
         h(UButton as ReturnType<typeof resolveComponent>, {
           icon: 'i-lucide-pencil',
           variant: 'ghost',
@@ -152,7 +238,7 @@ const columns = computed(() => [
           size: 'sm',
           to: `/admin/contents/${row.original.id}`,
         }),
-      ];
+      );
       if (canDelete.value) {
         buttons.push(
           h(UButton as ReturnType<typeof resolveComponent>, {
@@ -184,10 +270,23 @@ onMounted(fetchContentTypes);
       </UButton>
     </div>
 
-    <div class="flex flex-wrap gap-3">
+    <div class="flex flex-wrap gap-3 items-center">
       <UInput v-model="search" :placeholder="$t('common.search')" icon="i-lucide-search" class="w-64" />
       <USelect v-model="contentTypeFilter" nullable :items="typeFilterItems" :placeholder="$t('contents.allTypes')" class="w-48" />
       <USelect v-model="statusFilter" nullable :items="statusFilterItems" :placeholder="$t('contents.allStatuses')" class="w-48" />
+
+      <template v-if="selectedIds.size > 0">
+        <span class="text-sm text-muted">{{ $t('contents.selected', { count: selectedIds.size }) }}</span>
+        <UButton v-if="canUpdate" size="sm" variant="outline" @click="confirmBulk('publish')">
+          {{ $t('contents.bulkPublish') }}
+        </UButton>
+        <UButton v-if="canUpdate" size="sm" variant="outline" @click="confirmBulk('unpublish')">
+          {{ $t('contents.bulkUnpublish') }}
+        </UButton>
+        <UButton v-if="canDelete" size="sm" variant="outline" color="error" @click="confirmBulk('delete')">
+          {{ $t('contents.bulkDelete') }}
+        </UButton>
+      </template>
     </div>
 
     <div v-if="loading && !contents.length" class="space-y-3">
@@ -207,6 +306,7 @@ onMounted(fetchContentTypes);
       <UPagination v-model="page" :total="total" :items-per-page="limit" />
     </div>
 
+    <!-- Delete modal -->
     <UModal v-model:open="deleteOpen">
       <template #content>
         <div class="p-6 space-y-4">
@@ -218,6 +318,26 @@ onMounted(fetchContentTypes);
             </UButton>
             <UButton color="error" :loading="deleting" @click="handleDelete">
               {{ $t('common.delete') }}
+            </UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
+
+    <!-- Bulk action confirmation modal -->
+    <UModal v-model:open="bulkOpen">
+      <template #content>
+        <div class="p-6 space-y-4">
+          <h3 class="text-lg font-semibold">{{ $t('contents.bulkConfirmTitle') }}</h3>
+          <p class="text-sm text-muted">
+            {{ $t('contents.bulkConfirmMessage', { action: bulkActionType, count: selectedIds.size }) }}
+          </p>
+          <div class="flex justify-end gap-2">
+            <UButton variant="ghost" color="neutral" @click="bulkOpen = false">
+              {{ $t('common.cancel') }}
+            </UButton>
+            <UButton :color="bulkActionType === 'delete' ? 'error' : 'primary'" @click="executeBulk">
+              {{ $t('common.confirm') }}
             </UButton>
           </div>
         </div>

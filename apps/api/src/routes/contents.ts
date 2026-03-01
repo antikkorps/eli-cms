@@ -7,6 +7,7 @@ import { CONTENT_CREATE, CONTENT_READ, CONTENT_UPDATE, CONTENT_DELETE } from '@e
 export const contentsRouter = new Router({ prefix: '/api/v1/contents' });
 
 contentsRouter.get('/', authenticate, requirePermission(CONTENT_READ), ContentController.list);
+contentsRouter.post('/bulk-action', authenticate, requirePermission(CONTENT_UPDATE), ContentController.bulkAction);
 contentsRouter.get('/:id', authenticate, requirePermission(CONTENT_READ), ContentController.get);
 contentsRouter.post('/', authenticate, requirePermission(CONTENT_CREATE), ContentController.create);
 contentsRouter.put('/:id', authenticate, requirePermission(CONTENT_UPDATE), ContentController.update);

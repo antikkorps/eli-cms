@@ -8,6 +8,7 @@ const { apiFetch } = useApi();
 const { t } = useI18n();
 const toast = useToast();
 const router = useRouter();
+const route = useRoute();
 
 interface FieldDefinition {
   name: string;
@@ -26,6 +27,7 @@ interface ContentTypeOption {
 
 const contentTypes = ref<ContentTypeOption[]>([]);
 const selectedTypeId = ref('');
+const slug = ref('');
 const status = ref<'draft' | 'published'>('draft');
 const data = ref<Record<string, unknown>>({});
 const saving = ref(false);
@@ -45,7 +47,7 @@ const statusItems = [
 ];
 
 watch(selectedTypeId, () => {
-  data.value = {};
+  if (!route.query.duplicate) data.value = {};
 });
 
 async function fetchContentTypes() {
@@ -60,6 +62,22 @@ async function fetchContentTypes() {
   }
 }
 
+async function loadDuplicate() {
+  const duplicateId = route.query.duplicate as string | undefined;
+  if (!duplicateId) return;
+  try {
+    const res = await apiFetch<{
+      success: boolean;
+      data: { contentTypeId: string; status: string; data: Record<string, unknown> };
+    }>(`/contents/${duplicateId}`);
+    selectedTypeId.value = res.data.contentTypeId;
+    status.value = 'draft';
+    data.value = { ...res.data.data };
+  } catch {
+    // ignore — just start fresh
+  }
+}
+
 async function submit() {
   saving.value = true;
   try {
@@ -67,6 +85,7 @@ async function submit() {
       method: 'POST',
       body: {
         contentTypeId: selectedTypeId.value,
+        slug: slug.value || undefined,
         status: status.value,
         data: data.value,
       },
@@ -80,7 +99,10 @@ async function submit() {
   }
 }
 
-onMounted(fetchContentTypes);
+onMounted(async () => {
+  await fetchContentTypes();
+  await loadDuplicate();
+});
 </script>
 
 <template>
@@ -109,6 +131,10 @@ onMounted(fetchContentTypes);
           <USelect v-model="status" :items="statusItems" class="w-full" />
         </UFormField>
       </div>
+
+      <UFormField :label="$t('contents.slugLabel')" :hint="$t('contents.slugHint')">
+        <UInput v-model="slug" :placeholder="$t('contents.slugPlaceholder')" class="w-full" />
+      </UFormField>
 
       <template v-if="selectedType">
         <DynamicContentForm v-model="data" :fields="selectedType.fields" />

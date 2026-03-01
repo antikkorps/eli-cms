@@ -11,6 +11,7 @@
 ## Medium Priority
 
 - [x] Rich text editor field type (WYSIWYG)
+- [ ] Public API improvements (preview mode, advanced filters, field selection, populate relations)
 - [ ] Auto-generate slug from name in content types and contents
 - [ ] Bulk actions on list pages (delete, publish, unpublish)
 - [ ] Search result highlighting
@@ -34,3 +35,7 @@
 - [ ] Dashboard charts (content created over time)
 - [ ] Webhook delivery retry UI (manual retry button)
 - [ ] Pre-signed URLs for S3 direct uploads
+
+## Nice to Have
+
+- [ ] SDK client (`@eli-cms/client`) — typed wrapper around the public API for easy integration in any JS framework
