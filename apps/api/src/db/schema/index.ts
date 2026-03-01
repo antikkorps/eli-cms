@@ -54,11 +54,18 @@ export const refreshTokens = pgTable('refresh_tokens', {
 export const contents = pgTable('contents', {
   id: uuid('id').defaultRandom().primaryKey(),
   contentTypeId: uuid('content_type_id').notNull().references(() => contentTypes.id, { onDelete: 'cascade' }),
-  status: varchar('status', { length: 20 }).notNull().default('draft').$type<'draft' | 'published'>(),
+  slug: varchar('slug', { length: 255 }),
+  status: varchar('status', { length: 20 }).notNull().default('draft').$type<'draft' | 'in-review' | 'approved' | 'scheduled' | 'published'>(),
   data: jsonb('data').notNull().$type<Record<string, unknown>>(),
+  publishedAt: timestamp('published_at', { withTimezone: true }),
+  editedBy: uuid('edited_by').references(() => users.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
-});
+}, (table) => [
+  uniqueIndex('uq_contents_slug_type').on(table.slug, table.contentTypeId),
+  index('idx_contents_status').on(table.status),
+  index('idx_contents_published_at').on(table.publishedAt),
+]);
 
 // ─── Content Relations ──────────────────────────────────
 export const contentRelations = pgTable('content_relations', {

@@ -31,6 +31,7 @@ const deleteOpen = ref(false);
 const deleting = ref(false);
 
 const UBadge = resolveComponent('UBadge');
+const UTooltip = resolveComponent('UTooltip');
 
 const columns = computed(() => [
   {
@@ -60,15 +61,19 @@ const columns = computed(() => [
         }, () => p),
       );
       if (remaining > 0) {
+        const tooltipText = perms.slice(3).join(', ');
         badges.push(
-          h(UBadge as ReturnType<typeof resolveComponent>, {
-            variant: 'subtle',
-            color: 'neutral',
-            size: 'sm',
-          }, () => `+${remaining}`),
+          h(UTooltip as ReturnType<typeof resolveComponent>, { text: tooltipText }, () =>
+            h(UBadge as ReturnType<typeof resolveComponent>, {
+              variant: 'subtle',
+              color: 'neutral',
+              size: 'sm',
+              class: 'cursor-help',
+            }, () => `+${remaining}`),
+          ),
         );
       }
-      return h('div', { class: 'flex flex-wrap gap-1' }, badges);
+      return h('div', { class: 'flex flex-wrap gap-1 max-w-sm' }, badges);
     },
   },
   {

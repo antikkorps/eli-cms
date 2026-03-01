@@ -146,6 +146,7 @@ async function copyKey() {
               <UInput
                 v-model="form.name"
                 :placeholder="$t('apiKeysNew.namePlaceholder')"
+                class="w-full"
                 autofocus
               />
             </UFormField>
@@ -156,6 +157,7 @@ async function copyKey() {
                 :items="permissionOptions"
                 multiple
                 :placeholder="$t('apiKeysNew.permissionsPlaceholder')"
+                class="w-full max-w-full [&>div]:max-h-24 [&>div]:overflow-y-auto"
               />
             </UFormField>
 
@@ -163,6 +165,7 @@ async function copyKey() {
               <UInput
                 v-model="form.expiresAt"
                 type="date"
+                class="w-full"
               />
             </UFormField>
           </div>

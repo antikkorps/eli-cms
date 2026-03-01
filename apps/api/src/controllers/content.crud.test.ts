@@ -135,7 +135,42 @@ describe('Contents CRUD', () => {
 
   // ─── PUT /api/contents/:id ───────────────────────────
   describe('PUT /api/contents/:id', () => {
-    it('200 updates status from draft to published', async () => {
+    it('200 updates status through full workflow (draft → in-review → approved → published)', async () => {
+      const api = agent();
+      const created = await api
+        .post('/api/v1/contents')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ contentTypeId, data: buildBlogData() });
+
+      const id = created.body.data.id;
+
+      // draft → in-review
+      const r1 = await api
+        .put(`/api/v1/contents/${id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ status: 'in-review' });
+      expect(r1.status).toBe(200);
+      expect(r1.body.data.status).toBe('in-review');
+
+      // in-review → approved
+      const r2 = await api
+        .put(`/api/v1/contents/${id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ status: 'approved' });
+      expect(r2.status).toBe(200);
+      expect(r2.body.data.status).toBe('approved');
+
+      // approved → published
+      const r3 = await api
+        .put(`/api/v1/contents/${id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ status: 'published' });
+      expect(r3.status).toBe(200);
+      expect(r3.body.success).toBe(true);
+      expect(r3.body.data.status).toBe('published');
+    });
+
+    it('400 rejects direct draft → published (must go through workflow)', async () => {
       const api = agent();
       const created = await api
         .post('/api/v1/contents')
@@ -147,9 +182,7 @@ describe('Contents CRUD', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({ status: 'published' });
 
-      expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.status).toBe('published');
+      expect(res.status).toBe(400);
     });
 
     it('200 updates the data', async () => {

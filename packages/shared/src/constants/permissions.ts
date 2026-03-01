@@ -4,6 +4,7 @@ export const CONTENT_READ = 'content:read';
 export const CONTENT_UPDATE = 'content:update';
 export const CONTENT_DELETE = 'content:delete';
 export const CONTENT_PUBLISH = 'content:publish';
+export const CONTENT_REVIEW = 'content:review';
 
 export const CONTENT_TYPES_CREATE = 'content-types:create';
 export const CONTENT_TYPES_READ = 'content-types:read';
@@ -43,6 +44,7 @@ export const ALL_PERMISSIONS = [
   CONTENT_UPDATE,
   CONTENT_DELETE,
   CONTENT_PUBLISH,
+  CONTENT_REVIEW,
   CONTENT_TYPES_CREATE,
   CONTENT_TYPES_READ,
   CONTENT_TYPES_UPDATE,
@@ -80,6 +82,17 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, readonly Permission[]> = {
     CONTENT_UPDATE,
     CONTENT_DELETE,
     CONTENT_PUBLISH,
+    CONTENT_REVIEW,
+    CONTENT_TYPES_READ,
+    UPLOADS_CREATE,
+    UPLOADS_READ,
+  ],
+  reviewer: [
+    CONTENT_CREATE,
+    CONTENT_READ,
+    CONTENT_UPDATE,
+    CONTENT_DELETE,
+    CONTENT_REVIEW,
     CONTENT_TYPES_READ,
     UPLOADS_CREATE,
     UPLOADS_READ,

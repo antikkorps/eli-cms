@@ -55,14 +55,31 @@ function getOptionsRaw(index: number): string {
   return model.value[index]?.options?.join('\n') ?? '';
 }
 
-function getAcceptRaw(index: number): string {
-  return model.value[index]?.accept?.join(', ') ?? '';
+const mediaAcceptCategories = [
+  { label: 'Images (JPEG, PNG, GIF, WebP, SVG)', value: 'image/*' },
+  { label: 'PDF', value: 'application/pdf' },
+  { label: 'Word', value: 'application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+  { label: 'Excel', value: 'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
+  { label: 'PowerPoint', value: 'application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation' },
+];
+
+function getAcceptSelected(index: number): string[] {
+  const accept = model.value[index]?.accept;
+  if (!accept?.length) return [];
+  const flat = accept.join(', ');
+  return mediaAcceptCategories
+    .filter((cat) => cat.value.split(', ').every((mime) => flat.includes(mime)))
+    .map((cat) => cat.value);
 }
 
-function updateAccept(index: number, raw: string) {
+function updateAcceptFromSelect(index: number, selected: string[]) {
   const updated = [...model.value];
-  const parsed = raw.split(',').map((s) => s.trim()).filter(Boolean);
-  updated[index] = Object.assign({}, updated[index], { accept: parsed.length > 0 ? parsed : undefined });
+  if (!selected.length) {
+    updated[index] = Object.assign({}, updated[index], { accept: undefined });
+  } else {
+    const mimes = selected.flatMap((v) => v.split(', ').map((s) => s.trim()));
+    updated[index] = Object.assign({}, updated[index], { accept: mimes });
+  }
   model.value = updated;
 }
 
@@ -144,12 +161,14 @@ function isDuplicate(index: number): boolean {
             @update:model-value="(v: boolean) => updateField(index, 'multiple', v)"
           />
         </UFormField>
-        <UFormField :label="$t('fieldBuilder.fieldAccept')">
-          <UInput
-            :model-value="getAcceptRaw(index)"
+        <UFormField :label="$t('fieldBuilder.fieldAccept')" :hint="$t('fieldBuilder.fieldAcceptHint')">
+          <USelectMenu
+            :model-value="getAcceptSelected(index)"
+            :items="mediaAcceptCategories"
+            multiple
             :placeholder="$t('fieldBuilder.fieldAcceptPlaceholder')"
             class="w-full"
-            @update:model-value="(v: string) => updateAccept(index, v)"
+            @update:model-value="(v: string[]) => updateAcceptFromSelect(index, v)"
           />
         </UFormField>
       </div>

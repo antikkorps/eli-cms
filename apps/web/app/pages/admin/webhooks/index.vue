@@ -48,6 +48,7 @@ async function toggleActive(webhook: WebhookItem) {
 
 const UBadge = resolveComponent('UBadge');
 const UButton = resolveComponent('UButton');
+const UTooltip = resolveComponent('UTooltip');
 
 const columns = computed(() => [
   { accessorKey: 'name', header: t('webhooks.columnName') },
@@ -70,9 +71,14 @@ const columns = computed(() => [
         h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', size: 'sm', class: 'mr-1' }, () => e),
       );
       if (remaining > 0) {
-        badges.push(h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: 'neutral', size: 'sm' }, () => `+${remaining}`));
+        const tooltipText = events.slice(2).join(', ');
+        badges.push(
+          h(UTooltip as ReturnType<typeof resolveComponent>, { text: tooltipText }, () =>
+            h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: 'neutral', size: 'sm', class: 'cursor-help' }, () => `+${remaining}`),
+          ),
+        );
       }
-      return h('div', { class: 'flex flex-wrap gap-1' }, badges);
+      return h('div', { class: 'flex flex-wrap gap-1 max-w-sm' }, badges);
     },
   },
   {

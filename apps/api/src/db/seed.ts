@@ -8,11 +8,18 @@ async function seed() {
   console.log('Seeding database...');
 
   // 1. Ensure default roles exist
+  const roleMetadata: Record<string, { name: string; description: string }> = {
+    'super-admin': { name: 'Super Admin', description: 'Full access to all features' },
+    editor: { name: 'Editor', description: 'Can manage content and uploads, publish approved content' },
+    reviewer: { name: 'Reviewer', description: 'Can manage content and review submissions' },
+  };
+
   for (const [slug, permissions] of Object.entries(DEFAULT_ROLE_PERMISSIONS)) {
     const existing = await db.select().from(roles).where(eq(roles.slug, slug)).limit(1);
     if (existing.length === 0) {
-      const name = slug === 'super-admin' ? 'Super Admin' : 'Editor';
-      const description = slug === 'super-admin' ? 'Full access to all features' : 'Can manage content and uploads';
+      const meta = roleMetadata[slug] ?? { name: slug, description: '' };
+      const name = meta.name;
+      const description = meta.description;
       await db.insert(roles).values({
         name,
         slug,
