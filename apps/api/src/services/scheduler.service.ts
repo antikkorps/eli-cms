@@ -2,6 +2,7 @@ import { db } from '../db/index.js';
 import { contents } from '../db/schema/index.js';
 import { eq, and, lte, isNull, isNotNull } from 'drizzle-orm';
 import { eventBus } from './event-bus.js';
+import { LockService } from './lock.service.js';
 
 const POLL_INTERVAL_MS = 60_000; // 60 seconds
 const TRASH_RETENTION_DAYS = 30;
@@ -15,10 +16,12 @@ export class SchedulerService {
     this.timer = setInterval(() => {
       this.publishScheduled().catch(console.error);
       this.purgeExpiredTrash().catch(console.error);
+      LockService.cleanExpired().catch(console.error);
     }, POLL_INTERVAL_MS);
     // Run once immediately
     this.publishScheduled().catch(console.error);
     this.purgeExpiredTrash().catch(console.error);
+    LockService.cleanExpired().catch(console.error);
   }
 
   static shutdown() {

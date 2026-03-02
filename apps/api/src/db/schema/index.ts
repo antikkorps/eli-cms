@@ -173,6 +173,17 @@ export const auditLogs = pgTable('audit_logs', {
   index('idx_audit_logs_created_at').on(table.createdAt),
 ]);
 
+// ─── Content Locks ─────────────────────────────────────
+export const contentLocks = pgTable('content_locks', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  contentId: uuid('content_id').notNull().references(() => contents.id, { onDelete: 'cascade' }).unique(),
+  lockedBy: uuid('locked_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('idx_content_locks_expires_at').on(table.expiresAt),
+]);
+
 // ─── API Keys ───────────────────────────────────────────
 export const apiKeys = pgTable('api_keys', {
   id: uuid('id').defaultRandom().primaryKey(),

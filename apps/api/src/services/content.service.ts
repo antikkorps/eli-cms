@@ -6,6 +6,7 @@ import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import { buildContentDataSchema } from '@eli-cms/shared';
 import { ContentVersionService } from './content-version.service.js';
+import { LockService } from './lock.service.js';
 import type { CreateContentInput, UpdateContentInput, ContentListQuery, PublicContentListQuery, TrashListQuery, ActorType, FieldDefinition } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
 import { UploadService } from './upload.service.js';
@@ -297,6 +298,11 @@ export class ContentService {
   static async update(id: string, input: UpdateContentInput, userId?: string, actor?: Actor, userPermissions?: string[]) {
     const existing = await this.findById(id);
 
+    // Check content lock — reject if locked by another user
+    if (userId) {
+      await LockService.checkLock(id, userId);
+    }
+
     // Validate workflow transition if status is changing
     if (input.status && input.status !== existing.status && userPermissions) {
       WorkflowService.validateTransition(existing.status, input.status, userPermissions);
@@ -343,6 +349,11 @@ export class ContentService {
     }
 
     const [content] = await db.update(contents).set(updateData).where(eq(contents.id, id)).returning();
+
+    // Auto-release lock on successful save
+    if (userId) {
+      await LockService.release(id, userId);
+    }
 
     const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
     eventBus.emit('content.updated', { content, ...actorData });

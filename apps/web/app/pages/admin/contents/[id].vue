@@ -10,6 +10,7 @@ const { t, locale } = useI18n();
 const toast = useToast();
 const router = useRouter();
 const { invalidate: invalidateContentTypes } = useContentTypes();
+const { isLockedByOther, lockerEmail, acquire: acquireLock, release: releaseLock, onSaveSuccess } = useContentLock();
 
 interface FieldDefinition {
   name: string;
@@ -211,6 +212,7 @@ async function handleSchedule(date: string) {
 }
 
 async function submit() {
+  if (isLockedByOther.value) return;
   saving.value = true;
   try {
     await apiFetch(`/contents/${route.params.id}`, {
@@ -220,6 +222,7 @@ async function submit() {
         data: form.data,
       },
     });
+    onSaveSuccess();
     toast.add({ title: t('common.updated'), color: 'success' });
     router.push('/admin/contents');
   } catch (err: unknown) {
@@ -241,7 +244,7 @@ defineShortcuts({
   meta_s: {
     usingInput: true,
     handler: () => {
-      if (activeTab.value === 'content' && !saving.value) submit();
+      if (activeTab.value === 'content' && !saving.value && !isLockedByOther.value) submit();
     },
   },
 });
@@ -251,7 +254,12 @@ watch(activeTab, (tab) => {
   if (tab === 'relations' && !relations.value.length) fetchRelations();
 });
 
-onMounted(fetchContent);
+onMounted(async () => {
+  await fetchContent();
+  if (!loading.value) {
+    await acquireLock(route.params.id as string);
+  }
+});
 </script>
 
 <template>
@@ -266,31 +274,42 @@ onMounted(fetchContent);
     <div v-if="loading" class="text-sm text-muted">{{ $t('common.loading') }}</div>
 
     <div v-else class="space-y-6">
+      <UAlert
+        v-if="isLockedByOther"
+        icon="i-lucide-lock"
+        color="warning"
+        :title="$t('lock.lockedBy', { email: lockerEmail })"
+        :description="$t('lock.readOnly')"
+      />
+
       <UTabs v-model="activeTab" :items="tabs" />
 
       <!-- Content tab -->
-      <form v-if="activeTab === 'content'" class="space-y-6" @submit.prevent="submit">
-        <WorkflowActions
-          :status="form.status"
-          @transition="handleTransition"
-          @schedule="scheduleOpen = true"
-        />
+      <fieldset v-if="activeTab === 'content'" :disabled="isLockedByOther">
+        <form class="space-y-6" @submit.prevent="submit">
+          <WorkflowActions
+            v-if="!isLockedByOther"
+            :status="form.status"
+            @transition="handleTransition"
+            @schedule="scheduleOpen = true"
+          />
 
-        <UFormField :label="$t('contents.slugLabel')" :hint="$t('contents.slugHint')">
-          <UInput v-model="form.slug" :placeholder="$t('contents.slugPlaceholder')" class="w-full" />
-        </UFormField>
+          <UFormField :label="$t('contents.slugLabel')" :hint="$t('contents.slugHint')">
+            <UInput v-model="form.slug" :placeholder="$t('contents.slugPlaceholder')" class="w-full" />
+          </UFormField>
 
-        <DynamicContentForm v-model="form.data" :fields="fields" />
+          <DynamicContentForm v-model="form.data" :fields="fields" />
 
-        <div class="flex justify-end gap-2">
-          <UButton to="/admin/contents" variant="ghost" color="neutral">
-            {{ $t('common.cancel') }}
-          </UButton>
-          <UButton type="submit" :loading="saving">
-            {{ $t('common.save') }}
-          </UButton>
-        </div>
-      </form>
+          <div class="flex justify-end gap-2">
+            <UButton to="/admin/contents" variant="ghost" color="neutral">
+              {{ $t('common.cancel') }}
+            </UButton>
+            <UButton type="submit" :loading="saving" :disabled="isLockedByOther">
+              {{ $t('common.save') }}
+            </UButton>
+          </div>
+        </form>
+      </fieldset>
 
       <!-- Versions tab -->
       <div v-else-if="activeTab === 'versions'" class="space-y-4">

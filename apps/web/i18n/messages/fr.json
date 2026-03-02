@@ -403,6 +403,13 @@
     "errorPermissionRequired": "Sélectionnez au moins une permission",
     "errorGeneric": "Échec de la création de la clé API"
   },
+  "lock": {
+    "lockedBy": "En cours d'édition par {email}",
+    "lockAcquired": "Verrou acquis",
+    "lockFailed": "Ce contenu est en cours d'édition par {email}",
+    "lockReleased": "Verrou libéré",
+    "readOnly": "Vous pouvez consulter ce contenu mais ne pouvez pas enregistrer tant qu'il est verrouillé."
+  },
   "trash": {
     "title": "Corbeille",
     "subtitle": "Les contenus supprimés sont conservés 30 jours avant d'être définitivement supprimés",

@@ -403,6 +403,13 @@
     "errorPermissionRequired": "Select at least one permission",
     "errorGeneric": "Failed to create API key"
   },
+  "lock": {
+    "lockedBy": "Being edited by {email}",
+    "lockAcquired": "Lock acquired",
+    "lockFailed": "This content is being edited by {email}",
+    "lockReleased": "Lock released",
+    "readOnly": "You can view this content but cannot save changes while it is locked."
+  },
   "trash": {
     "title": "Trash",
     "subtitle": "Deleted content is kept for 30 days before being permanently removed",
