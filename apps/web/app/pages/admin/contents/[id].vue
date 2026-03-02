@@ -139,8 +139,7 @@ async function restoreVersion(version: ContentVersion) {
     });
     toast.add({ title: t('contents.versionRestored'), color: 'success' });
     diffVersion.value = null;
-    await fetchContent();
-    activeTab.value = 'content';
+    await Promise.all([fetchContent(), fetchVersions()]);
   } catch {
     toast.add({ title: t('common.error'), color: 'error' });
   }
