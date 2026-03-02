@@ -1,9 +1,11 @@
 import { db } from '../db/index.js';
 import { contents } from '../db/schema/index.js';
-import { eq, and, lte, sql } from 'drizzle-orm';
+import { eq, and, lte, isNull, isNotNull } from 'drizzle-orm';
 import { eventBus } from './event-bus.js';
+import { LockService } from './lock.service.js';
 
 const POLL_INTERVAL_MS = 60_000; // 60 seconds
+const TRASH_RETENTION_DAYS = 30;
 
 export class SchedulerService {
   private static timer: ReturnType<typeof setInterval> | null = null;
@@ -13,9 +15,13 @@ export class SchedulerService {
     console.log('Scheduler started (polling every 60s)');
     this.timer = setInterval(() => {
       this.publishScheduled().catch(console.error);
+      this.purgeExpiredTrash().catch(console.error);
+      LockService.cleanExpired().catch(console.error);
     }, POLL_INTERVAL_MS);
     // Run once immediately
     this.publishScheduled().catch(console.error);
+    this.purgeExpiredTrash().catch(console.error);
+    LockService.cleanExpired().catch(console.error);
   }
 
   static shutdown() {
@@ -35,6 +41,7 @@ export class SchedulerService {
         and(
           eq(contents.status, 'scheduled'),
           lte(contents.publishedAt, now),
+          isNull(contents.deletedAt),
         ),
       );
 
@@ -54,5 +61,31 @@ export class SchedulerService {
       });
       console.log(`Auto-published content ${content.id}`);
     }
+  }
+
+  private static async purgeExpiredTrash() {
+    const cutoff = new Date(Date.now() - TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+    const expired = await db
+      .select()
+      .from(contents)
+      .where(
+        and(
+          isNotNull(contents.deletedAt),
+          lte(contents.deletedAt, cutoff),
+        ),
+      );
+
+    if (expired.length === 0) return;
+
+    await db.delete(contents).where(and(isNotNull(contents.deletedAt), lte(contents.deletedAt, cutoff)));
+
+    for (const content of expired) {
+      eventBus.emit('content.purged', {
+        content,
+        actorId: 'system',
+        actorType: 'system',
+      });
+    }
+    console.log(`Purged ${expired.length} expired trashed content(s)`);
   }
 }

@@ -2,6 +2,7 @@ import Router from '@koa/router';
 import multer from '@koa/multer';
 import { ContentController } from '../controllers/content.controller.js';
 import { ContentExportController } from '../controllers/content-export.controller.js';
+import { LockController } from '../controllers/lock.controller.js';
 import { authenticate } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/permission-guard.js';
 import { CONTENT_CREATE, CONTENT_READ, CONTENT_UPDATE, CONTENT_DELETE } from '@eli-cms/shared';
@@ -17,6 +18,19 @@ contentsRouter.get('/', authenticate, requirePermission(CONTENT_READ), ContentCo
 contentsRouter.post('/bulk-action', authenticate, requirePermission(CONTENT_UPDATE), ContentController.bulkAction);
 contentsRouter.get('/export', authenticate, requirePermission(CONTENT_READ), ContentExportController.exportContents);
 contentsRouter.post('/import', authenticate, requirePermission(CONTENT_CREATE), importUpload.single('file'), ContentExportController.importContents);
+
+// Lock routes (before /:id to avoid param conflicts)
+contentsRouter.post('/:id/lock', authenticate, requirePermission(CONTENT_UPDATE), LockController.acquire);
+contentsRouter.delete('/:id/lock', authenticate, requirePermission(CONTENT_UPDATE), LockController.release);
+contentsRouter.put('/:id/lock/heartbeat', authenticate, requirePermission(CONTENT_UPDATE), LockController.heartbeat);
+contentsRouter.get('/:id/lock', authenticate, requirePermission(CONTENT_READ), LockController.getStatus);
+
+// Trash routes (before /:id to avoid param conflicts)
+contentsRouter.get('/trash', authenticate, requirePermission(CONTENT_READ), ContentController.listTrash);
+contentsRouter.get('/trash/count', authenticate, requirePermission(CONTENT_READ), ContentController.trashCount);
+contentsRouter.post('/trash/:id/restore', authenticate, requirePermission(CONTENT_UPDATE), ContentController.restore);
+contentsRouter.delete('/trash/:id', authenticate, requirePermission(CONTENT_DELETE), ContentController.permanentDelete);
+
 contentsRouter.get('/:id', authenticate, requirePermission(CONTENT_READ), ContentController.get);
 contentsRouter.post('/', authenticate, requirePermission(CONTENT_CREATE), ContentController.create);
 contentsRouter.put('/:id', authenticate, requirePermission(CONTENT_UPDATE), ContentController.update);

@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import { db } from '../db/index.js';
 import { contents } from '../db/schema/index.js';
@@ -12,7 +12,7 @@ export class ContentExportService {
   static async exportContents(query: ExportContentQuery): Promise<{ data: string; mimeType: string; extension: string }> {
     const contentType = await ContentTypeService.findById(query.contentTypeId);
 
-    const filters = [eq(contents.contentTypeId, query.contentTypeId)];
+    const filters = [eq(contents.contentTypeId, query.contentTypeId), isNull(contents.deletedAt)];
     if (query.status) filters.push(eq(contents.status, query.status));
 
     const rows = await db

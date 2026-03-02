@@ -8,4 +8,4 @@ export const contentVersionsRouter = new Router({ prefix: '/api/v1/contents' });
 
 contentVersionsRouter.get('/:id/versions', authenticate, requirePermission(CONTENT_READ), ContentVersionController.list);
 contentVersionsRouter.get('/:id/versions/:versionId', authenticate, requirePermission(CONTENT_READ), ContentVersionController.get);
-contentVersionsRouter.post('/:id/versions/:versionId/restore', authenticate, requirePermission(CONTENT_UPDATE), ContentVersionController.restore);
+contentVersionsRouter.post('/:id/versions/:versionNumber/restore', authenticate, requirePermission(CONTENT_UPDATE), ContentVersionController.restore);

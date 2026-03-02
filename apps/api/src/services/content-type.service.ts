@@ -1,4 +1,4 @@
-import { eq, ilike, or, count as drizzleCount, sql } from 'drizzle-orm';
+import { eq, ilike, or, count as drizzleCount, sql, isNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { contentTypes, contents } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
@@ -28,6 +28,7 @@ export class ContentTypeService {
           contentCount: drizzleCount().as('content_count'),
         })
         .from(contents)
+        .where(isNull(contents.deletedAt))
         .groupBy(contents.contentTypeId)
         .as('counts');
 

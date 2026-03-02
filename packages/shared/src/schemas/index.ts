@@ -129,7 +129,7 @@ export function buildContentDataSchema(fields: FieldDefinition[]): z.ZodObject<R
 // ─── Bulk action schema ────────────────────────────────
 export const bulkContentActionSchema = z.object({
   ids: z.array(z.string().uuid()).min(1).max(100),
-  action: z.enum(['delete', 'publish', 'unpublish']),
+  action: z.enum(['delete', 'publish', 'unpublish', 'restore', 'permanent-delete']),
 });
 
 export type BulkContentActionInput = z.infer<typeof bulkContentActionSchema>;
@@ -159,6 +159,13 @@ export const contentListQuerySchema = paginationSchema.extend({
   status: z.enum(CONTENT_STATUSES).optional(),
   search: z.string().max(200).optional(),
   sortBy: z.enum(['createdAt', 'updatedAt', 'status', 'slug', 'relevance']).default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+
+export const trashListQuerySchema = paginationSchema.extend({
+  contentTypeId: z.string().uuid().optional(),
+  search: z.string().max(200).optional(),
+  sortBy: z.enum(['deletedAt', 'createdAt', 'updatedAt']).default('deletedAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
@@ -267,6 +274,9 @@ const webhookEventEnum = z.enum([
   'content.approved',
   'content.rejected',
   'content.scheduled',
+  'content.trashed',
+  'content.restored',
+  'content.purged',
   'content_type.created',
   'content_type.updated',
   'content_type.deleted',
@@ -356,6 +366,7 @@ export type CreateContentInput = z.infer<typeof createContentSchema>;
 export type UpdateContentInput = z.infer<typeof updateContentSchema>;
 export type ContentTypeListQuery = z.infer<typeof contentTypeListQuerySchema>;
 export type ContentListQuery = z.infer<typeof contentListQuerySchema>;
+export type TrashListQuery = z.infer<typeof trashListQuerySchema>;
 export type PublicContentListQuery = z.infer<typeof publicContentListQuerySchema>;
 export type LogoutInput = z.infer<typeof logoutSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

@@ -59,12 +59,14 @@ export const contents = pgTable('contents', {
   data: jsonb('data').notNull().$type<Record<string, unknown>>(),
   publishedAt: timestamp('published_at', { withTimezone: true }),
   editedBy: uuid('edited_by').references(() => users.id, { onDelete: 'set null' }),
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 }, (table) => [
   uniqueIndex('uq_contents_slug_type').on(table.slug, table.contentTypeId),
   index('idx_contents_status').on(table.status),
   index('idx_contents_published_at').on(table.publishedAt),
+  index('idx_contents_deleted_at').on(table.deletedAt),
 ]);
 
 // ─── Content Relations ──────────────────────────────────
@@ -169,6 +171,17 @@ export const auditLogs = pgTable('audit_logs', {
   index('idx_audit_logs_action').on(table.action),
   index('idx_audit_logs_resource_type').on(table.resourceType),
   index('idx_audit_logs_created_at').on(table.createdAt),
+]);
+
+// ─── Content Locks ─────────────────────────────────────
+export const contentLocks = pgTable('content_locks', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  contentId: uuid('content_id').notNull().references(() => contents.id, { onDelete: 'cascade' }).unique(),
+  lockedBy: uuid('locked_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('idx_content_locks_expires_at').on(table.expiresAt),
 ]);
 
 // ─── API Keys ───────────────────────────────────────────

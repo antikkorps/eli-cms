@@ -49,6 +49,7 @@ export interface Content {
   data: Record<string, unknown>;
   publishedAt: Date | null;
   editedBy: string | null;
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -156,6 +157,9 @@ export type WebhookEvent =
   | 'content.approved'
   | 'content.rejected'
   | 'content.scheduled'
+  | 'content.trashed'
+  | 'content.restored'
+  | 'content.purged'
   | 'content_type.created'
   | 'content_type.updated'
   | 'content_type.deleted'

@@ -1,4 +1,4 @@
-import { eq, and, count as drizzleCount, asc, desc, sql, inArray, gte, lte } from 'drizzle-orm';
+import { eq, and, count as drizzleCount, asc, desc, sql, inArray, gte, lte, isNull, isNotNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { contents } from '../db/schema/index.js';
 import { ContentTypeService } from './content-type.service.js';
@@ -6,7 +6,8 @@ import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import { buildContentDataSchema } from '@eli-cms/shared';
 import { ContentVersionService } from './content-version.service.js';
-import type { CreateContentInput, UpdateContentInput, ContentListQuery, PublicContentListQuery, ActorType, FieldDefinition } from '@eli-cms/shared';
+import { LockService } from './lock.service.js';
+import type { CreateContentInput, UpdateContentInput, ContentListQuery, PublicContentListQuery, TrashListQuery, ActorType, FieldDefinition } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
 import { UploadService } from './upload.service.js';
 import { UserService } from './user.service.js';
@@ -23,6 +24,7 @@ const sortColumns = {
   createdAt: contents.createdAt,
   updatedAt: contents.updatedAt,
   publishedAt: contents.publishedAt,
+  deletedAt: contents.deletedAt,
   status: contents.status,
   slug: contents.slug,
 } as const;
@@ -58,7 +60,7 @@ export class ContentService {
     let suffix = 0;
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const filters = [eq(contents.slug, slug), eq(contents.contentTypeId, contentTypeId)];
+      const filters = [eq(contents.slug, slug), eq(contents.contentTypeId, contentTypeId), isNull(contents.deletedAt)];
       if (excludeId) filters.push(sql`${contents.id} != ${excludeId}`);
       const [existing] = await db.select({ id: contents.id }).from(contents).where(and(...filters)).limit(1);
       if (!existing) return slug;
@@ -71,7 +73,7 @@ export class ContentService {
     const { page, limit, contentTypeId, status, search, sortBy, sortOrder } = query;
     const offset = (page - 1) * limit;
 
-    const filters = [];
+    const filters = [isNull(contents.deletedAt)];
     if (contentTypeId) filters.push(eq(contents.contentTypeId, contentTypeId));
     if (status) filters.push(eq(contents.status, status));
 
@@ -113,7 +115,7 @@ export class ContentService {
     const offset = (page - 1) * limit;
     const isPreview = options?.isPreview ?? false;
 
-    const filters = [];
+    const filters = [isNull(contents.deletedAt)];
 
     // Status filter — only published unless preview mode
     if (!isPreview) {
@@ -182,16 +184,17 @@ export class ContentService {
   }
 
   static async findById(id: string) {
-    const [content] = await db.select().from(contents).where(eq(contents.id, id)).limit(1);
+    const [content] = await db.select().from(contents).where(and(eq(contents.id, id), isNull(contents.deletedAt))).limit(1);
     if (!content) throw new AppError(404, 'Content not found');
-    return content;
+    const contentType = await ContentTypeService.findById(content.contentTypeId);
+    return { ...content, contentType: { id: contentType.id, slug: contentType.slug, name: contentType.name, fields: contentType.fields } };
   }
 
   static async findPublishedById(id: string) {
     const [content] = await db
       .select()
       .from(contents)
-      .where(and(eq(contents.id, id), eq(contents.status, 'published')))
+      .where(and(eq(contents.id, id), eq(contents.status, 'published'), isNull(contents.deletedAt)))
       .limit(1);
     if (!content) throw new AppError(404, 'Content not found');
     return content;
@@ -240,7 +243,7 @@ export class ContentService {
     const [content] = await db
       .select()
       .from(contents)
-      .where(and(eq(contents.slug, slug), eq(contents.contentTypeId, contentTypeId)))
+      .where(and(eq(contents.slug, slug), eq(contents.contentTypeId, contentTypeId), isNull(contents.deletedAt)))
       .limit(1);
     if (!content) throw new AppError(404, 'Content not found');
     return content;
@@ -250,7 +253,7 @@ export class ContentService {
     const [content] = await db
       .select()
       .from(contents)
-      .where(and(eq(contents.slug, slug), eq(contents.contentTypeId, contentTypeId), eq(contents.status, 'published')))
+      .where(and(eq(contents.slug, slug), eq(contents.contentTypeId, contentTypeId), eq(contents.status, 'published'), isNull(contents.deletedAt)))
       .limit(1);
     if (!content) throw new AppError(404, 'Content not found');
     return content;
@@ -295,6 +298,11 @@ export class ContentService {
 
   static async update(id: string, input: UpdateContentInput, userId?: string, actor?: Actor, userPermissions?: string[]) {
     const existing = await this.findById(id);
+
+    // Check content lock — reject if locked by another user
+    if (userId) {
+      await LockService.checkLock(id, userId);
+    }
 
     // Validate workflow transition if status is changing
     if (input.status && input.status !== existing.status && userPermissions) {
@@ -343,6 +351,11 @@ export class ContentService {
 
     const [content] = await db.update(contents).set(updateData).where(eq(contents.id, id)).returning();
 
+    // Auto-release lock on successful save
+    if (userId) {
+      await LockService.release(id, userId);
+    }
+
     const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
     eventBus.emit('content.updated', { content, ...actorData });
 
@@ -368,9 +381,10 @@ export class ContentService {
 
   static async delete(id: string, actor?: Actor) {
     const content = await this.findById(id);
-    await db.delete(contents).where(eq(contents.id, id));
+    await db.update(contents).set({ deletedAt: new Date() }).where(eq(contents.id, id));
     const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
-    eventBus.emit('content.deleted', { content, ...actorData });
+    eventBus.emit('content.trashed', { content, ...actorData });
+    eventBus.emit('content.deleted', { content, ...actorData }); // backward compat
   }
 
   static async bulkAction(ids: string[], action: string, actor?: Actor) {
@@ -378,12 +392,35 @@ export class ContentService {
 
     switch (action) {
       case 'delete': {
-        const toDelete = await db.select().from(contents).where(inArray(contents.id, ids));
-        await db.delete(contents).where(inArray(contents.id, ids));
-        for (const content of toDelete) {
-          eventBus.emit('content.deleted', { content, ...actorData });
+        const toDelete = await db.select().from(contents).where(and(inArray(contents.id, ids), isNull(contents.deletedAt)));
+        if (toDelete.length > 0) {
+          await db.update(contents).set({ deletedAt: new Date() }).where(inArray(contents.id, toDelete.map(c => c.id)));
+          for (const content of toDelete) {
+            eventBus.emit('content.trashed', { content, ...actorData });
+            eventBus.emit('content.deleted', { content, ...actorData });
+          }
         }
         return { affected: toDelete.length };
+      }
+      case 'restore': {
+        const toRestore = await db.select().from(contents).where(and(inArray(contents.id, ids), isNotNull(contents.deletedAt)));
+        if (toRestore.length > 0) {
+          await db.update(contents).set({ deletedAt: null }).where(inArray(contents.id, toRestore.map(c => c.id)));
+          for (const content of toRestore) {
+            eventBus.emit('content.restored', { content, ...actorData });
+          }
+        }
+        return { affected: toRestore.length };
+      }
+      case 'permanent-delete': {
+        const toPurge = await db.select().from(contents).where(and(inArray(contents.id, ids), isNotNull(contents.deletedAt)));
+        if (toPurge.length > 0) {
+          await db.delete(contents).where(inArray(contents.id, toPurge.map(c => c.id)));
+          for (const content of toPurge) {
+            eventBus.emit('content.purged', { content, ...actorData });
+          }
+        }
+        return { affected: toPurge.length };
       }
       case 'publish': {
         const result = await db
@@ -410,5 +447,71 @@ export class ContentService {
       default:
         throw new AppError(400, `Unknown bulk action: ${action}`);
     }
+  }
+
+  // ─── Trash methods ─────────────────────────────────────
+
+  static async findTrashedById(id: string) {
+    const [content] = await db.select().from(contents).where(and(eq(contents.id, id), isNotNull(contents.deletedAt))).limit(1);
+    if (!content) throw new AppError(404, 'Trashed content not found');
+    return content;
+  }
+
+  static async findTrashed(query: TrashListQuery) {
+    const { page, limit, contentTypeId, search, sortBy, sortOrder } = query;
+    const offset = (page - 1) * limit;
+
+    const filters = [isNotNull(contents.deletedAt)];
+    if (contentTypeId) filters.push(eq(contents.contentTypeId, contentTypeId));
+
+    const tsquery = search ? sanitizeSearchTerms(search) : null;
+    if (tsquery) {
+      filters.push(sql`search_vector @@ to_tsquery('simple', ${tsquery})`);
+    }
+
+    const where = and(...filters);
+
+    const [{ total }] = await db
+      .select({ total: drizzleCount() })
+      .from(contents)
+      .where(where);
+
+    const orderFn = sortOrder === 'asc' ? asc : desc;
+    const orderByClause = sortBy === 'deletedAt'
+      ? orderFn(contents.deletedAt)
+      : orderFn(sortColumns[sortBy as keyof typeof sortColumns]);
+
+    const data = await db
+      .select()
+      .from(contents)
+      .where(where)
+      .orderBy(orderByClause)
+      .limit(limit)
+      .offset(offset);
+
+    return { data, meta: buildMeta(total, page, limit) };
+  }
+
+  static async restore(id: string, actor?: Actor) {
+    await this.findTrashedById(id);
+    const [restored] = await db.update(contents).set({ deletedAt: null }).where(eq(contents.id, id)).returning();
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('content.restored', { content: restored, ...actorData });
+    return restored;
+  }
+
+  static async permanentDelete(id: string, actor?: Actor) {
+    const content = await this.findTrashedById(id);
+    await db.delete(contents).where(eq(contents.id, id));
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('content.purged', { content, ...actorData });
+  }
+
+  static async trashCount() {
+    const [{ total }] = await db
+      .select({ total: drizzleCount() })
+      .from(contents)
+      .where(isNotNull(contents.deletedAt));
+    return total;
   }
 }

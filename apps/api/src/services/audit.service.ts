@@ -9,6 +9,7 @@ import type { AuditLogListQuery, ActorType } from '@eli-cms/shared';
 const KNOWN_EVENTS = [
   // Content
   'content.created', 'content.updated', 'content.deleted', 'content.published',
+  'content.trashed', 'content.restored', 'content.purged',
   // Content types
   'content_type.created', 'content_type.updated', 'content_type.deleted',
   // Media

@@ -20,7 +20,11 @@ export class ContentVersionController {
 
   static async restore(ctx: Context) {
     const userId = ctx.state.user.userId as string;
-    const data = await ContentVersionService.restore(ctx.params.id, ctx.params.versionId, userId);
+    const versionNumber = Number(ctx.params.versionNumber);
+    if (!Number.isInteger(versionNumber) || versionNumber < 1) {
+      throw new AppError(400, 'Invalid version number');
+    }
+    const data = await ContentVersionService.restore(ctx.params.id, versionNumber, userId);
     ctx.body = { success: true, data };
   }
 }
