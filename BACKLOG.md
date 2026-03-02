@@ -10,9 +10,15 @@
 - [x] Media field type dropdown in FieldBuilder (replace free-text input with a dropdown of accepted media types: image, video, document, etc.)
 - [x] Webhook URL field UX (add placeholder, helper text, and tooltip explaining what URL to provide — the endpoint that will receive POST events)
 - [x] API key permissions overflow (when many permissions are selected, badges overflow the container — use a wrapping grid or collapsible chip list instead)
-- [ ] Trash / soft delete with restore (deleted content goes to trash for 30 days before permanent removal)
-- [ ] Content locking (prevent simultaneous editing — show "being edited by X" banner, auto-lock with TTL)
+- [x] Trash / soft delete with restore (deleted content goes to trash for 30 days before permanent removal)
+- [x] Content locking (prevent simultaneous editing — show "being edited by X" banner, auto-lock with TTL)
 - [ ] Media folders / organization (allow grouping uploads into folders for better asset management)
+- [ ] Image transforms — resize, crop, WebP/AVIF conversion via Sharp (`GET /uploads/:id?w=400&h=300&format=webp`)
+- [ ] Media metadata (alt text, caption, width, height, focal point — extract dimensions on upload)
+- [ ] Fix SQL injection in public JSONB filter (`content.service.ts:147` — `sql.raw()` on user-supplied field name)
+- [ ] Fix race condition in lock acquisition (use `ON CONFLICT` upsert or transaction with `FOR UPDATE`)
+- [ ] Wrap content update in DB transaction (lock check → snapshot → validate → update must be atomic)
+- [ ] Cap pagination limit in shared schemas (prevent DoS with `?limit=999999`)
 
 ## Medium Priority
 
@@ -29,23 +35,36 @@
 - [x] Content types in sidebar (Strapi/Directus pattern — collapsible section, per-type navigation, badge counts)
 - [x] Command palette with content type navigation (Cmd+K)
 - [x] Keyboard shortcuts (Cmd+S save, Cmd+N new content, Cmd+K command palette)
-- [ ] Search result highlighting
-- [ ] User profile page (change email, password, avatar)
-- [ ] Image crop/resize before upload
-- [ ] i18n labels in FieldBuilder (translate field type names)
+- [ ] User profile page (change email, password, name, avatar)
+- [ ] Password reset flow (forgot password → email link → reset form)
+- [ ] Content duplication endpoint (`POST /contents/:id/duplicate`)
+- [ ] Repeatable fields / arrays (lists of structured sub-objects — FAQ items, feature lists, gallery)
+- [ ] Default values for fields (add `default` to FieldDefinition + schema builder + field builder UI)
+- [ ] Singleton content types (`isSingleton` flag — "Site Settings", "Homepage" with single entry)
+- [ ] Client-side form validation (reuse shared Zod schemas, show field-level errors instead of generic toasts)
+- [ ] HTTP caching on public API (Cache-Control, ETag, Last-Modified headers)
+- [ ] Brute-force login protection (progressive delays or lockout after N failed attempts)
+- [ ] Background job queue — replace `setInterval` scheduler with BullMQ/Redis
+- [ ] Structured logging — replace `console.log` with pino (JSON, request IDs)
 - [ ] Advanced form validation (min/max length, regex patterns, unique constraints per field)
 - [ ] Content type field groups / tabs (organize fields into sections for complex content types)
+- [ ] Search result highlighting
+- [ ] Image crop/resize before upload
+- [ ] i18n labels in FieldBuilder (translate field type names)
 - [ ] Configurable slug patterns (e.g. `{year}/{slug}`, `{category}/{slug}`)
 - [ ] Drag-and-drop field reordering in FieldBuilder
 
 ## Low Priority
 
+- [ ] Component / block system (reusable field groups embeddable in any content type — hero, CTA, testimonials)
+- [ ] JSON/object field type (arbitrary nested JSON with optional schema validation)
 - [ ] Dark mode polish (ensure all custom components respect dark theme)
-- [ ] OpenAPI spec generation from routes (auto-generate docs including dynamic content type endpoints)
+- [ ] OpenAPI spec completion (add paths/endpoints, currently only schemas defined)
 - [ ] E2E tests (Playwright or Cypress)
 - [ ] Multilingual content (per-locale fields, locale switcher in content form)
 - [ ] Dashboard charts (content created over time, storage usage, API usage)
 - [ ] Webhook delivery retry UI (manual retry button, delivery log detail view)
+- [ ] Webhook test delivery (`POST /webhooks/:id/test` — verify endpoint before going live)
 - [ ] Pre-signed URLs for S3 direct uploads
 - [ ] GraphQL API endpoint (alternative to REST for frontend devs)
 - [ ] Live preview / iframe preview (preview content as rendered on the frontend before publishing)
@@ -55,11 +74,16 @@
 - [ ] Custom dashboard widgets (configurable per user)
 - [ ] API playground (in-app sandbox to test API calls, beyond Scalar docs)
 - [ ] Batch import from other CMS (WordPress, Strapi JSON export)
+- [ ] Per-content-type permissions (scope editor access to specific content types)
+- [ ] Content calendar view (visual calendar of scheduled/published content)
+- [ ] Autosave drafts (periodic save while editing, every 30s if changes detected)
 
 ## Nice to Have
 
 - [ ] SDK client (`@eli-cms/client`) — typed wrapper around the public API for easy integration in any JS framework
-- [ ] Plugin system (hooks to extend content lifecycle, custom field types)
+- [ ] Plugin system (hooks to extend content lifecycle, custom field types, installable extensions)
 - [ ] Single Sign-On (SSO) — SAML / OIDC integration
 - [ ] Content tree / nested pages (hierarchical content with parent-child relationships in navigation)
 - [ ] Real-time collaboration (presence indicators, live cursors in rich text)
+- [ ] Admin UI theming (custom logo, colors, branding)
+- [ ] Auto-generated TypeScript types from content models (like Contentful's codegen)
