@@ -80,9 +80,19 @@ export class ContentVersionService {
     return version;
   }
 
+  static async findByNumber(contentId: string, versionNumber: number) {
+    const [version] = await db
+      .select()
+      .from(contentVersions)
+      .where(and(eq(contentVersions.versionNumber, versionNumber), eq(contentVersions.contentId, contentId)))
+      .limit(1);
+    if (!version) throw new AppError(404, 'Version not found');
+    return version;
+  }
+
   /** Restores a previous version: snapshots current state first, then overwrites with the chosen version. */
-  static async restore(contentId: string, versionId: string, userId: string) {
-    const version = await this.findById(contentId, versionId);
+  static async restore(contentId: string, versionNumber: number, userId: string) {
+    const version = await this.findByNumber(contentId, versionNumber);
 
     // Snapshot current state before restoring
     await this.snapshot(contentId, userId);
