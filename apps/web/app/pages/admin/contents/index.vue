@@ -12,6 +12,7 @@ const { hasPermission } = useAuth();
 const route = useRoute();
 const router = useRouter();
 const { items: contentTypeItems, fetch: fetchContentTypes, invalidate: invalidateContentTypes } = useContentTypes();
+const { invalidate: invalidateTrashCount } = useTrashCount();
 
 interface ContentItem {
   id: string;
@@ -275,9 +276,12 @@ const columns = computed(() => [
   },
 ]);
 
-// Invalidate content type counts after delete/bulk actions
+// Invalidate content type counts and trash count after delete/bulk actions
 watch(deleteOpen, (open, wasOpen) => {
-  if (wasOpen && !open) invalidateContentTypes();
+  if (wasOpen && !open) {
+    invalidateContentTypes();
+    invalidateTrashCount();
+  }
 });
 
 // Track whether the filter change originates from URL (avoid circular updates)

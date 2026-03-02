@@ -3,6 +3,7 @@ const { hasPermission } = useAuth();
 const { t } = useI18n();
 const router = useRouter();
 const { items: contentTypeItems, fetch: fetchContentTypes } = useContentTypes();
+const { count: trashCount, fetch: fetchTrashCount } = useTrashCount();
 
 const MAX_SIDEBAR_TYPES = 7;
 
@@ -25,6 +26,7 @@ onMounted(() => {
   mounted.value = true;
   if (hasPermission('content:read')) {
     fetchContentTypes();
+    fetchTrashCount();
   }
 });
 
@@ -54,6 +56,12 @@ const navigation = computed(() => {
     if (types.length > MAX_SIDEBAR_TYPES) {
       children.push({ label: t('nav.seeAllTypes'), to: '/admin/content-types' });
     }
+
+    children.push({
+      label: t('nav.trash'),
+      to: '/admin/contents/trash',
+      badge: trashCount.value > 0 ? String(trashCount.value) : undefined,
+    });
 
     items.push({
       label: t('nav.content'),

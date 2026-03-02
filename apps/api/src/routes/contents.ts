@@ -17,6 +17,13 @@ contentsRouter.get('/', authenticate, requirePermission(CONTENT_READ), ContentCo
 contentsRouter.post('/bulk-action', authenticate, requirePermission(CONTENT_UPDATE), ContentController.bulkAction);
 contentsRouter.get('/export', authenticate, requirePermission(CONTENT_READ), ContentExportController.exportContents);
 contentsRouter.post('/import', authenticate, requirePermission(CONTENT_CREATE), importUpload.single('file'), ContentExportController.importContents);
+
+// Trash routes (before /:id to avoid param conflicts)
+contentsRouter.get('/trash', authenticate, requirePermission(CONTENT_READ), ContentController.listTrash);
+contentsRouter.get('/trash/count', authenticate, requirePermission(CONTENT_READ), ContentController.trashCount);
+contentsRouter.post('/trash/:id/restore', authenticate, requirePermission(CONTENT_UPDATE), ContentController.restore);
+contentsRouter.delete('/trash/:id', authenticate, requirePermission(CONTENT_DELETE), ContentController.permanentDelete);
+
 contentsRouter.get('/:id', authenticate, requirePermission(CONTENT_READ), ContentController.get);
 contentsRouter.post('/', authenticate, requirePermission(CONTENT_CREATE), ContentController.create);
 contentsRouter.put('/:id', authenticate, requirePermission(CONTENT_UPDATE), ContentController.update);

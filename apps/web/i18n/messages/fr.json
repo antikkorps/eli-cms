@@ -42,6 +42,7 @@
     "content": "Contenu",
     "allContents": "Tous les contenus",
     "seeAllTypes": "Voir tous les types...",
+    "trash": "Corbeille",
     "logout": "Déconnexion"
   },
   "login": {
@@ -186,7 +187,7 @@
     "contentTypeLabel": "Type de contenu",
     "statusLabel": "Statut",
     "deleteTitle": "Supprimer le contenu",
-    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce contenu ? Cette action est irréversible.",
+    "deleteConfirm": "Ce contenu sera déplacé dans la corbeille. Vous pourrez le restaurer pendant 30 jours.",
     "versionsTab": "Versions",
     "contentTab": "Contenu",
     "versionNumber": "Version {n}",
@@ -401,5 +402,20 @@
     "errorNameRequired": "Le nom est requis",
     "errorPermissionRequired": "Sélectionnez au moins une permission",
     "errorGeneric": "Échec de la création de la clé API"
+  },
+  "trash": {
+    "title": "Corbeille",
+    "subtitle": "Les contenus supprimés sont conservés 30 jours avant d'être définitivement supprimés",
+    "empty": "La corbeille est vide",
+    "restore": "Restaurer",
+    "permanentDelete": "Supprimer définitivement",
+    "restoreConfirm": "Restaurer ce contenu ? Il retrouvera son statut d'origine.",
+    "permanentDeleteConfirm": "Supprimer définitivement ce contenu ? Cette action est irréversible.",
+    "restored": "Contenu restauré",
+    "permanentlyDeleted": "Contenu supprimé définitivement",
+    "bulkRestore": "Restaurer la sélection",
+    "bulkPermanentDelete": "Supprimer la sélection définitivement",
+    "autoPurgeNotice": "Les éléments dans la corbeille sont automatiquement supprimés après 30 jours.",
+    "columnDeletedAt": "Supprimé le"
   }
 }
