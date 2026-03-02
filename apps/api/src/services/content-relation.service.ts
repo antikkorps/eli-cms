@@ -1,6 +1,6 @@
 import { eq, and, count as drizzleCount, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { contents, contentRelations } from '../db/schema/index.js';
+import { contents, contentRelations, contentTypes } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import type { CreateContentRelationInput, ContentRelationListQuery, PopulatedRelation } from '@eli-cms/shared';
@@ -55,12 +55,39 @@ export class ContentRelationService {
       .from(contentRelations)
       .where(where);
 
-    const data = await db
+    const rows = await db
       .select()
       .from(contentRelations)
       .where(where)
       .limit(limit)
       .offset(offset);
+
+    // Populate target contents with their content type
+    const targetIds = [...new Set(rows.map(r => r.targetId))];
+    let targets: { content: typeof contents.$inferSelect; contentTypeName: string | null }[] = [];
+    if (targetIds.length > 0) {
+      targets = await db
+        .select({
+          content: contents,
+          contentTypeName: contentTypes.name,
+        })
+        .from(contents)
+        .leftJoin(contentTypes, eq(contents.contentTypeId, contentTypes.id))
+        .where(inArray(contents.id, targetIds));
+    }
+    const targetMap = new Map(targets.map(t => [t.content.id, t]));
+
+    const data = rows.map(rel => {
+      const t = targetMap.get(rel.targetId);
+      return {
+        ...rel,
+        target: t ? {
+          id: t.content.id,
+          data: t.content.data,
+          contentType: t.contentTypeName ? { name: t.contentTypeName } : undefined,
+        } : undefined,
+      };
+    });
 
     return { data, meta: buildMeta(total, page, limit) };
   }
