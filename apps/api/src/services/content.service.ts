@@ -186,7 +186,8 @@ export class ContentService {
   static async findById(id: string) {
     const [content] = await db.select().from(contents).where(and(eq(contents.id, id), isNull(contents.deletedAt))).limit(1);
     if (!content) throw new AppError(404, 'Content not found');
-    return content;
+    const contentType = await ContentTypeService.findById(content.contentTypeId);
+    return { ...content, contentType: { id: contentType.id, slug: contentType.slug, name: contentType.name, fields: contentType.fields } };
   }
 
   static async findPublishedById(id: string) {
