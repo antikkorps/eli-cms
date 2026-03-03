@@ -28,6 +28,7 @@
     "koa-ratelimit": "^6.0.0",
     "multer": "^2.0.2",
     "pg": "^8.13.0",
+    "sharp": "^0.34.5",
     "zod": "^3.24.0"
   },
   "devDependencies": {

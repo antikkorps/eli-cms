@@ -4,8 +4,10 @@ const { t } = useI18n();
 const router = useRouter();
 const { items: contentTypeItems, fetch: fetchContentTypes } = useContentTypes();
 const { count: trashCount, fetch: fetchTrashCount } = useTrashCount();
+const { tree: folderTree, fetch: fetchFolders } = useMediaFolders();
 
 const MAX_SIDEBAR_TYPES = 7;
+const MAX_SIDEBAR_FOLDERS = 7;
 
 // Command palette
 const commandPaletteOpen = ref(false);
@@ -27,6 +29,9 @@ onMounted(() => {
   if (hasPermission('content:read')) {
     fetchContentTypes();
     fetchTrashCount();
+  }
+  if (hasPermission('uploads:read')) {
+    fetchFolders();
   }
 });
 
@@ -75,7 +80,42 @@ const navigation = computed(() => {
     items.push({ label: t('nav.contentTypes'), icon: 'i-lucide-blocks', to: '/admin/content-types' });
   }
   if (hasPermission('uploads:read')) {
-    items.push({ label: t('nav.uploads'), icon: 'i-lucide-upload', to: '/admin/uploads' });
+    const folderChildren: Array<Record<string, unknown>> = [
+      { label: t('mediaFolders.allFiles'), to: '/admin/uploads' },
+    ];
+
+    const folders = folderTree.value;
+    // Flatten top-level folders for sidebar
+    const flatFolders: Array<{ id: string; name: string }> = [];
+    for (const f of folders) {
+      flatFolders.push({ id: f.id, name: f.name });
+    }
+    const visibleFolders = flatFolders.slice(0, MAX_SIDEBAR_FOLDERS);
+
+    for (const folder of visibleFolders) {
+      folderChildren.push({
+        label: folder.name,
+        to: `/admin/uploads?folder=${folder.id}`,
+      });
+    }
+
+    if (flatFolders.length > MAX_SIDEBAR_FOLDERS) {
+      folderChildren.push({ label: t('nav.seeAllFolders'), to: '/admin/media-folders' });
+    }
+
+    if (hasPermission('uploads:create')) {
+      folderChildren.push({
+        label: t('mediaFolders.manageFolders'),
+        to: '/admin/media-folders',
+      });
+    }
+
+    items.push({
+      label: t('nav.uploads'),
+      icon: 'i-lucide-image',
+      defaultOpen: false,
+      children: folderChildren,
+    });
   }
   if (hasPermission('users:read') || hasPermission('users:delete')) {
     items.push({ label: t('nav.users'), icon: 'i-lucide-users', to: '/admin/users' });

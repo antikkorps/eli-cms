@@ -1,4 +1,5 @@
 import { eq, and, count as drizzleCount, desc, max } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { db } from '../db/index.js';
 import { contents, contentVersions } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
@@ -9,18 +10,20 @@ const MAX_VERSIONS = 20;
 
 export class ContentVersionService {
   /** Snapshots the current state of a content before an update. */
-  static async snapshot(contentId: string, editedBy: string) {
-    const [content] = await db.select().from(contents).where(eq(contents.id, contentId)).limit(1);
+  static async snapshot(contentId: string, editedBy: string, tx?: NodePgDatabase<any>) {
+    const runner = tx ?? db;
+
+    const [content] = await runner.select().from(contents).where(eq(contents.id, contentId)).limit(1);
     if (!content) throw new AppError(404, 'Content not found');
 
     // Get next version number
-    const [result] = await db
+    const [result] = await runner
       .select({ maxVersion: max(contentVersions.versionNumber) })
       .from(contentVersions)
       .where(eq(contentVersions.contentId, contentId));
     const nextVersion = (result.maxVersion ?? 0) + 1;
 
-    const [version] = await db
+    const [version] = await runner
       .insert(contentVersions)
       .values({
         contentId,
@@ -33,7 +36,7 @@ export class ContentVersionService {
 
     // Purge old versions if exceeding MAX_VERSIONS
     if (nextVersion > MAX_VERSIONS) {
-      const oldVersions = await db
+      const oldVersions = await runner
         .select({ id: contentVersions.id })
         .from(contentVersions)
         .where(eq(contentVersions.contentId, contentId))
@@ -41,7 +44,7 @@ export class ContentVersionService {
         .offset(MAX_VERSIONS);
 
       for (const v of oldVersions) {
-        await db.delete(contentVersions).where(eq(contentVersions.id, v.id));
+        await runner.delete(contentVersions).where(eq(contentVersions.id, v.id));
       }
     }
 

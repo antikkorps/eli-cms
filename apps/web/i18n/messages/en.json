@@ -15,6 +15,7 @@
     "back": "Back",
     "search": "Search...",
     "noResults": "No results found",
+    "or": "or",
     "actions": "Actions",
     "required": "Required",
     "confirm": "Confirm",
@@ -43,6 +44,7 @@
     "allContents": "All Contents",
     "seeAllTypes": "See all types...",
     "trash": "Trash",
+    "seeAllFolders": "See all folders...",
     "logout": "Log out"
   },
   "login": {
@@ -247,7 +249,38 @@
     "deleteTitle": "Delete File",
     "deleteConfirm": "Are you sure you want to delete {name}?",
     "uploaded": "File uploaded successfully",
-    "dropzone": "Click or drag a file to upload"
+    "dropzone": "Click or drag a file to upload",
+    "renameTitle": "Rename File",
+    "renameLabel": "Filename",
+    "renamed": "File renamed successfully",
+    "editMediaTitle": "Edit Media",
+    "editMediaDescription": "Edit file details, accessibility info, and organization",
+    "altLabel": "Alt text",
+    "altPlaceholder": "Describe this image...",
+    "altHint": "Accessibility",
+    "captionLabel": "Caption",
+    "captionPlaceholder": "Optional caption or description",
+    "columnDimensions": "Dimensions",
+    "updated": "Media updated successfully"
+  },
+  "mediaFolders": {
+    "title": "Folders",
+    "allFiles": "All files",
+    "createTitle": "Create Folder",
+    "renameTitle": "Rename Folder",
+    "deleteTitle": "Delete Folder",
+    "deleteConfirm": "Are you sure you want to delete this folder? Sub-folders will be deleted and files will be moved to the root.",
+    "nameLabel": "Folder name",
+    "namePlaceholder": "e.g. Photos",
+    "created": "Folder created",
+    "renamed": "Folder renamed",
+    "deleted": "Folder deleted",
+    "moveToFolder": "Move to folder",
+    "rootFolder": "Root (no folder)",
+    "manageFolders": "Manage folders",
+    "pageTitle": "Media Folders",
+    "pageSubtitle": "Organize your files into folders",
+    "empty": "No folders yet"
   },
   "webhooks": {
     "title": "Webhooks",
@@ -383,7 +416,8 @@
     "dropHereHint": "or click to browse",
     "addMedia": "Add media",
     "confirm": "Confirm",
-    "acceptedTypes": "Accepted types"
+    "acceptedTypes": "Accepted types",
+    "searchPlaceholder": "Search files..."
   },
   "apiKeysNew": {
     "back": "Back to API Keys",

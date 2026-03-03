@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n();
 const { apiFetch, uploadFile, baseURL } = useApi();
+const { flatten: flattenFolders, fetch: fetchFoldersData } = useMediaFolders();
 
 interface MediaItem {
   id: string;
@@ -9,6 +10,11 @@ interface MediaItem {
   mimeType: string;
   size: number;
   createdAt: string;
+  alt: string | null;
+  caption: string | null;
+  width: number | null;
+  height: number | null;
+  folderId: string | null;
 }
 
 const props = withDefaults(defineProps<{
@@ -32,6 +38,9 @@ const uploading = ref(false);
 const page = ref(1);
 const totalPages = ref(1);
 const dragging = ref(false);
+const search = ref('');
+const pickerFolderId = ref<string | null>(null);
+let searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
 // For single mode: resolved selected media
 const selectedMedia = ref<MediaItem | null>(null);
@@ -46,6 +55,10 @@ function isImage(mimeType: string): boolean {
 
 function getServeUrl(id: string): string {
   return `${baseURL}/uploads/${id}/serve`;
+}
+
+function getThumbUrl(id: string, size = 128): string {
+  return `${baseURL}/uploads/${id}/serve?w=${size}&h=${size}&format=webp`;
 }
 
 function formatSize(bytes: number): string {
@@ -74,11 +87,21 @@ const acceptString = computed(() => props.accept?.join(', '));
 async function fetchMedia() {
   loadingMedia.value = true;
   try {
+    const params = new URLSearchParams({
+      page: String(page.value),
+      limit: '12',
+    });
+    if (search.value.trim()) {
+      params.set('search', search.value.trim());
+    }
+    if (pickerFolderId.value) {
+      params.set('folderId', pickerFolderId.value);
+    }
     const res = await apiFetch<{
       success: boolean;
       data: MediaItem[];
       meta?: { total: number; totalPages: number };
-    }>(`/uploads?page=${page.value}&limit=12`);
+    }>(`/uploads?${params.toString()}`);
     mediaItems.value = res.data;
     totalPages.value = res.meta?.totalPages ?? 1;
   } catch {
@@ -87,6 +110,8 @@ async function fetchMedia() {
     loadingMedia.value = false;
   }
 }
+
+const flatPickerFolders = computed(() => flattenFolders());
 
 async function fetchSelectedMedia() {
   if (props.multiple) {
@@ -117,8 +142,11 @@ function openPicker() {
   if (props.multiple) {
     pendingSelection.value = [...((modelValue.value as string[]) ?? [])];
   }
+  search.value = '';
+  pickerFolderId.value = null;
   open.value = true;
   fetchMedia();
+  fetchFoldersData();
 }
 
 function selectMedia(item: MediaItem) {
@@ -212,6 +240,14 @@ function isSelected(id: string): boolean {
   return modelValue.value === id;
 }
 
+function onSearchInput() {
+  if (searchDebounce) clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => {
+    page.value = 1;
+    fetchMedia();
+  }, 300);
+}
+
 watch(page, fetchMedia);
 
 onMounted(() => {
@@ -228,7 +264,7 @@ onMounted(() => {
       <div v-if="selectedMedia" class="flex items-center gap-3 rounded-lg border p-3">
         <img
           v-if="isImage(selectedMedia.mimeType)"
-          :src="getServeUrl(selectedMedia.id)"
+          :src="getThumbUrl(selectedMedia.id, 64)"
           :alt="selectedMedia.originalName"
           class="size-16 rounded object-cover"
         />
@@ -237,6 +273,7 @@ onMounted(() => {
         </div>
         <div class="min-w-0 flex-1">
           <p class="truncate text-sm font-medium">{{ selectedMedia.originalName }}</p>
+          <p v-if="selectedMedia.alt" class="truncate text-xs text-dimmed">{{ selectedMedia.alt }}</p>
           <p class="text-xs text-muted">{{ formatSize(selectedMedia.size) }}</p>
         </div>
         <div class="flex gap-1">
@@ -272,7 +309,7 @@ onMounted(() => {
         <div v-for="item in selectedMediaList" :key="item.id" class="flex items-center gap-3 rounded-lg border p-2">
           <img
             v-if="isImage(item.mimeType)"
-            :src="getServeUrl(item.id)"
+            :src="getThumbUrl(item.id, 40)"
             :alt="item.originalName"
             class="size-10 rounded object-cover"
           />
@@ -304,17 +341,46 @@ onMounted(() => {
     </template>
 
     <!-- Picker modal -->
-    <UModal v-model:open="open">
+    <UModal v-model:open="open" :title="$t('mediaPicker.title')" :description="$t('mediaPicker.selectMedia')">
       <template #content>
         <div class="p-6 space-y-4">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold">{{ $t('mediaPicker.title') }}</h3>
-            <label class="cursor-pointer">
+            <UButton variant="ghost" color="neutral" size="xs" icon="i-lucide-x" @click="open = false" />
+          </div>
+
+          <!-- Search + Upload row -->
+          <div class="flex items-center gap-3">
+            <UInput
+              v-model="search"
+              icon="i-lucide-search"
+              :placeholder="$t('mediaPicker.searchPlaceholder')"
+              size="sm"
+              class="flex-1"
+              @input="onSearchInput"
+            />
+            <span class="text-xs text-muted uppercase">{{ $t('common.or') }}</span>
+            <label class="cursor-pointer shrink-0">
               <UButton as="span" size="sm" icon="i-lucide-upload" :loading="uploading">
                 {{ $t('uploads.upload') }}
               </UButton>
               <input type="file" class="hidden" :accept="acceptString" @change="handleUpload" />
             </label>
+          </div>
+
+          <!-- Folder filter -->
+          <div v-if="flatPickerFolders.length > 0">
+            <USelect
+              v-model="pickerFolderId"
+              :items="[
+                { label: $t('mediaFolders.allFiles'), value: null },
+                ...flatPickerFolders.map(f => ({ label: '\u00A0\u00A0'.repeat(f.depth) + f.name, value: f.id })),
+              ]"
+              value-key="value"
+              size="sm"
+              class="w-48"
+              @update:model-value="() => { page = 1; fetchMedia(); }"
+            />
           </div>
 
           <!-- Drop zone inside modal -->
@@ -356,9 +422,10 @@ onMounted(() => {
             >
               <img
                 v-if="isImage(item.mimeType)"
-                :src="getServeUrl(item.id)"
+                :src="getThumbUrl(item.id, 200)"
                 :alt="item.originalName"
                 class="size-full object-cover"
+                loading="lazy"
               />
               <div v-else class="flex size-full flex-col items-center justify-center gap-2 bg-muted">
                 <UIcon name="i-lucide-file" class="size-8 text-muted" />
@@ -379,9 +446,12 @@ onMounted(() => {
             <UPagination v-model="page" :total="totalPages * 12" :items-per-page="12" />
           </div>
 
-          <!-- Confirm button for multi-select -->
-          <div v-if="props.multiple" class="flex justify-end pt-2 border-t">
-            <UButton @click="confirmSelection">
+          <!-- Footer -->
+          <div class="flex justify-end gap-2 pt-2 border-t">
+            <UButton variant="ghost" color="neutral" @click="open = false">
+              {{ $t('common.cancel') }}
+            </UButton>
+            <UButton v-if="props.multiple" @click="confirmSelection">
               {{ $t('mediaPicker.confirm') }} ({{ pendingSelection.length }})
             </UButton>
           </div>

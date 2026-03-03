@@ -20,6 +20,7 @@ import { setupRouter } from './routes/setup.js';
 import { webhooksRouter } from './routes/webhooks.js';
 import { auditLogsRouter } from './routes/audit-logs.js';
 import { apiKeysRouter } from './routes/api-keys.js';
+import { mediaFoldersRouter } from './routes/media-folders.js';
 
 export function createApp() {
   const app = new Koa();
@@ -39,7 +40,7 @@ export function createApp() {
         return allowed.includes(origin) ? origin : '';
       },
       credentials: true,
-      allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
+      allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
       allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
       maxAge: 86400,
     }),
@@ -79,6 +80,7 @@ export function createApp() {
   app.use(webhooksRouter.routes()).use(webhooksRouter.allowedMethods());
   app.use(auditLogsRouter.routes()).use(auditLogsRouter.allowedMethods());
   app.use(apiKeysRouter.routes()).use(apiKeysRouter.allowedMethods());
+  app.use(mediaFoldersRouter.routes()).use(mediaFoldersRouter.allowedMethods());
 
   return app;
 }

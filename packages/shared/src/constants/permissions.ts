@@ -17,6 +17,7 @@ export const USERS_DELETE = 'users:delete';
 
 export const UPLOADS_CREATE = 'uploads:create';
 export const UPLOADS_READ = 'uploads:read';
+export const UPLOADS_UPDATE = 'uploads:update';
 export const UPLOADS_DELETE = 'uploads:delete';
 
 export const SETTINGS_READ = 'settings:read';
@@ -55,6 +56,7 @@ export const ALL_PERMISSIONS = [
   USERS_DELETE,
   UPLOADS_CREATE,
   UPLOADS_READ,
+  UPLOADS_UPDATE,
   UPLOADS_DELETE,
   SETTINGS_READ,
   SETTINGS_UPDATE,
@@ -88,6 +90,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, readonly Permission[]> = {
     CONTENT_TYPES_READ,
     UPLOADS_CREATE,
     UPLOADS_READ,
+    UPLOADS_UPDATE,
   ],
   reviewer: [
     CONTENT_CREATE,
@@ -98,5 +101,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, readonly Permission[]> = {
     CONTENT_TYPES_READ,
     UPLOADS_CREATE,
     UPLOADS_READ,
+    UPLOADS_UPDATE,
   ],
 };
