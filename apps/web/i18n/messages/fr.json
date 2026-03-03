@@ -44,6 +44,7 @@
     "allContents": "Tous les contenus",
     "seeAllTypes": "Voir tous les types...",
     "trash": "Corbeille",
+    "seeAllFolders": "Voir tous les dossiers...",
     "logout": "Déconnexion"
   },
   "login": {
@@ -273,7 +274,11 @@
     "renamed": "Dossier renommé",
     "deleted": "Dossier supprimé",
     "moveToFolder": "Déplacer vers un dossier",
-    "rootFolder": "Racine (aucun dossier)"
+    "rootFolder": "Racine (aucun dossier)",
+    "manageFolders": "Gérer les dossiers",
+    "pageTitle": "Dossiers média",
+    "pageSubtitle": "Organisez vos fichiers en dossiers",
+    "empty": "Aucun dossier pour le moment"
   },
   "webhooks": {
     "title": "Webhooks",

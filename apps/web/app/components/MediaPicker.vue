@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n();
 const { apiFetch, uploadFile, baseURL } = useApi();
+const { flatten: flattenFolders, fetch: fetchFoldersData } = useMediaFolders();
 
 interface MediaItem {
   id: string;
@@ -14,14 +15,6 @@ interface MediaItem {
   width: number | null;
   height: number | null;
   folderId: string | null;
-}
-
-interface FolderOption {
-  id: string;
-  name: string;
-  slug: string;
-  parentId: string | null;
-  children: FolderOption[];
 }
 
 const props = withDefaults(defineProps<{
@@ -47,7 +40,6 @@ const totalPages = ref(1);
 const dragging = ref(false);
 const search = ref('');
 const pickerFolderId = ref<string | null>(null);
-const pickerFolders = ref<FolderOption[]>([]);
 let searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
 // For single mode: resolved selected media
@@ -119,27 +111,7 @@ async function fetchMedia() {
   }
 }
 
-async function fetchPickerFolders() {
-  try {
-    const res = await apiFetch<{ success: boolean; data: FolderOption[] }>('/media-folders/tree');
-    pickerFolders.value = res.data;
-  } catch {
-    pickerFolders.value = [];
-  }
-}
-
-function flattenPickerFolders(nodes: FolderOption[], depth = 0): Array<{ id: string; name: string; depth: number }> {
-  const result: Array<{ id: string; name: string; depth: number }> = [];
-  for (const n of nodes) {
-    result.push({ id: n.id, name: n.name, depth });
-    if (n.children.length > 0) {
-      result.push(...flattenPickerFolders(n.children, depth + 1));
-    }
-  }
-  return result;
-}
-
-const flatPickerFolders = computed(() => flattenPickerFolders(pickerFolders.value));
+const flatPickerFolders = computed(() => flattenFolders());
 
 async function fetchSelectedMedia() {
   if (props.multiple) {
@@ -174,7 +146,7 @@ function openPicker() {
   pickerFolderId.value = null;
   open.value = true;
   fetchMedia();
-  fetchPickerFolders();
+  fetchFoldersData();
 }
 
 function selectMedia(item: MediaItem) {

@@ -6,10 +6,12 @@ definePageMeta({
   middleware: ['auth'],
 });
 
-const { apiFetch, uploadFile, baseURL } = useApi();
+const { apiFetch, baseURL } = useApi();
 const { t, locale } = useI18n();
 const { hasPermission } = useAuth();
 const toast = useToast();
+const route = useRoute();
+const { flatten: flattenFolders, fetch: fetchFolders, invalidate: invalidateFolders } = useMediaFolders();
 
 interface MediaItem {
   id: string;
@@ -26,23 +28,13 @@ interface MediaItem {
   folderId: string | null;
 }
 
-interface FolderNode {
-  id: string;
-  name: string;
-  slug: string;
-  parentId: string | null;
-  children: FolderNode[];
-}
+// Read folder filter from route query
+const selectedFolderId = ref<string | null>((route.query.folder as string) ?? null);
 
-// Folder state
-const folderTree = ref<FolderNode[]>([]);
-const selectedFolderId = ref<string | null>(null);
-const folderCreateOpen = ref(false);
-const folderRenameOpen = ref(false);
-const folderDeleteOpen = ref(false);
-const folderName = ref('');
-const folderTarget = ref<FolderNode | null>(null);
-const folderSaving = ref(false);
+// Sync with route changes
+watch(() => route.query.folder, (val) => {
+  selectedFolderId.value = (val as string) ?? null;
+});
 
 const {
   items: uploads,
@@ -70,7 +62,7 @@ const canDelete = computed(() => hasPermission('uploads:delete'));
 const uploading = ref(false);
 const dragging = ref(false);
 
-// Edit media state (replaces old rename)
+// Edit media state
 const editOpen = ref(false);
 const editTarget = ref<MediaItem | null>(null);
 const editOriginalName = ref('');
@@ -78,6 +70,8 @@ const editAlt = ref('');
 const editCaption = ref('');
 const editFolderId = ref<string | null>(null);
 const saving = ref(false);
+
+const flatFolderList = computed(() => flattenFolders());
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return bytes + ' B';
@@ -87,10 +81,6 @@ function formatSize(bytes: number): string {
 
 function isImage(mimeType: string): boolean {
   return mimeType.startsWith('image/');
-}
-
-function getServeUrl(item: MediaItem): string {
-  return `${baseURL}/uploads/${item.id}/serve`;
 }
 
 function getThumbUrl(item: MediaItem): string {
@@ -179,130 +169,17 @@ async function handleEdit() {
     toast.add({ title: t('uploads.updated'), color: 'success' });
     editOpen.value = false;
     await fetchItems();
+    // Refresh sidebar folder counts if folder changed
+    if (body.folderId !== undefined) {
+      invalidateFolders();
+      fetchFolders();
+    }
   } catch {
     toast.add({ title: t('common.error'), color: 'error' });
   } finally {
     saving.value = false;
   }
 }
-
-// ─── Folder management ─────────────────────────────────
-async function fetchFolderTree() {
-  try {
-    const res = await apiFetch<{ success: boolean; data: FolderNode[] }>('/media-folders/tree');
-    folderTree.value = res.data;
-  } catch {
-    folderTree.value = [];
-  }
-}
-
-function flattenFolders(nodes: FolderNode[], depth = 0): Array<{ id: string; name: string; depth: number }> {
-  const result: Array<{ id: string; name: string; depth: number }> = [];
-  for (const n of nodes) {
-    result.push({ id: n.id, name: n.name, depth });
-    if (n.children.length > 0) {
-      result.push(...flattenFolders(n.children, depth + 1));
-    }
-  }
-  return result;
-}
-
-const flatFolders = computed(() => flattenFolders(folderTree.value));
-
-function selectFolder(id: string | null) {
-  selectedFolderId.value = id;
-}
-
-function openCreateFolder() {
-  folderName.value = '';
-  folderCreateOpen.value = true;
-}
-
-async function handleCreateFolder() {
-  if (!folderName.value.trim()) return;
-  folderSaving.value = true;
-  try {
-    await apiFetch('/media-folders', {
-      method: 'POST',
-      body: {
-        name: folderName.value.trim(),
-        parentId: selectedFolderId.value,
-      },
-    });
-    toast.add({ title: t('mediaFolders.created'), color: 'success' });
-    folderCreateOpen.value = false;
-    await fetchFolderTree();
-  } catch {
-    toast.add({ title: t('common.error'), color: 'error' });
-  } finally {
-    folderSaving.value = false;
-  }
-}
-
-function findFolder(nodes: FolderNode[], id: string): FolderNode | null {
-  for (const n of nodes) {
-    if (n.id === id) return n;
-    const found = findFolder(n.children, id);
-    if (found) return found;
-  }
-  return null;
-}
-
-function openRenameFolder() {
-  if (!selectedFolderId.value) return;
-  const folder = findFolder(folderTree.value, selectedFolderId.value);
-  if (!folder) return;
-  folderTarget.value = folder;
-  folderName.value = folder.name;
-  folderRenameOpen.value = true;
-}
-
-async function handleRenameFolder() {
-  if (!folderTarget.value || !folderName.value.trim()) return;
-  folderSaving.value = true;
-  try {
-    await apiFetch(`/media-folders/${folderTarget.value.id}`, {
-      method: 'PUT',
-      body: { name: folderName.value.trim() },
-    });
-    toast.add({ title: t('mediaFolders.renamed'), color: 'success' });
-    folderRenameOpen.value = false;
-    await fetchFolderTree();
-  } catch {
-    toast.add({ title: t('common.error'), color: 'error' });
-  } finally {
-    folderSaving.value = false;
-  }
-}
-
-function openDeleteFolder() {
-  if (!selectedFolderId.value) return;
-  const folder = findFolder(folderTree.value, selectedFolderId.value);
-  if (!folder) return;
-  folderTarget.value = folder;
-  folderDeleteOpen.value = true;
-}
-
-async function handleDeleteFolder() {
-  if (!folderTarget.value) return;
-  folderSaving.value = true;
-  try {
-    await apiFetch(`/media-folders/${folderTarget.value.id}`, { method: 'DELETE' });
-    toast.add({ title: t('mediaFolders.deleted'), color: 'success' });
-    folderDeleteOpen.value = false;
-    selectedFolderId.value = null;
-    await fetchFolderTree();
-    await fetchItems();
-  } catch {
-    toast.add({ title: t('common.error'), color: 'error' });
-  } finally {
-    folderSaving.value = false;
-  }
-}
-
-onMounted(() => {
-  fetchFolderTree();
-});
 
 const UBadge = resolveComponent('UBadge');
 const UButton = resolveComponent('UButton');
@@ -408,89 +285,36 @@ const columns = computed(() => [
       </div>
     </div>
 
-    <div class="flex gap-6">
-      <!-- Folder sidebar -->
-      <div class="w-56 shrink-0 space-y-2">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase text-muted">{{ $t('mediaFolders.title') }}</span>
-          <div class="flex gap-0.5">
-            <UButton
-              v-if="canUpload"
-              icon="i-lucide-folder-plus"
-              variant="ghost"
-              color="neutral"
-              size="xs"
-              @click="openCreateFolder"
-            />
-            <UButton
-              v-if="selectedFolderId && canUpload"
-              icon="i-lucide-pencil"
-              variant="ghost"
-              color="neutral"
-              size="xs"
-              @click="openRenameFolder"
-            />
-            <UButton
-              v-if="selectedFolderId && canDelete"
-              icon="i-lucide-trash-2"
-              variant="ghost"
-              color="error"
-              size="xs"
-              @click="openDeleteFolder"
-            />
-          </div>
-        </div>
-
-        <button
-          class="flex items-center gap-1 w-full text-left px-2 py-1.5 rounded text-sm transition-colors hover:bg-elevated"
-          :class="{ 'bg-primary/10 text-primary font-medium': !selectedFolderId, 'text-muted': selectedFolderId }"
-          @click="selectFolder(null)"
-        >
-          <UIcon name="i-lucide-folder" class="size-4 shrink-0" />
-          <span>{{ $t('mediaFolders.allFiles') }}</span>
-        </button>
-
-        <FolderTree
-          :folders="folderTree"
-          :selected="selectedFolderId"
-          @select="selectFolder"
-        />
+    <div
+      v-if="canUpload"
+      class="flex items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors"
+      :class="dragging ? 'border-primary bg-primary/5' : 'border-muted'"
+      @dragover="onDragOver"
+      @dragenter="onDragOver"
+      @dragleave="onDragLeave"
+      @drop="onDrop"
+    >
+      <div class="text-center">
+        <UIcon name="i-lucide-upload-cloud" class="size-8 text-muted mb-2" />
+        <p class="text-sm text-muted">{{ $t('uploads.dropzone') }}</p>
       </div>
+    </div>
 
-      <!-- Main content -->
-      <div class="flex-1 min-w-0 space-y-4">
-        <div
-          v-if="canUpload"
-          class="flex items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors"
-          :class="dragging ? 'border-primary bg-primary/5' : 'border-muted'"
-          @dragover="onDragOver"
-          @dragenter="onDragOver"
-          @dragleave="onDragLeave"
-          @drop="onDrop"
-        >
-          <div class="text-center">
-            <UIcon name="i-lucide-upload-cloud" class="size-8 text-muted mb-2" />
-            <p class="text-sm text-muted">{{ $t('uploads.dropzone') }}</p>
-          </div>
-        </div>
+    <div v-if="loading && !uploads.length" class="space-y-3">
+      <USkeleton class="h-10 w-full rounded" />
+      <USkeleton v-for="i in 5" :key="i" class="h-14 w-full rounded" />
+    </div>
+    <div v-else-if="!loading && !uploads.length" class="flex flex-col items-center justify-center py-16">
+      <UIcon name="i-lucide-image" class="size-12 text-muted" />
+      <p class="mt-3 text-sm text-muted">{{ $t('common.noResults') }}</p>
+    </div>
+    <UTable v-else :data="uploads" :columns="columns" :loading="loading" />
 
-        <div v-if="loading && !uploads.length" class="space-y-3">
-          <USkeleton class="h-10 w-full rounded" />
-          <USkeleton v-for="i in 5" :key="i" class="h-14 w-full rounded" />
-        </div>
-        <div v-else-if="!loading && !uploads.length" class="flex flex-col items-center justify-center py-16">
-          <UIcon name="i-lucide-image" class="size-12 text-muted" />
-          <p class="mt-3 text-sm text-muted">{{ $t('common.noResults') }}</p>
-        </div>
-        <UTable v-else :data="uploads" :columns="columns" :loading="loading" />
-
-        <div v-if="totalPages > 1" class="flex items-center justify-between">
-          <p class="text-sm text-muted">
-            {{ $t('common.showing', { from: (page - 1) * limit + 1, to: Math.min(page * limit, total), total }) }}
-          </p>
-          <UPagination v-model="page" :total="total" :items-per-page="limit" />
-        </div>
-      </div>
+    <div v-if="totalPages > 1" class="flex items-center justify-between">
+      <p class="text-sm text-muted">
+        {{ $t('common.showing', { from: (page - 1) * limit + 1, to: Math.min(page * limit, total), total }) }}
+      </p>
+      <UPagination v-model="page" :total="total" :items-per-page="limit" />
     </div>
 
     <!-- Delete modal -->
@@ -529,12 +353,12 @@ const columns = computed(() => [
           <UFormField :label="$t('uploads.captionLabel')">
             <UTextarea v-model="editCaption" :placeholder="$t('uploads.captionPlaceholder')" :rows="3" />
           </UFormField>
-          <UFormField v-if="flatFolders.length > 0" :label="$t('mediaFolders.moveToFolder')">
+          <UFormField v-if="flatFolderList.length > 0" :label="$t('mediaFolders.moveToFolder')">
             <USelect
               v-model="editFolderId"
               :items="[
                 { label: $t('mediaFolders.rootFolder'), value: null },
-                ...flatFolders.map(f => ({ label: '  '.repeat(f.depth) + f.name, value: f.id })),
+                ...flatFolderList.map(f => ({ label: '\u00A0\u00A0'.repeat(f.depth) + f.name, value: f.id })),
               ]"
               value-key="value"
             />
@@ -545,64 +369,6 @@ const columns = computed(() => [
             </UButton>
             <UButton :loading="saving" :disabled="!editOriginalName.trim()" @click="handleEdit">
               {{ $t('common.save') }}
-            </UButton>
-          </div>
-        </div>
-      </template>
-    </UModal>
-
-    <!-- Create folder modal -->
-    <UModal v-model:open="folderCreateOpen" :title="$t('mediaFolders.createTitle')" :description="$t('mediaFolders.nameLabel')">
-      <template #content>
-        <div class="p-6 space-y-4">
-          <h3 class="text-lg font-semibold">{{ $t('mediaFolders.createTitle') }}</h3>
-          <UFormField :label="$t('mediaFolders.nameLabel')">
-            <UInput v-model="folderName" :placeholder="$t('mediaFolders.namePlaceholder')" autofocus @keydown.enter="handleCreateFolder" />
-          </UFormField>
-          <div class="flex justify-end gap-2">
-            <UButton variant="ghost" color="neutral" @click="folderCreateOpen = false">
-              {{ $t('common.cancel') }}
-            </UButton>
-            <UButton :loading="folderSaving" :disabled="!folderName.trim()" @click="handleCreateFolder">
-              {{ $t('common.create') }}
-            </UButton>
-          </div>
-        </div>
-      </template>
-    </UModal>
-
-    <!-- Rename folder modal -->
-    <UModal v-model:open="folderRenameOpen" :title="$t('mediaFolders.renameTitle')" :description="$t('mediaFolders.nameLabel')">
-      <template #content>
-        <div class="p-6 space-y-4">
-          <h3 class="text-lg font-semibold">{{ $t('mediaFolders.renameTitle') }}</h3>
-          <UFormField :label="$t('mediaFolders.nameLabel')">
-            <UInput v-model="folderName" autofocus @keydown.enter="handleRenameFolder" />
-          </UFormField>
-          <div class="flex justify-end gap-2">
-            <UButton variant="ghost" color="neutral" @click="folderRenameOpen = false">
-              {{ $t('common.cancel') }}
-            </UButton>
-            <UButton :loading="folderSaving" :disabled="!folderName.trim()" @click="handleRenameFolder">
-              {{ $t('common.save') }}
-            </UButton>
-          </div>
-        </div>
-      </template>
-    </UModal>
-
-    <!-- Delete folder modal -->
-    <UModal v-model:open="folderDeleteOpen" :title="$t('mediaFolders.deleteTitle')" :description="$t('mediaFolders.deleteConfirm')">
-      <template #content>
-        <div class="p-6 space-y-4">
-          <h3 class="text-lg font-semibold">{{ $t('mediaFolders.deleteTitle') }}</h3>
-          <p class="text-sm text-muted">{{ $t('mediaFolders.deleteConfirm') }}</p>
-          <div class="flex justify-end gap-2">
-            <UButton variant="ghost" color="neutral" @click="folderDeleteOpen = false">
-              {{ $t('common.cancel') }}
-            </UButton>
-            <UButton color="error" :loading="folderSaving" @click="handleDeleteFolder">
-              {{ $t('common.delete') }}
             </UButton>
           </div>
         </div>

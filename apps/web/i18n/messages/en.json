@@ -44,6 +44,7 @@
     "allContents": "All Contents",
     "seeAllTypes": "See all types...",
     "trash": "Trash",
+    "seeAllFolders": "See all folders...",
     "logout": "Log out"
   },
   "login": {
@@ -273,7 +274,11 @@
     "renamed": "Folder renamed",
     "deleted": "Folder deleted",
     "moveToFolder": "Move to folder",
-    "rootFolder": "Root (no folder)"
+    "rootFolder": "Root (no folder)",
+    "manageFolders": "Manage folders",
+    "pageTitle": "Media Folders",
+    "pageSubtitle": "Organize your files into folders",
+    "empty": "No folders yet"
   },
   "webhooks": {
     "title": "Webhooks",
