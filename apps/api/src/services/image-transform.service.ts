@@ -1,11 +1,13 @@
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile, readdir, unlink } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, resolve, sep } from 'node:path';
+import { createHash } from 'node:crypto';
 import sharp from 'sharp';
 import type { Readable } from 'node:stream';
 import type { ImageTransformQuery } from '@eli-cms/shared';
 
 const CACHE_DIR = join(process.cwd(), 'uploads', '.cache');
+const CACHE_DIR_ABS = resolve(CACHE_DIR);
 
 const FORMAT_TO_MIME: Record<string, string> = {
   webp: 'image/webp',
@@ -23,13 +25,26 @@ const MIME_TO_FORMAT: Record<string, string> = {
 };
 
 export class ImageTransformService {
+  /** Hash mediaId to prevent path traversal in cache filenames. */
+  private static safeId(mediaId: string): string {
+    return createHash('sha256').update(mediaId).digest('hex');
+  }
+
+  /** Resolve a cache path and verify it stays inside CACHE_DIR. Returns null if unsafe. */
+  private static safeCachePath(cacheKey: string): string | null {
+    const candidate = resolve(CACHE_DIR_ABS, cacheKey);
+    if (!candidate.startsWith(CACHE_DIR_ABS + sep)) return null;
+    return candidate;
+  }
+
   static buildCacheKey(mediaId: string, params: ImageTransformQuery): string {
+    const safe = this.safeId(mediaId);
     const w = params.w ?? 0;
     const h = params.h ?? 0;
     const format = params.format ?? 'orig';
     const fit = params.fit ?? 'cover';
     const q = params.q ?? 0;
-    return `${mediaId}_${w}_${h}_${format}_${fit}_${q}`;
+    return `${safe}_${w}_${h}_${format}_${fit}_${q}`;
   }
 
   static getOutputMimeType(originalMime: string, requestedFormat?: string): string {
@@ -53,11 +68,11 @@ export class ImageTransformService {
     const cacheKey = this.buildCacheKey(mediaId, params);
     const mimeType = this.getOutputMimeType(originalMime, params.format);
 
-    // Check cache
     await mkdir(CACHE_DIR, { recursive: true });
-    const cachePath = join(CACHE_DIR, cacheKey);
+    const cachePath = this.safeCachePath(cacheKey);
 
-    if (existsSync(cachePath)) {
+    // Check cache
+    if (cachePath && existsSync(cachePath)) {
       const buffer = await readFile(cachePath);
       return { buffer, mimeType };
     }
@@ -71,7 +86,7 @@ export class ImageTransformService {
     sourceStream: Readable,
     originalMime: string,
     params: ImageTransformQuery,
-    cachePath: string,
+    cachePath: string | null,
   ): Promise<Buffer> {
     // Collect stream into buffer
     const chunks: Buffer[] = [];
@@ -98,8 +113,10 @@ export class ImageTransformService {
 
     const result = await pipeline.toBuffer();
 
-    // Write to cache (fire and forget — non-blocking)
-    writeFile(cachePath, result).catch(() => {});
+    // Write to cache (fire and forget — non-blocking, skip if path unsafe)
+    if (cachePath) {
+      writeFile(cachePath, result).catch(() => {});
+    }
 
     return result;
   }
@@ -108,10 +125,13 @@ export class ImageTransformService {
     try {
       if (!existsSync(CACHE_DIR)) return;
       const files = await readdir(CACHE_DIR);
-      const prefix = `${mediaId}_`;
+      const prefix = `${this.safeId(mediaId)}_`;
       const deletes = files
         .filter((f) => f.startsWith(prefix))
-        .map((f) => unlink(join(CACHE_DIR, f)).catch(() => {}));
+        .map((f) => {
+          const filePath = this.safeCachePath(f);
+          return filePath ? unlink(filePath).catch(() => {}) : Promise.resolve();
+        });
       await Promise.all(deletes);
     } catch {
       // Cache cleanup is best-effort
