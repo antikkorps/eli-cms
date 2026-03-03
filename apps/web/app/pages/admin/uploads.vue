@@ -87,6 +87,10 @@ function getThumbUrl(item: MediaItem): string {
   return `${baseURL}/uploads/${item.id}/serve?w=80&h=80&format=webp`;
 }
 
+function getPreviewUrl(item: MediaItem): string {
+  return `${baseURL}/uploads/${item.id}/serve?w=400&h=400&format=webp`;
+}
+
 async function handleUpload(event: Event) {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
@@ -340,30 +344,64 @@ const columns = computed(() => [
     </UModal>
 
     <!-- Edit media modal -->
-    <UModal v-model:open="editOpen" :title="$t('uploads.editMediaTitle')" :description="$t('uploads.altLabel')">
+    <UModal v-model:open="editOpen" :title="$t('uploads.editMediaTitle')" :description="$t('uploads.editMediaDescription')">
       <template #content>
-        <div class="p-6 space-y-4">
-          <h3 class="text-lg font-semibold">{{ $t('uploads.editMediaTitle') }}</h3>
-          <UFormField :label="$t('uploads.renameLabel')">
-            <UInput v-model="editOriginalName" />
-          </UFormField>
-          <UFormField :label="$t('uploads.altLabel')">
-            <UInput v-model="editAlt" :placeholder="$t('uploads.altPlaceholder')" />
-          </UFormField>
-          <UFormField :label="$t('uploads.captionLabel')">
-            <UTextarea v-model="editCaption" :placeholder="$t('uploads.captionPlaceholder')" :rows="3" />
-          </UFormField>
-          <UFormField v-if="flatFolderList.length > 0" :label="$t('mediaFolders.moveToFolder')">
-            <USelect
-              v-model="editFolderId"
-              :items="[
-                { label: $t('mediaFolders.rootFolder'), value: null },
-                ...flatFolderList.map(f => ({ label: '\u00A0\u00A0'.repeat(f.depth) + f.name, value: f.id })),
-              ]"
-              value-key="value"
-            />
-          </UFormField>
-          <div class="flex justify-end gap-2">
+        <div class="p-4 sm:p-6">
+          <h3 class="text-lg font-semibold mb-4">{{ $t('uploads.editMediaTitle') }}</h3>
+
+          <div v-if="editTarget" class="flex flex-col sm:flex-row gap-4 sm:gap-6">
+            <!-- Left: Preview + file info (stacks on top on mobile) -->
+            <div class="flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:w-40 shrink-0">
+              <img
+                v-if="isImage(editTarget.mimeType)"
+                :src="getPreviewUrl(editTarget)"
+                :alt="editTarget.originalName"
+                class="size-20 sm:w-40 sm:h-32 rounded-lg object-cover bg-muted"
+              />
+              <div v-else class="flex size-20 sm:w-40 sm:h-32 items-center justify-center rounded-lg bg-muted">
+                <UIcon name="i-lucide-file" class="size-8 text-muted" />
+              </div>
+              <div class="flex flex-col gap-1 sm:w-full min-w-0">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <UBadge variant="subtle" size="xs">{{ editTarget.mimeType }}</UBadge>
+                  <span class="text-xs text-muted">{{ formatSize(editTarget.size) }}</span>
+                </div>
+                <span v-if="editTarget.width && editTarget.height" class="text-xs text-muted">
+                  {{ editTarget.width }} × {{ editTarget.height }} px
+                </span>
+              </div>
+            </div>
+
+            <!-- Right: Form fields -->
+            <div class="flex-1 min-w-0 space-y-4">
+              <UFormField :label="$t('uploads.renameLabel')">
+                <UInput v-model="editOriginalName" class="w-full" />
+              </UFormField>
+
+              <UFormField :label="$t('uploads.altLabel')" :hint="$t('uploads.altHint')">
+                <UInput v-model="editAlt" :placeholder="$t('uploads.altPlaceholder')" class="w-full" />
+              </UFormField>
+
+              <UFormField :label="$t('uploads.captionLabel')">
+                <UTextarea v-model="editCaption" :placeholder="$t('uploads.captionPlaceholder')" :rows="2" autoresize />
+              </UFormField>
+
+              <UFormField v-if="flatFolderList.length > 0" :label="$t('mediaFolders.moveToFolder')">
+                <USelect
+                  v-model="editFolderId"
+                  icon="i-lucide-folder"
+                  :items="[
+                    { label: $t('mediaFolders.rootFolder'), value: null },
+                    ...flatFolderList.map(f => ({ label: '\u00A0\u00A0'.repeat(f.depth) + f.name, value: f.id })),
+                  ]"
+                  value-key="value"
+                />
+              </UFormField>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-end gap-2 mt-5 pt-4 border-t">
             <UButton variant="ghost" color="neutral" @click="editOpen = false">
               {{ $t('common.cancel') }}
             </UButton>
