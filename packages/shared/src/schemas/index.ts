@@ -223,7 +223,42 @@ export const storageConfigSchema = z
 export const uploadListQuerySchema = paginationSchema.extend({
   mimeType: z.string().optional(),
   createdBy: z.string().uuid().optional(),
+  search: z.string().max(200).optional(),
+  folderId: z.string().uuid().optional(),
 });
+
+// ─── Media Folder schemas ───────────────────────────────
+export const createMediaFolderSchema = z.object({
+  name: safeString(255).pipe(z.string().min(1)),
+  parentId: z.string().uuid().nullable().optional(),
+});
+
+export const updateMediaFolderSchema = z.object({
+  name: safeString(255).pipe(z.string().min(1)).optional(),
+  parentId: z.string().uuid().nullable().optional(),
+});
+
+export const mediaFolderListQuerySchema = paginationSchema.extend({
+  parentId: z.string().uuid().optional(),
+});
+
+// ─── Image Transform schemas ────────────────────────────
+export const imageTransformQuerySchema = z.object({
+  w: z.coerce.number().int().min(1).max(4096).optional(),
+  h: z.coerce.number().int().min(1).max(4096).optional(),
+  format: z.enum(['webp', 'avif', 'jpeg', 'png']).optional(),
+  fit: z.enum(['cover', 'contain', 'fill', 'inside', 'outside']).optional(),
+  q: z.coerce.number().int().min(1).max(100).optional(),
+});
+export type ImageTransformQuery = z.infer<typeof imageTransformQuerySchema>;
+
+export const updateMediaSchema = z.object({
+  originalName: safeString(255).pipe(z.string().min(1)).optional(),
+  alt: safeString(512).nullable().optional(),
+  caption: z.string().max(5000).transform(sanitize).nullable().optional(),
+  folderId: z.string().uuid().nullable().optional(),
+});
+export type UpdateMediaInput = z.infer<typeof updateMediaSchema>;
 
 // ─── Content Relations schemas ──────────────────────────
 export const createContentRelationSchema = z.object({
@@ -390,3 +425,7 @@ export type AuditLogListQuery = z.infer<typeof auditLogListQuerySchema>;
 export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;
 export type UpdateApiKeyInput = z.infer<typeof updateApiKeySchema>;
 export type ApiKeyListQuery = z.infer<typeof apiKeyListQuerySchema>;
+
+export type CreateMediaFolderInput = z.infer<typeof createMediaFolderSchema>;
+export type UpdateMediaFolderInput = z.infer<typeof updateMediaFolderSchema>;
+export type MediaFolderListQuery = z.infer<typeof mediaFolderListQuerySchema>;

@@ -12,12 +12,16 @@
 - [x] API key permissions overflow (when many permissions are selected, badges overflow the container — use a wrapping grid or collapsible chip list instead)
 - [x] Trash / soft delete with restore (deleted content goes to trash for 30 days before permanent removal)
 - [x] Content locking (prevent simultaneous editing — show "being edited by X" banner, auto-lock with TTL)
-- [ ] Media folders / organization (allow grouping uploads into folders for better asset management)
-- [ ] Image transforms — resize, crop, WebP/AVIF conversion via Sharp (`GET /uploads/:id?w=400&h=300&format=webp`)
-- [ ] Media metadata (alt text, caption, width, height, focal point — extract dimensions on upload)
-- [ ] Fix SQL injection in public JSONB filter (`content.service.ts:147` — `sql.raw()` on user-supplied field name)
-- [ ] Fix race condition in lock acquisition (use `ON CONFLICT` upsert or transaction with `FOR UPDATE`)
-- [ ] Wrap content update in DB transaction (lock check → snapshot → validate → update must be atomic)
+- [x] Media folders / organization (allow grouping uploads into folders for better asset management)
+- [x] Image transforms — resize, crop, WebP/AVIF conversion via Sharp (`GET /uploads/:id/serve?w=400&h=300&format=webp`), disk cache, ETag/304, AVIF upload support
+- [x] Media rename (PATCH endpoint, inline rename UI with pencil button, `uploads:update` permission)
+- [x] MediaPicker search (server-side search on filename, debounced input in picker modal)
+- [x] Optimized thumbnails in frontend (MediaPicker + uploads page use `?w=…&format=webp` transforms)
+- [x] Serve endpoint rate limiting (60 req/min/IP) + CORS PATCH support
+- [x] Media metadata (alt text, caption, width, height — extract dimensions on upload via Sharp, edit UI)
+- [x] Fix SQL injection in public JSONB filter (parameterized `fieldName` in `->>` operator)
+- [x] Fix race condition in lock acquisition (`db.transaction()` + `SELECT … FOR UPDATE`)
+- [x] Wrap content update in DB transaction (snapshot + update + lock release atomic)
 - [ ] Cap pagination limit in shared schemas (prevent DoS with `?limit=999999`)
 
 ## Medium Priority
@@ -42,14 +46,14 @@
 - [ ] Default values for fields (add `default` to FieldDefinition + schema builder + field builder UI)
 - [ ] Singleton content types (`isSingleton` flag — "Site Settings", "Homepage" with single entry)
 - [ ] Client-side form validation (reuse shared Zod schemas, show field-level errors instead of generic toasts)
-- [ ] HTTP caching on public API (Cache-Control, ETag, Last-Modified headers)
+- [~] HTTP caching on public API (Cache-Control + ETag on `/uploads/:id/serve` — remaining: content endpoints)
 - [ ] Brute-force login protection (progressive delays or lockout after N failed attempts)
 - [ ] Background job queue — replace `setInterval` scheduler with BullMQ/Redis
 - [ ] Structured logging — replace `console.log` with pino (JSON, request IDs)
 - [ ] Advanced form validation (min/max length, regex patterns, unique constraints per field)
 - [ ] Content type field groups / tabs (organize fields into sections for complex content types)
 - [ ] Search result highlighting
-- [ ] Image crop/resize before upload
+- [~] Image crop/resize before upload (server-side transforms done — remaining: client-side crop UI before upload)
 - [ ] i18n labels in FieldBuilder (translate field type names)
 - [ ] Configurable slug patterns (e.g. `{year}/{slug}`, `{category}/{slug}`)
 - [ ] Drag-and-drop field reordering in FieldBuilder

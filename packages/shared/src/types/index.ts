@@ -145,6 +145,23 @@ export interface Media {
   storageType: StorageType;
   createdBy: string;
   createdAt: Date;
+  alt: string | null;
+  caption: string | null;
+  width: number | null;
+  height: number | null;
+  folderId: string | null;
+}
+
+export interface MediaFolder {
+  id: string;
+  name: string;
+  slug: string;
+  parentId: string | null;
+  createdAt: Date;
+}
+
+export interface MediaFolderTree extends MediaFolder {
+  children: MediaFolderTree[];
 }
 
 // ─── Webhooks ───────────────────────────────────────────

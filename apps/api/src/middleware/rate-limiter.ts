@@ -36,6 +36,21 @@ export const uploadRateLimit = isTest
       throw: false,
     });
 
+const serveDb = new Map();
+
+/** 60 requests per minute per IP — for file serving with transforms */
+export const serveRateLimit = isTest
+  ? noop
+  : ratelimit({
+      driver: 'memory',
+      db: serveDb,
+      duration: 60 * 1000,
+      max: 60,
+      id: (ctx) => ctx.ip,
+      errorMessage: 'Too many requests, please try again later',
+      throw: false,
+    });
+
 /** 100 requests per minute per IP — for public API */
 export const publicRateLimit = isTest
   ? noop

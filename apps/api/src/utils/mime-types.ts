@@ -4,6 +4,7 @@ export const ALLOWED_MIME_TYPES = new Set([
   'image/png',
   'image/gif',
   'image/webp',
+  'image/avif',
   'image/svg+xml',
   // PDF
   'application/pdf',
@@ -16,6 +17,14 @@ export const ALLOWED_MIME_TYPES = new Set([
   // Office — PowerPoint
   'application/vnd.ms-powerpoint',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+]);
+
+export const TRANSFORMABLE_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/avif',
+  'image/tiff',
 ]);
 
 export function isAllowedMimeType(mimeType: string): boolean {

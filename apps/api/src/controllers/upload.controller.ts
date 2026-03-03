@@ -1,8 +1,10 @@
+import { createHash } from 'node:crypto';
 import type { Context } from 'koa';
-import { uploadListQuerySchema } from '@eli-cms/shared';
+import { uploadListQuerySchema, imageTransformQuerySchema, updateMediaSchema } from '@eli-cms/shared';
 import { UploadService } from '../services/upload.service.js';
+import { ImageTransformService } from '../services/image-transform.service.js';
 import { AppError } from '../utils/app-error.js';
-import { isAllowedMimeType } from '../utils/mime-types.js';
+import { isAllowedMimeType, TRANSFORMABLE_MIME_TYPES } from '../utils/mime-types.js';
 import { extractActor } from '../utils/extract-actor.js';
 
 export class UploadController {
@@ -18,7 +20,8 @@ export class UploadController {
     }
 
     const userId = ctx.state.user.userId as string;
-    const data = await UploadService.upload(file, userId, extractActor(ctx));
+    const folderId = (ctx.request.body as Record<string, unknown>)?.folderId as string | undefined;
+    const data = await UploadService.upload(file, userId, extractActor(ctx), folderId);
     ctx.status = 201;
     ctx.body = { success: true, data };
   }
@@ -37,6 +40,15 @@ export class UploadController {
     ctx.body = { success: true, data };
   }
 
+  static async update(ctx: Context) {
+    const result = updateMediaSchema.safeParse(ctx.request.body);
+    if (!result.success) {
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
+    }
+    const data = await UploadService.update(ctx.params.id, result.data);
+    ctx.body = { success: true, data };
+  }
+
   static async delete(ctx: Context) {
     await UploadService.delete(ctx.params.id, extractActor(ctx));
     ctx.status = 204;
@@ -44,8 +56,47 @@ export class UploadController {
 
   static async serve(ctx: Context) {
     const { stream, mimeType, filename } = await UploadService.getFileStream(ctx.params.id);
-    ctx.set('Content-Type', mimeType);
-    ctx.set('Content-Disposition', `inline; filename="${encodeURIComponent(filename)}"`);
-    ctx.body = stream;
+
+    // Try to parse transform query params
+    const parsed = imageTransformQuerySchema.safeParse(ctx.query);
+    const hasTransformParams =
+      parsed.success &&
+      (parsed.data.w !== undefined ||
+        parsed.data.h !== undefined ||
+        parsed.data.format !== undefined ||
+        parsed.data.fit !== undefined ||
+        parsed.data.q !== undefined);
+
+    if (hasTransformParams && TRANSFORMABLE_MIME_TYPES.has(mimeType)) {
+      const params = parsed.data;
+      const cacheKey = ImageTransformService.buildCacheKey(ctx.params.id, params);
+      const etag = `"${createHash('md5').update(cacheKey).digest('hex')}"`;
+
+      // ETag / 304 support
+      if (ctx.get('If-None-Match') === etag) {
+        ctx.status = 304;
+        stream.destroy();
+        return;
+      }
+
+      const { buffer, mimeType: outputMime } = await ImageTransformService.getTransformed(
+        ctx.params.id,
+        stream,
+        mimeType,
+        params,
+      );
+
+      ctx.set('Content-Type', outputMime);
+      ctx.set('Content-Length', String(buffer.length));
+      ctx.set('Cache-Control', 'public, max-age=31536000, immutable');
+      ctx.set('ETag', etag);
+      ctx.body = buffer;
+    } else {
+      // Serve original file
+      ctx.set('Content-Type', mimeType);
+      ctx.set('Content-Disposition', `inline; filename="${encodeURIComponent(filename)}"`);
+      ctx.set('Cache-Control', 'public, max-age=86400');
+      ctx.body = stream;
+    }
   }
 }

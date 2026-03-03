@@ -15,6 +15,7 @@
     "back": "Retour",
     "search": "Rechercher...",
     "noResults": "Aucun résultat trouvé",
+    "or": "ou",
     "actions": "Actions",
     "required": "Requis",
     "confirm": "Confirmer",
@@ -247,7 +248,32 @@
     "deleteTitle": "Supprimer le fichier",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ?",
     "uploaded": "Fichier téléversé avec succès",
-    "dropzone": "Cliquez ou déposez un fichier pour téléverser"
+    "dropzone": "Cliquez ou déposez un fichier pour téléverser",
+    "renameTitle": "Renommer le fichier",
+    "renameLabel": "Nom du fichier",
+    "renamed": "Fichier renommé avec succès",
+    "editMediaTitle": "Modifier le média",
+    "altLabel": "Texte alternatif",
+    "altPlaceholder": "Décrivez ce média pour l'accessibilité",
+    "captionLabel": "Légende",
+    "captionPlaceholder": "Légende ou description optionnelle",
+    "columnDimensions": "Dimensions",
+    "updated": "Média mis à jour avec succès"
+  },
+  "mediaFolders": {
+    "title": "Dossiers",
+    "allFiles": "Tous les fichiers",
+    "createTitle": "Créer un dossier",
+    "renameTitle": "Renommer le dossier",
+    "deleteTitle": "Supprimer le dossier",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce dossier ? Les sous-dossiers seront supprimés et les fichiers déplacés à la racine.",
+    "nameLabel": "Nom du dossier",
+    "namePlaceholder": "ex. Photos",
+    "created": "Dossier créé",
+    "renamed": "Dossier renommé",
+    "deleted": "Dossier supprimé",
+    "moveToFolder": "Déplacer vers un dossier",
+    "rootFolder": "Racine (aucun dossier)"
   },
   "webhooks": {
     "title": "Webhooks",
@@ -383,7 +409,8 @@
     "dropHereHint": "ou cliquez pour parcourir",
     "addMedia": "Ajouter un média",
     "confirm": "Confirmer",
-    "acceptedTypes": "Types acceptés"
+    "acceptedTypes": "Types acceptés",
+    "searchPlaceholder": "Rechercher des fichiers..."
   },
   "apiKeysNew": {
     "back": "Retour aux clés API",

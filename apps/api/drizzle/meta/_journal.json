@@ -71,6 +71,13 @@
       "when": 1772900000000,
       "tag": "0009_content_locks",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1773000000000,
+      "tag": "0010_media_folders_and_metadata",
+      "breakpoints": true
     }
   ]
 }

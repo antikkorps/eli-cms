@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, jsonb, timestamp, index, integer, uniqueIndex, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, jsonb, timestamp, index, integer, uniqueIndex, boolean, text, type AnyPgColumn } from 'drizzle-orm/pg-core';
 import type { FieldDefinition, RelationType, WebhookEvent, WebhookDeliveryStatus, ActorType } from '@eli-cms/shared';
 
 // ─── Roles ─────────────────────────────────────────────
@@ -104,6 +104,18 @@ export const settings = pgTable('settings', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ─── Media Folders ──────────────────────────────────────
+export const mediaFolders = pgTable('media_folders', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).notNull(),
+  parentId: uuid('parent_id').references((): AnyPgColumn => mediaFolders.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('idx_media_folders_parent_id').on(table.parentId),
+  uniqueIndex('uq_media_folders_slug_parent').on(table.slug, table.parentId),
+]);
+
 // ─── Media ──────────────────────────────────────────────
 export const media = pgTable('media', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -115,10 +127,16 @@ export const media = pgTable('media', {
   storageType: varchar('storage_type', { length: 20 }).notNull().default('local').$type<'local' | 's3'>(),
   createdBy: uuid('created_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  alt: varchar('alt', { length: 512 }),
+  caption: text('caption'),
+  width: integer('width'),
+  height: integer('height'),
+  folderId: uuid('folder_id').references(() => mediaFolders.id, { onDelete: 'set null' }),
 }, (table) => [
   index('idx_media_created_by').on(table.createdBy),
   index('idx_media_mime_type').on(table.mimeType),
   index('idx_media_storage_type').on(table.storageType),
+  index('idx_media_folder_id').on(table.folderId),
 ]);
 
 // ─── Webhooks ───────────────────────────────────────────

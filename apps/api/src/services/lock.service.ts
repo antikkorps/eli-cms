@@ -1,4 +1,4 @@
-import { eq, and, lte } from 'drizzle-orm';
+import { eq, and, lte, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { contentLocks, users } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
@@ -11,41 +11,46 @@ export class LockService {
   }
 
   static async acquire(contentId: string, userId: string) {
-    const now = new Date();
+    return db.transaction(async (tx) => {
+      const now = new Date();
 
-    // Check existing lock
-    const [existing] = await db
-      .select()
-      .from(contentLocks)
-      .where(eq(contentLocks.contentId, contentId))
-      .limit(1);
+      // Delete expired locks within the transaction
+      await tx.delete(contentLocks).where(
+        and(eq(contentLocks.contentId, contentId), lte(contentLocks.expiresAt, now)),
+      );
 
-    if (existing) {
-      // Lock expired → delete and replace
-      if (existing.expiresAt <= now) {
-        await db.delete(contentLocks).where(eq(contentLocks.id, existing.id));
-      } else if (existing.lockedBy === userId) {
-        // Same user → refresh
-        const [refreshed] = await db
-          .update(contentLocks)
-          .set({ expiresAt: this.ttl() })
-          .where(eq(contentLocks.id, existing.id))
-          .returning();
-        return refreshed;
-      } else {
+      // SELECT … FOR UPDATE to serialize concurrent lock attempts
+      const rows = await tx.execute(
+        sql`SELECT id, content_id, locked_by, expires_at, created_at
+            FROM content_locks
+            WHERE content_id = ${contentId}
+            FOR UPDATE`,
+      );
+      const existing = (rows as unknown as { rows: Array<{ id: string; locked_by: string; expires_at: Date }> }).rows?.[0];
+
+      if (existing) {
+        if (existing.locked_by === userId) {
+          // Same user → refresh TTL
+          const [refreshed] = await tx
+            .update(contentLocks)
+            .set({ expiresAt: this.ttl() })
+            .where(eq(contentLocks.id, existing.id))
+            .returning();
+          return refreshed;
+        }
         // Locked by another user
-        const [locker] = await db.select({ email: users.email }).from(users).where(eq(users.id, existing.lockedBy)).limit(1);
+        const [locker] = await tx.select({ email: users.email }).from(users).where(eq(users.id, existing.locked_by)).limit(1);
         throw new AppError(423, `Content is being edited by ${locker?.email ?? 'another user'}`);
       }
-    }
 
-    // Insert new lock
-    const [lock] = await db
-      .insert(contentLocks)
-      .values({ contentId, lockedBy: userId, expiresAt: this.ttl() })
-      .returning();
+      // No lock exists → insert
+      const [lock] = await tx
+        .insert(contentLocks)
+        .values({ contentId, lockedBy: userId, expiresAt: this.ttl() })
+        .returning();
 
-    return lock;
+      return lock;
+    });
   }
 
   static async release(contentId: string, userId: string) {

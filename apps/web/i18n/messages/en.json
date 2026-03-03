@@ -15,6 +15,7 @@
     "back": "Back",
     "search": "Search...",
     "noResults": "No results found",
+    "or": "or",
     "actions": "Actions",
     "required": "Required",
     "confirm": "Confirm",
@@ -247,7 +248,32 @@
     "deleteTitle": "Delete File",
     "deleteConfirm": "Are you sure you want to delete {name}?",
     "uploaded": "File uploaded successfully",
-    "dropzone": "Click or drag a file to upload"
+    "dropzone": "Click or drag a file to upload",
+    "renameTitle": "Rename File",
+    "renameLabel": "Filename",
+    "renamed": "File renamed successfully",
+    "editMediaTitle": "Edit Media",
+    "altLabel": "Alt text",
+    "altPlaceholder": "Describe this media for accessibility",
+    "captionLabel": "Caption",
+    "captionPlaceholder": "Optional caption or description",
+    "columnDimensions": "Dimensions",
+    "updated": "Media updated successfully"
+  },
+  "mediaFolders": {
+    "title": "Folders",
+    "allFiles": "All files",
+    "createTitle": "Create Folder",
+    "renameTitle": "Rename Folder",
+    "deleteTitle": "Delete Folder",
+    "deleteConfirm": "Are you sure you want to delete this folder? Sub-folders will be deleted and files will be moved to the root.",
+    "nameLabel": "Folder name",
+    "namePlaceholder": "e.g. Photos",
+    "created": "Folder created",
+    "renamed": "Folder renamed",
+    "deleted": "Folder deleted",
+    "moveToFolder": "Move to folder",
+    "rootFolder": "Root (no folder)"
   },
   "webhooks": {
     "title": "Webhooks",
@@ -383,7 +409,8 @@
     "dropHereHint": "or click to browse",
     "addMedia": "Add media",
     "confirm": "Confirm",
-    "acceptedTypes": "Accepted types"
+    "acceptedTypes": "Accepted types",
+    "searchPlaceholder": "Search files..."
   },
   "apiKeysNew": {
     "back": "Back to API Keys",

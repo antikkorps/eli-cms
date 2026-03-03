@@ -1,6 +1,6 @@
 import { eq, and, count as drizzleCount, asc, desc, sql, inArray, gte, lte, isNull, isNotNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { contents } from '../db/schema/index.js';
+import { contents, contentLocks } from '../db/schema/index.js';
 import { ContentTypeService } from './content-type.service.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
@@ -144,7 +144,7 @@ export class ContentService {
           filters.push(sql`${contents.data} @> ${JSON.stringify({ [fieldName]: value })}::jsonb`);
         } else if (typeof value === 'object' && value !== null && 'like' in value) {
           // ILIKE on extracted text value
-          filters.push(sql`${contents.data}->>${sql.raw(`'${fieldName}'`)} ILIKE ${'%' + value.like + '%'}`);
+          filters.push(sql`${contents.data} ->> ${fieldName} ILIKE ${'%' + value.like + '%'}`);
         }
       }
     }
@@ -309,11 +309,6 @@ export class ContentService {
       WorkflowService.validateTransition(existing.status, input.status, userPermissions);
     }
 
-    // Snapshot current state before updating (if userId provided)
-    if (userId) {
-      await ContentVersionService.snapshot(id, userId);
-    }
-
     if (input.data) {
       const contentType = await ContentTypeService.findById(existing.contentTypeId);
       const dataSchema = buildContentDataSchema(contentType.fields);
@@ -349,12 +344,22 @@ export class ContentService {
       updateData.publishedAt = new Date(publishedAtInput);
     }
 
-    const [content] = await db.update(contents).set(updateData).where(eq(contents.id, id)).returning();
+    // Atomic transaction: snapshot + update + release lock
+    const content = await db.transaction(async (tx) => {
+      // Snapshot current state before updating (if userId provided)
+      if (userId) {
+        await ContentVersionService.snapshot(id, userId, tx);
+      }
 
-    // Auto-release lock on successful save
-    if (userId) {
-      await LockService.release(id, userId);
-    }
+      const [updated] = await tx.update(contents).set(updateData).where(eq(contents.id, id)).returning();
+
+      // Auto-release lock on successful save
+      if (userId) {
+        await tx.delete(contentLocks).where(and(eq(contentLocks.contentId, id), eq(contentLocks.lockedBy, userId)));
+      }
+
+      return updated;
+    });
 
     const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
     eventBus.emit('content.updated', { content, ...actorData });
