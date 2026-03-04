@@ -53,8 +53,9 @@ const navigation = computed(() => {
     for (const ct of visibleTypes) {
       children.push({
         label: ct.name,
+        icon: ct.isSingleton ? 'i-lucide-file-cog' : undefined,
         to: `/admin/contents?type=${ct.slug}`,
-        badge: ct.contentCount != null ? String(ct.contentCount) : undefined,
+        badge: ct.isSingleton ? undefined : (ct.contentCount != null ? String(ct.contentCount) : undefined),
       });
     }
 

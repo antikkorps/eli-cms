@@ -1,5 +1,5 @@
 import type { Context } from 'koa';
-import { loginSchema, registerSchema, refreshTokenSchema, logoutSchema, changePasswordSchema } from '@eli-cms/shared';
+import { loginSchema, registerSchema, refreshTokenSchema, logoutSchema, changePasswordSchema, updateProfileSchema } from '@eli-cms/shared';
 import type { TokenPair } from '@eli-cms/shared';
 import { AuthService } from '../services/auth.service.js';
 import { AppError } from '../utils/app-error.js';
@@ -112,6 +112,16 @@ export class AuthController {
     await AuthService.changePassword(ctx.state.user.userId, result.data, actor);
     clearAuthCookies(ctx);
     ctx.body = { success: true };
+  }
+
+  static async updateProfile(ctx: Context) {
+    const result = updateProfileSchema.safeParse(ctx.request.body);
+    if (!result.success) {
+      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+    }
+
+    const user = await AuthService.updateProfile(ctx.state.user.userId, result.data);
+    ctx.body = { success: true, data: user };
   }
 
   static async me(ctx: Context) {

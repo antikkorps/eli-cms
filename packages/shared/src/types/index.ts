@@ -14,6 +14,8 @@ export interface User {
   id: string;
   email: string;
   roleId: string;
+  avatarStyle: string | null;
+  avatarSeed: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,6 +37,7 @@ export interface ContentType {
   slug: string;
   name: string;
   fields: FieldDefinition[];
+  isSingleton: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

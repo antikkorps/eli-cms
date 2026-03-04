@@ -239,7 +239,8 @@ const columns = computed(() => [
     header: '',
     cell: ({ row }: { row: { original: ContentItem } }) => {
       const buttons = [];
-      if (canCreate.value) {
+      const isSingleton = contentTypeItems.value.find(c => c.id === row.original.contentTypeId)?.isSingleton;
+      if (canCreate.value && !isSingleton) {
         buttons.push(
           h(UButton as ReturnType<typeof resolveComponent>, {
             icon: 'i-lucide-copy',
@@ -322,7 +323,24 @@ onMounted(async () => {
   const typeSlug = route.query.type as string | undefined;
   if (typeSlug) {
     const ct = contentTypeItems.value.find((c) => c.slug === typeSlug);
-    if (ct) contentTypeFilter.value = ct.id;
+    if (ct) {
+      // Singleton auto-redirect: go directly to edit or create
+      if (ct.isSingleton) {
+        try {
+          const res = await apiFetch<{ success: boolean; data: Array<{ id: string }> }>(
+            `/contents?contentTypeId=${ct.id}&limit=1`,
+          );
+          if (res.data.length > 0) {
+            return navigateTo(`/admin/contents/${res.data[0].id}`, { replace: true });
+          } else {
+            return navigateTo(`/admin/contents/new?type=${ct.slug}`, { replace: true });
+          }
+        } catch {
+          // fall through to normal list view
+        }
+      }
+      contentTypeFilter.value = ct.id;
+    }
   }
 });
 </script>

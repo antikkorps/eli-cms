@@ -19,6 +19,10 @@ export const users = pgTable('users', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   password: varchar('password', { length: 255 }).notNull(),
   roleId: uuid('role_id').notNull().references(() => roles.id),
+  avatarStyle: varchar('avatar_style', { length: 50 }),
+  avatarSeed: varchar('avatar_seed', { length: 255 }),
+  failedLoginAttempts: integer('failed_login_attempts').notNull().default(0),
+  lockedUntil: timestamp('locked_until', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 }, (table) => [
@@ -31,6 +35,7 @@ export const contentTypes = pgTable('content_types', {
   slug: varchar('slug', { length: 255 }).notNull().unique(),
   name: varchar('name', { length: 255 }).notNull(),
   fields: jsonb('fields').notNull().$type<FieldDefinition[]>(),
+  isSingleton: boolean('is_singleton').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

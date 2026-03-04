@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { FieldDefinition } from '../types/index.js';
 import { sanitize } from '../utils/sanitize.js';
 import { ALL_PERMISSIONS } from '../constants/permissions.js';
+import { DICEBEAR_STYLES } from '../constants/avatar.js';
 
 /** Zod string that strips all HTML tags and trims. */
 const safeString = (max = 255) => z.string().max(max).transform(sanitize);
@@ -31,6 +32,12 @@ export const changePasswordSchema = z.object({
   newPassword: z.string().min(6),
 });
 
+export const updateProfileSchema = z.object({
+  email: z.string().email().optional(),
+  avatarStyle: z.enum(DICEBEAR_STYLES).nullable().optional(),
+  avatarSeed: z.string().max(255).nullable().optional(),
+});
+
 // Content Type schemas
 const fieldDefinitionSchema = z.object({
   name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
@@ -46,6 +53,7 @@ export const createContentTypeSchema = z.object({
   slug: z.string().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
   name: safeString(255).pipe(z.string().min(1)),
   fields: z.array(fieldDefinitionSchema).min(1),
+  isSingleton: z.boolean().default(false),
 });
 
 export const updateContentTypeSchema = createContentTypeSchema.partial();
@@ -405,6 +413,7 @@ export type TrashListQuery = z.infer<typeof trashListQuerySchema>;
 export type PublicContentListQuery = z.infer<typeof publicContentListQuerySchema>;
 export type LogoutInput = z.infer<typeof logoutSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 export type UserListQuery = z.infer<typeof userListQuerySchema>;
 export type S3ConfigInput = z.infer<typeof s3ConfigSchema>;
 export type StorageConfigInput = z.infer<typeof storageConfigSchema>;

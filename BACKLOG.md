@@ -22,7 +22,7 @@
 - [x] Fix SQL injection in public JSONB filter (parameterized `fieldName` in `->>` operator)
 - [x] Fix race condition in lock acquisition (`db.transaction()` + `SELECT … FOR UPDATE`)
 - [x] Wrap content update in DB transaction (snapshot + update + lock release atomic)
-- [ ] Cap pagination limit in shared schemas (prevent DoS with `?limit=999999`)
+- [x] Cap pagination limit in shared schemas (`.max(100)` on `paginationSchema.limit`)
 
 ## Medium Priority
 
@@ -39,15 +39,15 @@
 - [x] Content types in sidebar (Strapi/Directus pattern — collapsible section, per-type navigation, badge counts)
 - [x] Command palette with content type navigation (Cmd+K)
 - [x] Keyboard shortcuts (Cmd+S save, Cmd+N new content, Cmd+K command palette)
-- [ ] User profile page (change email, password, name, avatar)
+- [x] User profile page (card-based layout, email/password change, DiceBear avatar picker with 12 styles + seed variations, persisted in DB)
 - [ ] Password reset flow (forgot password → email link → reset form)
 - [ ] Content duplication endpoint (`POST /contents/:id/duplicate`)
 - [ ] Repeatable fields / arrays (lists of structured sub-objects — FAQ items, feature lists, gallery)
 - [ ] Default values for fields (add `default` to FieldDefinition + schema builder + field builder UI)
-- [ ] Singleton content types (`isSingleton` flag — "Site Settings", "Homepage" with single entry)
+- [x] Singleton content types (`isSingleton` column, enforce single entry 409, auto-redirect in contents list, sidebar icon)
 - [ ] Client-side form validation (reuse shared Zod schemas, show field-level errors instead of generic toasts)
 - [~] HTTP caching on public API (Cache-Control + ETag on `/uploads/:id/serve` — remaining: content endpoints)
-- [ ] Brute-force login protection (progressive delays or lockout after N failed attempts)
+- [x] Brute-force login protection (progressive delays or lockout after N failed attempts)
 - [ ] Background job queue — replace `setInterval` scheduler with BullMQ/Redis
 - [ ] Structured logging — replace `console.log` with pino (JSON, request IDs)
 - [ ] Advanced form validation (min/max length, regex patterns, unique constraints per field)

@@ -6,6 +6,7 @@ const { t } = useI18n();
 
 const loading = ref(false);
 const error = ref('');
+const showPassword = ref(false);
 const form = reactive({
   email: '',
   password: '',
@@ -94,13 +95,24 @@ async function handleSubmit() {
           <UFormField :label="$t('login.passwordLabel')">
             <UInput
               v-model="form.password"
-              type="password"
+              :type="showPassword ? 'text' : 'password'"
               :placeholder="$t('login.passwordPlaceholder')"
               icon="i-lucide-lock"
               size="xl"
               required
               class="w-full"
-            />
+            >
+              <template #trailing>
+                <UButton
+                  :icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+                  variant="link"
+                  color="neutral"
+                  size="xs"
+                  :padded="false"
+                  @click="showPassword = !showPassword"
+                />
+              </template>
+            </UInput>
           </UFormField>
 
           <UAlert v-if="error" color="error" variant="subtle" :title="error" icon="i-lucide-circle-alert" />

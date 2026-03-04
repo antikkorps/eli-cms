@@ -78,6 +78,27 @@
       "when": 1773000000000,
       "tag": "0010_media_folders_and_metadata",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1773100000000,
+      "tag": "0011_singleton_content_types",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1773200000000,
+      "tag": "0012_user_avatar",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1773300000000,
+      "tag": "0013_login_brute_force",
+      "breakpoints": true
     }
   ]
 }
