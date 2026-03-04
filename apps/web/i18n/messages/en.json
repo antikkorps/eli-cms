@@ -58,7 +58,8 @@
     "passwordPlaceholder": "Enter your password",
     "submit": "Sign in",
     "defaultCredentials": "Default: admin{'@'}eli-cms.local / admin123",
-    "errorInvalid": "Invalid email or password"
+    "errorInvalid": "Invalid email or password",
+    "accountLocked": "Account temporarily locked. Try again in {minutes} minute(s)."
   },
   "setup": {
     "subtitle": "Create your admin account to get started",

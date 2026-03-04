@@ -8,6 +8,7 @@ import { env } from '../config/environment.js';
 import { parseDuration, parseDurationSec } from '../utils/parse-duration.js';
 import { AppError } from '../utils/app-error.js';
 import type { JwtPayload, TokenPair, RegisterInput, LoginInput, ChangePasswordInput, UpdateProfileInput } from '@eli-cms/shared';
+import { MAX_LOGIN_ATTEMPTS, LOCKOUT_DURATIONS_MIN } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
 import type { Actor } from './content.service.js';
 
@@ -54,6 +55,8 @@ export class AuthService {
         password: users.password,
         roleId: users.roleId,
         permissions: roles.permissions,
+        failedLoginAttempts: users.failedLoginAttempts,
+        lockedUntil: users.lockedUntil,
       })
       .from(users)
       .innerJoin(roles, eq(users.roleId, roles.id))
@@ -64,9 +67,30 @@ export class AuthService {
       throw new AppError(401, 'Invalid credentials');
     }
 
+    // Check lockout
+    if (row.lockedUntil && row.lockedUntil > new Date()) {
+      const minutesLeft = Math.ceil((row.lockedUntil.getTime() - Date.now()) / 60_000);
+      throw new AppError(429, `Account temporarily locked. Try again in ${minutesLeft} minute(s).`);
+    }
+
     const valid = await bcrypt.compare(input.password, row.password);
     if (!valid) {
+      const newAttempts = row.failedLoginAttempts + 1;
+      const updates: Record<string, unknown> = { failedLoginAttempts: newAttempts };
+
+      if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
+        const tier = Math.min(Math.floor(newAttempts / MAX_LOGIN_ATTEMPTS) - 1, LOCKOUT_DURATIONS_MIN.length - 1);
+        const lockoutMinutes = LOCKOUT_DURATIONS_MIN[tier];
+        updates.lockedUntil = new Date(Date.now() + lockoutMinutes * 60_000);
+      }
+
+      await db.update(users).set(updates).where(eq(users.id, row.id));
       throw new AppError(401, 'Invalid credentials');
+    }
+
+    // Successful login — reset counters
+    if (row.failedLoginAttempts > 0 || row.lockedUntil) {
+      await db.update(users).set({ failedLoginAttempts: 0, lockedUntil: null }).where(eq(users.id, row.id));
     }
 
     const payload: JwtPayload = {

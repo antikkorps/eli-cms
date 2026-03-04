@@ -56,6 +56,9 @@ const passwordForm = reactive({
   newPassword: '',
   confirmPassword: '',
 });
+const showCurrentPassword = ref(false);
+const showNewPassword = ref(false);
+const showConfirmPassword = ref(false);
 const savingPassword = ref(false);
 
 async function submitPassword() {
@@ -156,13 +159,25 @@ const memberSince = computed(() => {
       </template>
       <form class="space-y-4" @submit.prevent="submitPassword">
         <UFormField :label="$t('profile.currentPassword')">
-          <UInput v-model="passwordForm.currentPassword" type="password" required class="w-full max-w-sm" />
+          <UInput v-model="passwordForm.currentPassword" :type="showCurrentPassword ? 'text' : 'password'" required class="w-full max-w-sm">
+            <template #trailing>
+              <UButton :icon="showCurrentPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'" variant="link" color="neutral" size="xs" :padded="false" @click="showCurrentPassword = !showCurrentPassword" />
+            </template>
+          </UInput>
         </UFormField>
         <UFormField :label="$t('profile.newPassword')">
-          <UInput v-model="passwordForm.newPassword" type="password" required minlength="6" class="w-full max-w-sm" />
+          <UInput v-model="passwordForm.newPassword" :type="showNewPassword ? 'text' : 'password'" required minlength="6" class="w-full max-w-sm">
+            <template #trailing>
+              <UButton :icon="showNewPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'" variant="link" color="neutral" size="xs" :padded="false" @click="showNewPassword = !showNewPassword" />
+            </template>
+          </UInput>
         </UFormField>
         <UFormField :label="$t('profile.confirmPassword')">
-          <UInput v-model="passwordForm.confirmPassword" type="password" required minlength="6" class="w-full max-w-sm" />
+          <UInput v-model="passwordForm.confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" required minlength="6" class="w-full max-w-sm">
+            <template #trailing>
+              <UButton :icon="showConfirmPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'" variant="link" color="neutral" size="xs" :padded="false" @click="showConfirmPassword = !showConfirmPassword" />
+            </template>
+          </UInput>
         </UFormField>
         <UButton type="submit" :loading="savingPassword" :disabled="!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword">
           {{ $t('profile.changePassword') }}

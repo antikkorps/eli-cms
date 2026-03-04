@@ -21,6 +21,8 @@ export const users = pgTable('users', {
   roleId: uuid('role_id').notNull().references(() => roles.id),
   avatarStyle: varchar('avatar_style', { length: 50 }),
   avatarSeed: varchar('avatar_seed', { length: 255 }),
+  failedLoginAttempts: integer('failed_login_attempts').notNull().default(0),
+  lockedUntil: timestamp('locked_until', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 }, (table) => [
