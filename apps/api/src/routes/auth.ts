@@ -11,4 +11,5 @@ authRouter.post('/refresh', authRateLimit, AuthController.refresh);
 authRouter.post('/logout', authenticate, AuthController.logout);
 authRouter.post('/logout-all', authenticate, AuthController.logoutAll);
 authRouter.put('/change-password', authenticate, AuthController.changePassword);
+authRouter.put('/profile', authenticate, AuthController.updateProfile);
 authRouter.get('/me', authenticate, AuthController.me);

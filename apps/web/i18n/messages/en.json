@@ -45,7 +45,8 @@
     "seeAllTypes": "See all types...",
     "trash": "Trash",
     "seeAllFolders": "See all folders...",
-    "logout": "Log out"
+    "logout": "Log out",
+    "profile": "Profile"
   },
   "login": {
     "tagline": "Headless CMS with dynamic content types. Zero migration, infinite flexibility.",
@@ -149,7 +150,9 @@
     "slugPlaceholder": "e.g. blog-post",
     "fieldsLabel": "Fields",
     "deleteTitle": "Delete Content Type",
-    "deleteConfirm": "Are you sure you want to delete {name}? All associated content will be lost."
+    "deleteConfirm": "Are you sure you want to delete {name}? All associated content will be lost.",
+    "singletonLabel": "Singleton",
+    "singletonHint": "Only one entry allowed — ideal for pages like Homepage or Settings"
   },
   "fieldBuilder": {
     "addField": "Add Field",
@@ -458,5 +461,27 @@
     "bulkPermanentDelete": "Delete selected permanently",
     "autoPurgeNotice": "Items in the trash are automatically deleted after 30 days.",
     "columnDeletedAt": "Deleted"
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your account settings",
+    "changeAvatar": "Change Avatar",
+    "avatarPickerTitle": "Choose an Avatar Style",
+    "avatarPickerSubtitle": "Select a style, then pick a variation",
+    "avatarSeedSubtitle": "Pick a variation you like",
+    "avatarRandomize": "Randomize",
+    "avatarConfirm": "Confirm",
+    "memberSince": "Member since",
+    "emailSection": "Email",
+    "emailSubtitle": "Update your email address",
+    "emailLabel": "Email address",
+    "passwordSection": "Change Password",
+    "passwordSubtitle": "Update your password to keep your account secure",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "changePassword": "Change password",
+    "passwordMismatch": "Passwords do not match",
+    "passwordChanged": "Password changed successfully"
   }
 }

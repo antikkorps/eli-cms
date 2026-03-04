@@ -1,6 +1,6 @@
 import { eq, and, count as drizzleCount, asc, desc, sql, inArray, gte, lte, isNull, isNotNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { contents, contentLocks } from '../db/schema/index.js';
+import { contents, contentLocks, contentTypes } from '../db/schema/index.js';
 import { ContentTypeService } from './content-type.service.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
@@ -99,13 +99,32 @@ export class ContentService {
       orderByClause = orderFn(orderCol);
     }
 
-    const data = await db
-      .select()
+    const rows = await db
+      .select({
+        id: contents.id,
+        contentTypeId: contents.contentTypeId,
+        slug: contents.slug,
+        status: contents.status,
+        data: contents.data,
+        publishedAt: contents.publishedAt,
+        editedBy: contents.editedBy,
+        deletedAt: contents.deletedAt,
+        createdAt: contents.createdAt,
+        updatedAt: contents.updatedAt,
+        ctName: contentTypes.name,
+        ctSlug: contentTypes.slug,
+      })
       .from(contents)
+      .innerJoin(contentTypes, eq(contents.contentTypeId, contentTypes.id))
       .where(where)
       .orderBy(orderByClause)
       .limit(limit)
       .offset(offset);
+
+    const data = rows.map(({ ctName, ctSlug, ...rest }) => ({
+      ...rest,
+      contentType: { name: ctName, slug: ctSlug },
+    }));
 
     return { data, meta: buildMeta(total, page, limit) };
   }
@@ -261,6 +280,17 @@ export class ContentService {
 
   static async create(input: CreateContentInput, actor?: Actor) {
     const contentType = await ContentTypeService.findById(input.contentTypeId);
+
+    // Singleton check: only one content allowed
+    if (contentType.isSingleton) {
+      const [{ total }] = await db
+        .select({ total: drizzleCount() })
+        .from(contents)
+        .where(and(eq(contents.contentTypeId, input.contentTypeId), isNull(contents.deletedAt)));
+      if (total > 0) {
+        throw new AppError(409, `"${contentType.name}" is a singleton and already has an entry`);
+      }
+    }
 
     // Dynamic validation
     const dataSchema = buildContentDataSchema(contentType.fields);

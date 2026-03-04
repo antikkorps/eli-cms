@@ -22,6 +22,7 @@ interface FieldDefinition {
 const form = reactive({
   name: '',
   slug: '',
+  isSingleton: false,
   fields: [] as FieldDefinition[],
 });
 
@@ -33,10 +34,11 @@ async function fetchContentType() {
   try {
     const res = await apiFetch<{
       success: boolean;
-      data: { id: string; name: string; slug: string; fields: FieldDefinition[] };
+      data: { id: string; name: string; slug: string; isSingleton?: boolean; fields: FieldDefinition[] };
     }>(`/content-types/${route.params.id}`);
     form.name = res.data.name;
     form.slug = res.data.slug;
+    form.isSingleton = res.data.isSingleton ?? false;
     form.fields = res.data.fields;
   } catch {
     toast.add({ title: t('common.error'), color: 'error' });
@@ -54,6 +56,7 @@ async function submit() {
       body: {
         name: form.name,
         slug: form.slug,
+        isSingleton: form.isSingleton,
         fields: form.fields,
       },
     });
@@ -92,6 +95,16 @@ onMounted(fetchContentType);
           <UInput v-model="form.slug" :placeholder="$t('contentTypes.slugPlaceholder')" required class="w-full" />
         </UFormField>
       </div>
+
+      <UFormField>
+        <div class="flex items-center gap-3">
+          <USwitch v-model="form.isSingleton" />
+          <div>
+            <span class="text-sm font-medium">{{ $t('contentTypes.singletonLabel') }}</span>
+            <p class="text-xs text-muted">{{ $t('contentTypes.singletonHint') }}</p>
+          </div>
+        </div>
+      </UFormField>
 
       <UFormField :label="$t('contentTypes.fieldsLabel')">
         <FieldBuilder v-model="form.fields" />

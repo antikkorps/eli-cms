@@ -2,6 +2,7 @@ interface ContentTypeItem {
   id: string;
   name: string;
   slug: string;
+  isSingleton?: boolean;
   fields?: Array<{
     name: string;
     type: string;

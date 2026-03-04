@@ -2,12 +2,15 @@
 defineProps<{ collapsed?: boolean }>();
 
 const { user, logout } = useAuth();
+const { userAvatarUrl } = useAvatar();
 const { t } = useI18n();
 </script>
 
 <template>
   <div v-if="collapsed" class="flex flex-col items-center gap-2 w-full">
-    <UAvatar :text="user?.email?.charAt(0).toUpperCase()" size="xs" />
+    <NuxtLink to="/admin/profile">
+      <UAvatar v-if="user?.email" :src="userAvatarUrl(user, 32)" size="xs" />
+    </NuxtLink>
     <UButton
       icon="i-lucide-log-out"
       variant="ghost"
@@ -19,10 +22,10 @@ const { t } = useI18n();
   </div>
 
   <div v-else class="space-y-2 w-full">
-    <div class="flex items-center gap-2 min-w-0">
-      <UAvatar :text="user?.email?.charAt(0).toUpperCase()" size="xs" class="shrink-0" />
+    <NuxtLink to="/admin/profile" class="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity">
+      <UAvatar v-if="user?.email" :src="userAvatarUrl(user, 32)" size="xs" class="shrink-0" />
       <span class="text-xs truncate">{{ user?.email }}</span>
-    </div>
+    </NuxtLink>
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-1">
         <DarkModeToggle />

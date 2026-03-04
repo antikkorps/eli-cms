@@ -30,8 +30,25 @@ const statusItems = [
   { label: t('contents.published'), value: 'published' },
 ];
 
-watch(selectedTypeId, () => {
+watch(selectedTypeId, async () => {
   if (!route.query.duplicate) data.value = {};
+
+  // If singleton type is selected, check if content already exists
+  if (selectedTypeId.value) {
+    const ct = contentTypeItems.value.find((c) => c.id === selectedTypeId.value);
+    if (ct?.isSingleton) {
+      try {
+        const res = await apiFetch<{ success: boolean; data: Array<{ id: string }> }>(
+          `/contents?contentTypeId=${ct.id}&limit=1`,
+        );
+        if (res.data.length > 0) {
+          navigateTo(`/admin/contents/${res.data[0].id}`, { replace: true });
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
 });
 
 async function loadDuplicate() {

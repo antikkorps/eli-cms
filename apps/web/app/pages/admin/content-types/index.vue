@@ -13,6 +13,7 @@ interface ContentTypeItem {
   id: string;
   name: string;
   slug: string;
+  isSingleton?: boolean;
   fields: unknown[];
   createdAt: string;
 }
@@ -37,7 +38,20 @@ const UBadge = resolveComponent('UBadge');
 const UButton = resolveComponent('UButton');
 
 const columns = computed(() => [
-  { accessorKey: 'name', header: t('contentTypes.columnName') },
+  {
+    accessorKey: 'name',
+    header: t('contentTypes.columnName'),
+    cell: ({ row }: { row: { original: ContentTypeItem } }) => {
+      const children = [row.original.name];
+      if (row.original.isSingleton) {
+        children.push(
+          ' ',
+          h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: 'info', size: 'sm' }, () => t('contentTypes.singletonLabel')),
+        );
+      }
+      return h('span', { class: 'flex items-center gap-1.5' }, children);
+    },
+  },
   { accessorKey: 'slug', header: t('contentTypes.columnSlug') },
   {
     accessorKey: 'fields',

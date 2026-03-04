@@ -7,7 +7,7 @@ import { users, refreshTokens, roles } from '../db/schema/index.js';
 import { env } from '../config/environment.js';
 import { parseDuration, parseDurationSec } from '../utils/parse-duration.js';
 import { AppError } from '../utils/app-error.js';
-import type { JwtPayload, TokenPair, RegisterInput, LoginInput, ChangePasswordInput } from '@eli-cms/shared';
+import type { JwtPayload, TokenPair, RegisterInput, LoginInput, ChangePasswordInput, UpdateProfileInput } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
 import type { Actor } from './content.service.js';
 
@@ -191,12 +191,76 @@ export class AuthService {
     eventBus.emit('auth.password_changed', { userId, ...actorData });
   }
 
+  static async updateProfile(userId: string, input: UpdateProfileInput) {
+    // Build partial update — only set fields present in input
+    const updates: Record<string, unknown> = {};
+
+    if (input.email !== undefined) {
+      const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, input.email)).limit(1);
+      if (existing && existing.id !== userId) {
+        throw new AppError(409, 'Email already in use');
+      }
+      updates.email = input.email;
+    }
+
+    if (input.avatarStyle !== undefined) {
+      updates.avatarStyle = input.avatarStyle;
+    }
+    if (input.avatarSeed !== undefined) {
+      updates.avatarSeed = input.avatarSeed;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      const [updated] = await db
+        .update(users)
+        .set(updates)
+        .where(eq(users.id, userId))
+        .returning({ id: users.id });
+
+      if (!updated) throw new AppError(404, 'User not found');
+    }
+
+    // Return full user with role info
+    const [row] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        roleId: users.roleId,
+        avatarStyle: users.avatarStyle,
+        avatarSeed: users.avatarSeed,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        roleName: roles.name,
+        roleSlug: roles.slug,
+        permissions: roles.permissions,
+      })
+      .from(users)
+      .innerJoin(roles, eq(users.roleId, roles.id))
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!row) throw new AppError(404, 'User not found');
+
+    return {
+      id: row.id,
+      email: row.email,
+      roleId: row.roleId,
+      avatarStyle: row.avatarStyle,
+      avatarSeed: row.avatarSeed,
+      role: { name: row.roleName, slug: row.roleSlug, permissions: row.permissions },
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
+  }
+
   static async getUserFromToken(payload: JwtPayload) {
     const [row] = await db
       .select({
         id: users.id,
         email: users.email,
         roleId: users.roleId,
+        avatarStyle: users.avatarStyle,
+        avatarSeed: users.avatarSeed,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
         roleName: roles.name,
@@ -215,6 +279,8 @@ export class AuthService {
       id: row.id,
       email: row.email,
       roleId: row.roleId,
+      avatarStyle: row.avatarStyle,
+      avatarSeed: row.avatarSeed,
       role: { name: row.roleName, slug: row.roleSlug, permissions: row.permissions },
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

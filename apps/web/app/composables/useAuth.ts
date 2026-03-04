@@ -8,6 +8,8 @@ interface AuthUser {
   id: string;
   email: string;
   roleId: string;
+  avatarStyle: string | null;
+  avatarSeed: string | null;
   role: AuthRole;
   createdAt: string;
   updatedAt: string;
@@ -88,6 +90,19 @@ export function useAuth() {
     }
   }
 
+  async function updateProfile(input: { email?: string; avatarStyle?: string | null; avatarSeed?: string | null }) {
+    const res = await $fetch<{ success: boolean; data: AuthUser }>(`${baseURL}/auth/profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${tokenCookie.value}`,
+      },
+      body: input,
+    });
+    state.user = res.data;
+    return res.data;
+  }
+
   async function logout() {
     try {
       if (tokenCookie.value) {
@@ -118,6 +133,7 @@ export function useAuth() {
     hasPermission,
     login,
     fetchUser,
+    updateProfile,
     logout,
   };
 }

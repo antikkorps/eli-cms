@@ -1,4 +1,4 @@
-import { eq, ilike, or, count as drizzleCount, sql, isNull } from 'drizzle-orm';
+import { eq, ilike, or, and, count as drizzleCount, sql, isNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { contentTypes, contents } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
@@ -38,6 +38,7 @@ export class ContentTypeService {
           slug: contentTypes.slug,
           name: contentTypes.name,
           fields: contentTypes.fields,
+          isSingleton: contentTypes.isSingleton,
           createdAt: contentTypes.createdAt,
           updatedAt: contentTypes.updatedAt,
           contentCount: sql<number>`coalesce(${countSubquery.contentCount}, 0)`.mapWith(Number),
@@ -91,7 +92,18 @@ export class ContentTypeService {
   }
 
   static async update(id: string, input: UpdateContentTypeInput, actor?: Actor) {
-    await this.findById(id); // ensure exists
+    const current = await this.findById(id); // ensure exists
+
+    // Prevent enabling singleton if >1 content already exists
+    if (input.isSingleton === true && !current.isSingleton) {
+      const [{ total }] = await db
+        .select({ total: drizzleCount() })
+        .from(contents)
+        .where(and(eq(contents.contentTypeId, id), isNull(contents.deletedAt)));
+      if (total > 1) {
+        throw new AppError(409, `Cannot enable singleton: ${total} contents already exist (max 1)`);
+      }
+    }
 
     if (input.slug) {
       const existing = await this.findBySlug(input.slug);

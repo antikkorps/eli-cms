@@ -45,7 +45,8 @@
     "seeAllTypes": "Voir tous les types...",
     "trash": "Corbeille",
     "seeAllFolders": "Voir tous les dossiers...",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "profile": "Profil"
   },
   "login": {
     "tagline": "CMS headless avec des types de contenu dynamiques. Zéro migration, flexibilité infinie.",
@@ -149,7 +150,9 @@
     "slugPlaceholder": "ex. article-de-blog",
     "fieldsLabel": "Champs",
     "deleteTitle": "Supprimer le type de contenu",
-    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ? Tous les contenus associés seront perdus."
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ? Tous les contenus associés seront perdus.",
+    "singletonLabel": "Singleton",
+    "singletonHint": "Une seule entrée autorisée — idéal pour les pages comme Accueil ou Paramètres"
   },
   "fieldBuilder": {
     "addField": "Ajouter un champ",
@@ -458,5 +461,27 @@
     "bulkPermanentDelete": "Supprimer la sélection définitivement",
     "autoPurgeNotice": "Les éléments dans la corbeille sont automatiquement supprimés après 30 jours.",
     "columnDeletedAt": "Supprimé le"
+  },
+  "profile": {
+    "title": "Profil",
+    "subtitle": "Gérez les paramètres de votre compte",
+    "changeAvatar": "Changer l'avatar",
+    "avatarPickerTitle": "Choisissez un style d'avatar",
+    "avatarPickerSubtitle": "Sélectionnez un style, puis choisissez une variation",
+    "avatarSeedSubtitle": "Choisissez une variation qui vous plaît",
+    "avatarRandomize": "Mélanger",
+    "avatarConfirm": "Confirmer",
+    "memberSince": "Membre depuis",
+    "emailSection": "E-mail",
+    "emailSubtitle": "Mettez à jour votre adresse e-mail",
+    "emailLabel": "Adresse e-mail",
+    "passwordSection": "Changer le mot de passe",
+    "passwordSubtitle": "Mettez à jour votre mot de passe pour sécuriser votre compte",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "changePassword": "Changer le mot de passe",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "passwordChanged": "Mot de passe modifié avec succès"
   }
 }
