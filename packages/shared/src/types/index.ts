@@ -168,6 +168,23 @@ export interface MediaFolderTree extends MediaFolder {
   children: MediaFolderTree[];
 }
 
+// ─── SMTP ───────────────────────────────────────────────
+export type SmtpAuthType = 'password' | 'oauth2' | 'none';
+
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  authType: SmtpAuthType;
+  user?: string;
+  password?: string;
+  clientId?: string;
+  clientSecret?: string;
+  refreshToken?: string;
+  fromName: string;
+  fromAddress: string;
+}
+
 // ─── Webhooks ───────────────────────────────────────────
 export type WebhookEvent =
   | 'content.created'

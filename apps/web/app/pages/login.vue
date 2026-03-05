@@ -118,6 +118,12 @@ async function handleSubmit() {
           <UAlert v-if="error" color="error" variant="subtle" :title="error" icon="i-lucide-circle-alert" />
 
           <UButton type="submit" block size="xl" :loading="loading">{{ $t('login.submit') }}</UButton>
+
+          <div class="text-center">
+            <NuxtLink to="/forgot-password" class="text-sm text-primary hover:underline">
+              {{ $t('login.forgotPassword') }}
+            </NuxtLink>
+          </div>
         </form>
 
         <p class="text-center text-xs text-muted">{{ $t('login.defaultCredentials') }}</p>

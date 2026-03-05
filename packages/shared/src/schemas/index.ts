@@ -412,6 +412,40 @@ export const apiKeyListQuerySchema = paginationSchema.extend({
     .optional(),
 });
 
+// ─── SMTP Config schema ─────────────────────────────────
+export const smtpConfigSchema = z
+  .object({
+    host: z.string().min(1),
+    port: z.coerce.number().int().min(1).max(65535),
+    secure: z.boolean().default(false),
+    authType: z.enum(['password', 'oauth2', 'none']).default('password'),
+    user: z.string().min(1).optional(),
+    password: z.string().min(1).optional(),
+    clientId: z.string().min(1).optional(),
+    clientSecret: z.string().min(1).optional(),
+    refreshToken: z.string().min(1).optional(),
+    fromName: z.string().min(1).max(255),
+    fromAddress: z.string().email(),
+  })
+  .refine(
+    (data) => data.authType !== 'password' || (data.user && data.password),
+    { message: 'User and password are required for password authentication', path: ['password'] },
+  )
+  .refine(
+    (data) => data.authType !== 'oauth2' || (data.user && data.clientId && data.clientSecret && data.refreshToken),
+    { message: 'User, Client ID, Client Secret and Refresh Token are required for OAuth2', path: ['refreshToken'] },
+  );
+
+// ─── Password Reset schemas ─────────────────────────────
+export const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().uuid(),
+  newPassword: z.string().min(6),
+});
+
 // ─── Setup schema ───────────────────────────────────────
 export const setupSchema = z
   .object({
@@ -466,3 +500,7 @@ export type ApiKeyListQuery = z.infer<typeof apiKeyListQuerySchema>;
 export type CreateMediaFolderInput = z.infer<typeof createMediaFolderSchema>;
 export type UpdateMediaFolderInput = z.infer<typeof updateMediaFolderSchema>;
 export type MediaFolderListQuery = z.infer<typeof mediaFolderListQuerySchema>;
+
+export type SmtpConfigInput = z.infer<typeof smtpConfigSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

@@ -3,14 +3,15 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { eq, and, isNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { users, refreshTokens, roles } from '../db/schema/index.js';
+import { users, refreshTokens, roles, passwordResetTokens } from '../db/schema/index.js';
 import { env } from '../config/environment.js';
 import { parseDuration, parseDurationSec } from '../utils/parse-duration.js';
 import { AppError } from '../utils/app-error.js';
 import type { JwtPayload, TokenPair, RegisterInput, LoginInput, ChangePasswordInput, UpdateProfileInput } from '@eli-cms/shared';
-import { MAX_LOGIN_ATTEMPTS, LOCKOUT_DURATIONS_MIN } from '@eli-cms/shared';
+import { MAX_LOGIN_ATTEMPTS, LOCKOUT_DURATIONS_MIN, RESET_TOKEN_EXPIRY_MIN } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
 import type { Actor } from './content.service.js';
+import { EmailService } from './email.service.js';
 
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
@@ -309,6 +310,69 @@ export class AuthService {
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
+  }
+
+  static async forgotPassword(email: string, frontendUrl: string): Promise<void> {
+    const [user] = await db
+      .select({ id: users.id, email: users.email })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    // Silent return if user not found — don't leak existence
+    if (!user) return;
+
+    const rawToken = randomUUID();
+    const tokenHash = hashToken(rawToken);
+    const expiresAt = new Date(Date.now() + RESET_TOKEN_EXPIRY_MIN * 60_000);
+
+    await db.insert(passwordResetTokens).values({
+      userId: user.id,
+      tokenHash,
+      expiresAt,
+    });
+
+    try {
+      await EmailService.sendPasswordReset(user.email, rawToken, frontendUrl);
+    } catch {
+      // Log but don't expose email delivery failures
+    }
+  }
+
+  static async resetPassword(token: string, newPassword: string): Promise<void> {
+    const tokenHash = hashToken(token);
+
+    const [stored] = await db
+      .select()
+      .from(passwordResetTokens)
+      .where(eq(passwordResetTokens.tokenHash, tokenHash))
+      .limit(1);
+
+    if (!stored) {
+      throw new AppError(400, 'Invalid or expired reset token');
+    }
+
+    if (stored.usedAt) {
+      throw new AppError(400, 'This reset token has already been used');
+    }
+
+    if (stored.expiresAt < new Date()) {
+      throw new AppError(400, 'Invalid or expired reset token');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    await db.transaction(async (tx) => {
+      await tx.update(users).set({ password: hashedPassword }).where(eq(users.id, stored.userId));
+      await tx.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, stored.id));
+      // Revoke all refresh tokens for the user
+      await tx
+        .update(refreshTokens)
+        .set({ revokedAt: new Date() })
+        .where(and(eq(refreshTokens.userId, stored.userId), isNull(refreshTokens.revokedAt)));
+    });
+
+    eventBus.emit('auth.password_reset', { userId: stored.userId });
   }
 
   private static async generateTokens(payload: JwtPayload, family: string): Promise<TokenPair> {

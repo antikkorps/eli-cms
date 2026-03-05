@@ -59,7 +59,8 @@
     "submit": "Se connecter",
     "defaultCredentials": "Par défaut : admin{'@'}eli-cms.local / admin123",
     "errorInvalid": "E-mail ou mot de passe invalide",
-    "accountLocked": "Compte temporairement verrouillé. Réessayez dans {minutes} minute(s)."
+    "accountLocked": "Compte temporairement verrouillé. Réessayez dans {minutes} minute(s).",
+    "forgotPassword": "Mot de passe oublié ?"
   },
   "setup": {
     "subtitle": "Créez votre compte administrateur pour commencer",
@@ -134,7 +135,28 @@
     "s3AccessKeyLabel": "ID de clé d'accès",
     "s3SecretKeyLabel": "Clé secrète",
     "s3EndpointLabel": "Point de terminaison",
-    "s3EndpointHint": "Optionnel, pour les services compatibles S3"
+    "s3EndpointHint": "Optionnel, pour les services compatibles S3",
+    "smtpTitle": "Configuration SMTP",
+    "smtpHostLabel": "Hôte",
+    "smtpPortLabel": "Port",
+    "smtpSecureLabel": "Sécurisé (TLS)",
+    "smtpAuthTypeLabel": "Authentification",
+    "smtpAuthPassword": "Mot de passe / App Password",
+    "smtpAuthOAuth2": "OAuth2 (Gmail, Azure...)",
+    "smtpAuthNone": "Aucune (relais ouvert)",
+    "smtpUserLabel": "Nom d'utilisateur",
+    "smtpPasswordLabel": "Mot de passe",
+    "smtpClientIdLabel": "Client ID",
+    "smtpClientSecretLabel": "Client Secret",
+    "smtpRefreshTokenLabel": "Refresh Token",
+    "smtpRefreshTokenHint": "Jeton longue durée obtenu auprès de votre fournisseur OAuth2",
+    "smtpFromNameLabel": "Nom de l'expéditeur",
+    "smtpFromAddressLabel": "Adresse de l'expéditeur",
+    "smtpTestTitle": "Envoyer un e-mail test",
+    "smtpTestRecipient": "E-mail du destinataire",
+    "smtpTestSend": "Envoyer un e-mail test",
+    "smtpTestSuccess": "E-mail test envoyé avec succès",
+    "smtpNotConfigured": "Configurez d'abord les paramètres SMTP"
   },
   "contentTypes": {
     "title": "Types de contenu",
@@ -488,5 +510,28 @@
     "changePassword": "Changer le mot de passe",
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "passwordChanged": "Mot de passe modifié avec succès"
+  },
+  "forgotPassword": {
+    "title": "Mot de passe oublié ?",
+    "subtitle": "Entrez votre e-mail et nous vous enverrons un lien de réinitialisation",
+    "emailLabel": "E-mail",
+    "emailPlaceholder": "vous{'@'}exemple.com",
+    "submit": "Envoyer le lien",
+    "success": "Si un compte existe avec cet e-mail, nous avons envoyé un lien de réinitialisation.",
+    "backToLogin": "Retour à la connexion"
+  },
+  "resetPassword": {
+    "title": "Définir un nouveau mot de passe",
+    "subtitle": "Entrez votre nouveau mot de passe ci-dessous",
+    "newPasswordLabel": "Nouveau mot de passe",
+    "newPasswordPlaceholder": "Au moins 6 caractères",
+    "confirmPasswordLabel": "Confirmer le mot de passe",
+    "confirmPasswordPlaceholder": "Confirmez votre nouveau mot de passe",
+    "submit": "Réinitialiser le mot de passe",
+    "success": "Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.",
+    "errorInvalid": "Lien de réinitialisation invalide ou expiré",
+    "errorUsed": "Ce lien de réinitialisation a déjà été utilisé",
+    "errorMismatch": "Les mots de passe ne correspondent pas",
+    "backToLogin": "Retour à la connexion"
   }
 }
