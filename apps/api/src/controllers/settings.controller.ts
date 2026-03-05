@@ -1,7 +1,8 @@
 import type { Context } from 'koa';
-import { storageConfigSchema } from '@eli-cms/shared';
+import { storageConfigSchema, smtpConfigSchema } from '@eli-cms/shared';
 import { SettingsService } from '../services/settings.service.js';
 import { invalidateStorageCache } from '../services/storage/index.js';
+import { EmailService } from '../services/email.service.js';
 import { AppError } from '../utils/app-error.js';
 import { extractActor } from '../utils/extract-actor.js';
 
@@ -15,6 +16,9 @@ function maskSecrets(config: Record<string, unknown>): Record<string, unknown> {
     if (s3.accessKeyId) s3.accessKeyId = MASK;
     result.s3 = s3;
   }
+  if (result.password) result.password = MASK;
+  if (result.clientSecret) result.clientSecret = MASK;
+  if (result.refreshToken) result.refreshToken = MASK;
   return result;
 }
 
@@ -34,5 +38,30 @@ export class SettingsController {
     invalidateStorageCache();
 
     ctx.body = { success: true, data: maskSecrets(saved as unknown as Record<string, unknown>) };
+  }
+
+  static async getSmtp(ctx: Context) {
+    const config = await SettingsService.getSmtpConfig();
+    ctx.body = { success: true, data: config ? maskSecrets(config as unknown as Record<string, unknown>) : null };
+  }
+
+  static async updateSmtp(ctx: Context) {
+    const result = smtpConfigSchema.safeParse(ctx.request.body);
+    if (!result.success) {
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
+    }
+
+    const saved = await SettingsService.updateSmtpConfig(result.data, extractActor(ctx));
+    ctx.body = { success: true, data: maskSecrets(saved as unknown as Record<string, unknown>) };
+  }
+
+  static async testSmtp(ctx: Context) {
+    const body = ctx.request.body as { email?: string };
+    if (!body.email || typeof body.email !== 'string') {
+      throw new AppError(400, 'email is required');
+    }
+
+    await EmailService.sendTestEmail(body.email);
+    ctx.body = { success: true };
   }
 }

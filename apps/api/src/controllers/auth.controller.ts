@@ -1,5 +1,5 @@
 import type { Context } from 'koa';
-import { loginSchema, registerSchema, refreshTokenSchema, logoutSchema, changePasswordSchema, updateProfileSchema } from '@eli-cms/shared';
+import { loginSchema, registerSchema, refreshTokenSchema, logoutSchema, changePasswordSchema, updateProfileSchema, forgotPasswordSchema, resetPasswordSchema } from '@eli-cms/shared';
 import type { TokenPair } from '@eli-cms/shared';
 import { AuthService } from '../services/auth.service.js';
 import { AppError } from '../utils/app-error.js';
@@ -127,5 +127,26 @@ export class AuthController {
   static async me(ctx: Context) {
     const user = await AuthService.getUserFromToken(ctx.state.user);
     ctx.body = { success: true, data: user };
+  }
+
+  static async forgotPassword(ctx: Context) {
+    const result = forgotPasswordSchema.safeParse(ctx.request.body);
+    if (!result.success) {
+      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+    }
+
+    await AuthService.forgotPassword(result.data.email, env.FRONTEND_URL);
+    // Always return success to avoid leaking user existence
+    ctx.body = { success: true };
+  }
+
+  static async resetPassword(ctx: Context) {
+    const result = resetPasswordSchema.safeParse(ctx.request.body);
+    if (!result.success) {
+      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+    }
+
+    await AuthService.resetPassword(result.data.token, result.data.newPassword);
+    ctx.body = { success: true };
   }
 }

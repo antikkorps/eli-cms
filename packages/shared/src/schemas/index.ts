@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { FieldDefinition } from '../types/index.js';
-import { sanitize } from '../utils/sanitize.js';
+import { sanitize, sanitizeHtml } from '../utils/sanitize.js';
 import { ALL_PERMISSIONS } from '../constants/permissions.js';
 import { DICEBEAR_STYLES } from '../constants/avatar.js';
 
@@ -39,15 +39,35 @@ export const updateProfileSchema = z.object({
 });
 
 // Content Type schemas
-const fieldDefinitionSchema = z.object({
+const scalarFieldTypes = ['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media', 'richtext', 'author'] as const;
+
+const baseFieldDefinitionSchema = z.object({
   name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
-  type: z.enum(['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media', 'richtext', 'author']),
+  type: z.enum([...scalarFieldTypes, 'repeatable']),
   required: z.boolean(),
   label: safeString(255).pipe(z.string().min(1)),
   options: z.array(safeString(255)).optional(),
   multiple: z.boolean().optional(),
   accept: z.array(z.string()).optional(),
+  subFields: z.lazy(() =>
+    z.array(
+      z.object({
+        name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
+        type: z.enum(scalarFieldTypes),
+        required: z.boolean(),
+        label: safeString(255).pipe(z.string().min(1)),
+        options: z.array(safeString(255)).optional(),
+        multiple: z.boolean().optional(),
+        accept: z.array(z.string()).optional(),
+      }),
+    ).min(1),
+  ).optional(),
 });
+
+const fieldDefinitionSchema = baseFieldDefinitionSchema.refine(
+  (field) => field.type !== 'repeatable' || (field.subFields && field.subFields.length > 0),
+  { message: 'Repeatable fields must have at least one sub-field', path: ['subFields'] },
+);
 
 export const createContentTypeSchema = z.object({
   slug: z.string().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
@@ -119,10 +139,18 @@ export function buildContentDataSchema(fields: FieldDefinition[]): z.ZodObject<R
         fieldSchema = field.multiple ? z.array(z.string().uuid()) : z.string().uuid();
         break;
       case 'richtext':
-        fieldSchema = z.string().max(200000).transform(sanitize);
+        fieldSchema = z.string().max(200000).transform(sanitizeHtml);
         break;
       case 'author':
         fieldSchema = z.string().uuid();
+        break;
+      case 'repeatable':
+        if (field.subFields && field.subFields.length > 0) {
+          const itemSchema = buildContentDataSchema(field.subFields);
+          fieldSchema = z.array(itemSchema);
+        } else {
+          fieldSchema = z.array(z.unknown());
+        }
         break;
       default:
         fieldSchema = z.unknown();
@@ -384,6 +412,40 @@ export const apiKeyListQuerySchema = paginationSchema.extend({
     .optional(),
 });
 
+// ─── SMTP Config schema ─────────────────────────────────
+export const smtpConfigSchema = z
+  .object({
+    host: z.string().min(1),
+    port: z.coerce.number().int().min(1).max(65535),
+    secure: z.boolean().default(false),
+    authType: z.enum(['password', 'oauth2', 'none']).default('password'),
+    user: z.string().min(1).optional(),
+    password: z.string().min(1).optional(),
+    clientId: z.string().min(1).optional(),
+    clientSecret: z.string().min(1).optional(),
+    refreshToken: z.string().min(1).optional(),
+    fromName: z.string().min(1).max(255),
+    fromAddress: z.string().email(),
+  })
+  .refine(
+    (data) => data.authType !== 'password' || (data.user && data.password),
+    { message: 'User and password are required for password authentication', path: ['password'] },
+  )
+  .refine(
+    (data) => data.authType !== 'oauth2' || (data.user && data.clientId && data.clientSecret && data.refreshToken),
+    { message: 'User, Client ID, Client Secret and Refresh Token are required for OAuth2', path: ['refreshToken'] },
+  );
+
+// ─── Password Reset schemas ─────────────────────────────
+export const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().uuid(),
+  newPassword: z.string().min(6),
+});
+
 // ─── Setup schema ───────────────────────────────────────
 export const setupSchema = z
   .object({
@@ -438,3 +500,7 @@ export type ApiKeyListQuery = z.infer<typeof apiKeyListQuerySchema>;
 export type CreateMediaFolderInput = z.infer<typeof createMediaFolderSchema>;
 export type UpdateMediaFolderInput = z.infer<typeof updateMediaFolderSchema>;
 export type MediaFolderListQuery = z.infer<typeof mediaFolderListQuerySchema>;
+
+export type SmtpConfigInput = z.infer<typeof smtpConfigSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

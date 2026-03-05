@@ -261,7 +261,7 @@ onMounted(() => {
   <div>
     <!-- SINGLE MODE: Selected media preview -->
     <template v-if="!props.multiple">
-      <div v-if="selectedMedia" class="flex items-center gap-3 rounded-lg border p-3">
+      <div v-if="selectedMedia" class="flex items-center gap-3 rounded-lg border border-accented p-3">
         <img
           v-if="isImage(selectedMedia.mimeType)"
           :src="getThumbUrl(selectedMedia.id, 64)"
@@ -306,7 +306,7 @@ onMounted(() => {
     <!-- MULTIPLE MODE: Selected media list -->
     <template v-else>
       <div v-if="selectedMediaList.length > 0" class="space-y-2">
-        <div v-for="item in selectedMediaList" :key="item.id" class="flex items-center gap-3 rounded-lg border p-2">
+        <div v-for="item in selectedMediaList" :key="item.id" class="flex items-center gap-3 rounded-lg border border-accented p-2">
           <img
             v-if="isImage(item.mimeType)"
             :src="getThumbUrl(item.id, 40)"
