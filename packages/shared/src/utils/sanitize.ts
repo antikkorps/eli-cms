@@ -1,21 +1,22 @@
 /**
  * Strip ALL HTML tags — returns plain text only.
- * Uses a loop to handle nested/reconstructed patterns safely.
+ * Processes character-by-character to avoid ReDoS and incomplete sanitization.
  * Decodes basic HTML entities, with &amp; decoded last to prevent double-unescaping.
  * Final pass strips any remaining angle brackets.
  */
 export function sanitize(input: string): string {
-  let previous: string;
-  let result = input;
-
-  // Loop until stable — prevents incomplete multi-character sanitization
-  do {
-    previous = result;
-    result = previous
-      .replace(/<!--[\s\S]*?-->/g, '')       // HTML comments
-      .replace(/<!\[CDATA\[[\s\S]*?\]\]>/g, '') // CDATA
-      .replace(/<[^>]*>/g, '');               // HTML tags
-  } while (result !== previous);
+  // Character-level tag stripping — no regex backtracking risk
+  let result = '';
+  let inTag = false;
+  for (let i = 0; i < input.length; i++) {
+    if (input[i] === '<') {
+      inTag = true;
+    } else if (input[i] === '>') {
+      inTag = false;
+    } else if (!inTag) {
+      result += input[i];
+    }
+  }
 
   return result
     .replace(/&lt;/g, '<')
@@ -48,17 +49,30 @@ function removeEventHandlerAttributes(html: string): string {
  * Used for richtext fields that intentionally contain HTML.
  */
 export function sanitizeHtml(input: string): string {
-  // Loop until stable to handle nested/reconstructed dangerous blocks
   let html = input;
   let previous: string;
+
+  // Remove dangerous blocks — loop until stable
   do {
     previous = html;
     html = html
-      .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, '')
-      .replace(/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, '')
-      .replace(/<!--[\s\S]*?-->/g, '')
-      .replace(/<!\[CDATA\[[\s\S]*?\]\]>/g, '');
+      .replace(/<script\b[^>]*>[^]*?<\/script\b[^>]*>/gi, '')
+      .replace(/<style\b[^>]*>[^]*?<\/style\b[^>]*>/gi, '')
+      .replace(/<!\[CDATA\[[^]*?\]\]>/g, '');
   } while (html !== previous);
+
+  // Strip any remaining script/style tags (unclosed, malformed, or partial)
+  do {
+    previous = html;
+    html = html.replace(/<\/?\s*(script|style)\b[^>]*>/gi, '');
+  } while (html !== previous);
+
+  // Strip HTML comments and any stray comment markers
+  do {
+    previous = html;
+    html = html.replace(/<!-{2,}[^]*?-{2,}>/g, '');
+  } while (html !== previous);
+  html = html.replace(/<!--|-->/g, '');
 
   // Remove event handler attributes (on*)
   html = removeEventHandlerAttributes(html);
