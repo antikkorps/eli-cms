@@ -40,7 +40,7 @@ importers:
         version: 5.0.0
       '@koa/multer':
         specifier: ^4.0.0
-        version: 4.0.0(koa@3.1.2)(multer@2.1.0)
+        version: 4.0.0(koa@3.1.2)(multer@2.1.1)
       '@koa/router':
         specifier: ^15.3.0
         version: 15.3.0(koa@3.1.2)
@@ -66,8 +66,8 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
       multer:
-        specifier: ^2.1.0
-        version: 2.1.0
+        specifier: ^2.1.1
+        version: 2.1.1
       pg:
         specifier: ^8.13.0
         version: 8.19.0
@@ -4966,8 +4966,8 @@ packages:
   muggle-string@0.4.1:
     resolution: {integrity: sha512-VNTrAak/KhO2i8dqqnqnAHOa3cYBwXEZe9h+D5h/1ZqFSTEFHdM65lR7RoIqq3tBBYavsOXV84NoHXZ0AkPyqQ==}
 
-  multer@2.1.0:
-    resolution: {integrity: sha512-TBm6j41rxNohqawsxlsWsNNh/VdV4QFXcBvRcPhXaA05EZ79z0qJ2bQFpync6JBoHTeNY5Q1JpG7AlTjdlfAEA==}
+  multer@2.1.1:
+    resolution: {integrity: sha512-mo+QTzKlx8R7E5ylSXxWzGoXoZbOsRMpyitcht8By2KHvMbf3tjwosZ/Mu/XYU6UuJ3VZnODIrak5ZrPiPyB6A==}
     engines: {node: '>= 10.16.0'}
 
   nano-spawn@2.0.0:
@@ -7762,10 +7762,10 @@ snapshots:
     dependencies:
       vary: 1.1.2
 
-  '@koa/multer@4.0.0(koa@3.1.2)(multer@2.1.0)':
+  '@koa/multer@4.0.0(koa@3.1.2)(multer@2.1.1)':
     dependencies:
       koa: 3.1.2
-      multer: 2.1.0
+      multer: 2.1.1
 
   '@koa/router@15.3.0(koa@3.1.2)':
     dependencies:
@@ -11740,7 +11740,7 @@ snapshots:
 
   muggle-string@0.4.1: {}
 
-  multer@2.1.0:
+  multer@2.1.1:
     dependencies:
       append-field: 1.0.0
       busboy: 1.6.0
