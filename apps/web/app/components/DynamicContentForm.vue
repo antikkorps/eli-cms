@@ -1,6 +1,31 @@
 <script setup lang="ts">
 const { t } = useI18n();
 
+const editorToolbarItems = [
+  [
+    { kind: 'mark', mark: 'bold', icon: 'i-lucide-bold', tooltip: { text: 'Bold' } },
+    { kind: 'mark', mark: 'italic', icon: 'i-lucide-italic', tooltip: { text: 'Italic' } },
+    { kind: 'mark', mark: 'strike', icon: 'i-lucide-strikethrough', tooltip: { text: 'Strikethrough' } },
+  ],
+  [
+    { kind: 'heading', level: 2, icon: 'i-lucide-heading-2', tooltip: { text: 'Heading 2' } },
+    { kind: 'heading', level: 3, icon: 'i-lucide-heading-3', tooltip: { text: 'Heading 3' } },
+  ],
+  [
+    { kind: 'bulletList', icon: 'i-lucide-list', tooltip: { text: 'Bullet list' } },
+    { kind: 'orderedList', icon: 'i-lucide-list-ordered', tooltip: { text: 'Ordered list' } },
+  ],
+  [
+    { kind: 'blockquote', icon: 'i-lucide-quote', tooltip: { text: 'Blockquote' } },
+    { kind: 'codeBlock', icon: 'i-lucide-code', tooltip: { text: 'Code block' } },
+    { kind: 'link', icon: 'i-lucide-link', tooltip: { text: 'Link' } },
+  ],
+  [
+    { kind: 'undo', icon: 'i-lucide-undo', tooltip: { text: 'Undo' } },
+    { kind: 'redo', icon: 'i-lucide-redo', tooltip: { text: 'Redo' } },
+  ],
+];
+
 interface FieldDefinition {
   name: string;
   type: string;
@@ -141,12 +166,15 @@ function getRepeatableSubSelectItems(field: FieldDefinition) {
 
       <UEditor
         v-else-if="field.type === 'richtext'"
+        v-slot="{ editor }"
         :model-value="(model[field.name] as string) ?? ''"
         content-type="html"
         :placeholder="field.label"
-        class="w-full min-h-48"
+        class="w-full min-h-48 border border-accented rounded-md"
         @update:model-value="(v: string) => updateValue(field.name, v)"
-      />
+      >
+        <UEditorToolbar :editor="editor" :items="editorToolbarItems" class="border-b border-accented" />
+      </UEditor>
 
       <!-- Repeatable field -->
       <template v-else-if="field.type === 'repeatable' && field.subFields">
@@ -257,12 +285,15 @@ function getRepeatableSubSelectItems(field: FieldDefinition) {
 
               <UEditor
                 v-else-if="sub.type === 'richtext'"
+                v-slot="{ editor: subEditor }"
                 :model-value="(item[sub.name] as string) ?? ''"
                 content-type="html"
                 :placeholder="sub.label"
-                class="w-full min-h-32"
+                class="w-full min-h-32 border border-accented rounded-md"
                 @update:model-value="(v: string) => updateRepeatableItem(field.name, itemIndex, sub.name, v)"
-              />
+              >
+                <UEditorToolbar :editor="subEditor" :items="editorToolbarItems" class="border-b border-accented" />
+              </UEditor>
             </UFormField>
           </div>
 

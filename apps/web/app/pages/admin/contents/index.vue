@@ -114,9 +114,16 @@ const statusFilterItems = [
   { label: t('contents.published'), value: 'published' },
 ];
 
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '').replace(/&\w+;/g, ' ').trim();
+}
+
 function getPreviewText(data: Record<string, unknown>): string {
   const first = Object.values(data).find((v) => typeof v === 'string' && v.length > 0);
-  if (typeof first === 'string') return first.length > 60 ? first.substring(0, 60) + '...' : first;
+  if (typeof first === 'string') {
+    const plain = stripHtml(first);
+    return plain.length > 60 ? plain.substring(0, 60) + '...' : plain;
+  }
   return JSON.stringify(data).substring(0, 60) + '...';
 }
 

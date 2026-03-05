@@ -40,7 +40,7 @@
 - [x] Command palette with content type navigation (Cmd+K)
 - [x] Keyboard shortcuts (Cmd+S save, Cmd+N new content, Cmd+K command palette)
 - [x] User profile page (card-based layout, email/password change, DiceBear avatar picker with 12 styles + seed variations, persisted in DB)
-- [ ] Password reset flow (forgot password → email link → reset form)
+- [x] Password reset flow (forgot password → email link → reset form, SMTP config with password/OAuth2/none auth)
 - [ ] Content duplication endpoint (`POST /contents/:id/duplicate`)
 - [x] Repeatable fields / arrays (lists of structured sub-objects — FAQ items, feature lists, gallery)
 - [ ] Default values for fields (add `default` to FieldDefinition + schema builder + field builder UI)

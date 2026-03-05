@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { FieldDefinition } from '../types/index.js';
-import { sanitize } from '../utils/sanitize.js';
+import { sanitize, sanitizeHtml } from '../utils/sanitize.js';
 import { ALL_PERMISSIONS } from '../constants/permissions.js';
 import { DICEBEAR_STYLES } from '../constants/avatar.js';
 
@@ -139,7 +139,7 @@ export function buildContentDataSchema(fields: FieldDefinition[]): z.ZodObject<R
         fieldSchema = field.multiple ? z.array(z.string().uuid()) : z.string().uuid();
         break;
       case 'richtext':
-        fieldSchema = z.string().max(200000).transform(sanitize);
+        fieldSchema = z.string().max(200000).transform(sanitizeHtml);
         break;
       case 'author':
         fieldSchema = z.string().uuid();
