@@ -12,9 +12,13 @@ interface FieldDefinition {
   subFields?: FieldDefinition[];
 }
 
-const props = defineProps<{
-  fields: FieldDefinition[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    fields: FieldDefinition[];
+    errors?: Record<string, string>;
+  }>(),
+  { errors: () => ({}) },
+);
 
 const model = defineModel<Record<string, unknown>>({ default: () => ({}) });
 
@@ -52,7 +56,7 @@ function moveRepeatableItem(fieldName: string, index: number, direction: 'up' | 
   const items = [...getRepeatableItems(fieldName)];
   const target = direction === 'up' ? index - 1 : index + 1;
   if (target < 0 || target >= items.length) return;
-  [items[index], items[target]] = [items[target], items[index]];
+  [items[index], items[target]] = [items[target]!, items[index]!];
   updateValue(fieldName, items);
 }
 
@@ -68,6 +72,7 @@ function getRepeatableSubSelectItems(field: FieldDefinition) {
       :key="field.name"
       :label="field.label"
       :required="field.required"
+      :error="props.errors[field.name]"
     >
       <UInput
         v-if="field.type === 'text' || field.type === 'email' || field.type === 'url'"
@@ -93,7 +98,7 @@ function getRepeatableSubSelectItems(field: FieldDefinition) {
         type="number"
         :required="field.required"
         class="w-full"
-        @update:model-value="(v: string) => updateValue(field.name, v ? Number(v) : undefined)"
+        @update:model-value="(v: number) => updateValue(field.name, v)"
       />
 
       <USwitch
@@ -183,6 +188,7 @@ function getRepeatableSubSelectItems(field: FieldDefinition) {
               :key="sub.name"
               :label="sub.label"
               :required="sub.required"
+              :error="props.errors[`${field.name}.${itemIndex}.${sub.name}`]"
             >
               <UInput
                 v-if="sub.type === 'text' || sub.type === 'email' || sub.type === 'url'"
@@ -208,7 +214,7 @@ function getRepeatableSubSelectItems(field: FieldDefinition) {
                 type="number"
                 :required="sub.required"
                 class="w-full"
-                @update:model-value="(v: string) => updateRepeatableItem(field.name, itemIndex, sub.name, v ? Number(v) : undefined)"
+                @update:model-value="(v: number) => updateRepeatableItem(field.name, itemIndex, sub.name, v)"
               />
 
               <USwitch

@@ -10,6 +10,7 @@
     "preview": "nuxt preview"
   },
   "dependencies": {
+    "@eli-cms/shared": "workspace:*",
     "@nuxt/ui": "^4.5.0",
     "@nuxtjs/i18n": "^10.2.3",
     "nuxt": "^4.0.0",

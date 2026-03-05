@@ -11,6 +11,7 @@ const toast = useToast();
 const router = useRouter();
 const { invalidate: invalidateContentTypes } = useContentTypes();
 const { isLockedByOther, lockerEmail, acquire: acquireLock, release: releaseLock, onSaveSuccess } = useContentLock();
+const { errors: validationErrors, validate, clearErrors } = useContentValidation();
 
 interface FieldDefinition {
   name: string;
@@ -213,6 +214,10 @@ async function handleSchedule(date: string) {
 
 async function submit() {
   if (isLockedByOther.value) return;
+  if (fields.value.length) {
+    const { valid } = validate(fields.value as import('@eli-cms/shared').FieldDefinition[], form.data);
+    if (!valid) return;
+  }
   saving.value = true;
   try {
     await apiFetch(`/contents/${route.params.id}`, {
@@ -248,6 +253,8 @@ defineShortcuts({
     },
   },
 });
+
+watch(() => form.data, () => clearErrors(), { deep: true });
 
 watch(activeTab, (tab) => {
   if (tab === 'versions' && !versions.value.length) fetchVersions();
@@ -298,7 +305,7 @@ onMounted(async () => {
             <UInput v-model="form.slug" :placeholder="$t('contents.slugPlaceholder')" class="w-full" />
           </UFormField>
 
-          <DynamicContentForm v-model="form.data" :fields="fields" />
+          <DynamicContentForm v-model="form.data" :fields="fields" :errors="validationErrors" />
 
           <div class="flex justify-end gap-2">
             <UButton to="/admin/contents" variant="ghost" color="neutral">

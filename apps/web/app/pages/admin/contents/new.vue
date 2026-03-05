@@ -10,6 +10,7 @@ const toast = useToast();
 const router = useRouter();
 const route = useRoute();
 const { items: contentTypeItems, fetch: fetchContentTypes, loading: loadingTypes, invalidate: invalidateContentTypes } = useContentTypes();
+const { errors: validationErrors, validate, clearErrors } = useContentValidation();
 
 const selectedTypeId = ref('');
 const slug = ref('');
@@ -30,6 +31,8 @@ const statusItems = [
   { label: t('contents.published'), value: 'published' },
 ];
 
+watch(data, () => clearErrors(), { deep: true });
+
 watch(selectedTypeId, async () => {
   if (!route.query.duplicate) data.value = {};
 
@@ -42,7 +45,7 @@ watch(selectedTypeId, async () => {
           `/contents?contentTypeId=${ct.id}&limit=1`,
         );
         if (res.data.length > 0) {
-          navigateTo(`/admin/contents/${res.data[0].id}`, { replace: true });
+          navigateTo(`/admin/contents/${res.data[0]!.id}`, { replace: true });
         }
       } catch {
         // ignore
@@ -68,6 +71,10 @@ async function loadDuplicate() {
 }
 
 async function submit() {
+  if (selectedType.value?.fields) {
+    const { valid } = validate(selectedType.value.fields as import('@eli-cms/shared').FieldDefinition[], data.value);
+    if (!valid) return;
+  }
   saving.value = true;
   try {
     await apiFetch('/contents', {
@@ -143,7 +150,7 @@ onMounted(async () => {
       </UFormField>
 
       <template v-if="selectedType">
-        <DynamicContentForm v-model="data" :fields="selectedType.fields ?? []" />
+        <DynamicContentForm v-model="data" :fields="selectedType.fields ?? []" :errors="validationErrors" />
       </template>
 
       <div class="flex justify-end gap-2">

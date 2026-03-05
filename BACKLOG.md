@@ -45,7 +45,7 @@
 - [x] Repeatable fields / arrays (lists of structured sub-objects — FAQ items, feature lists, gallery)
 - [ ] Default values for fields (add `default` to FieldDefinition + schema builder + field builder UI)
 - [x] Singleton content types (`isSingleton` column, enforce single entry 409, auto-redirect in contents list, sidebar icon)
-- [ ] Client-side form validation (reuse shared Zod schemas, show field-level errors instead of generic toasts)
+- [x] Client-side form validation (reuse shared Zod schemas, show field-level errors instead of generic toasts)
 - [~] HTTP caching on public API (Cache-Control + ETag on `/uploads/:id/serve` — remaining: content endpoints)
 - [x] Brute-force login protection (progressive delays or lockout after N failed attempts)
 - [ ] Background job queue — replace `setInterval` scheduler with BullMQ/Redis
