@@ -20,7 +20,7 @@ export interface User {
   updatedAt: Date;
 }
 
-export type FieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'email' | 'url' | 'select' | 'media' | 'richtext' | 'author';
+export type FieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'email' | 'url' | 'select' | 'media' | 'richtext' | 'author' | 'repeatable';
 
 export interface FieldDefinition {
   name: string;
@@ -30,6 +30,7 @@ export interface FieldDefinition {
   options?: string[]; // for select type
   multiple?: boolean; // for media type
   accept?: string[]; // MIME filter for media type (e.g. ['image/*', 'application/pdf'])
+  subFields?: FieldDefinition[]; // for repeatable type
 }
 
 export interface ContentType {

@@ -220,8 +220,17 @@ export class ContentService {
   }
 
   private static async validateMediaFields(fields: FieldDefinition[], data: Record<string, unknown>) {
-    const mediaFields = fields.filter((f) => f.type === 'media');
-    for (const field of mediaFields) {
+    for (const field of fields) {
+      if (field.type === 'repeatable' && field.subFields) {
+        const items = data[field.name];
+        if (Array.isArray(items)) {
+          for (const item of items) {
+            await this.validateMediaFields(field.subFields, item as Record<string, unknown>);
+          }
+        }
+        continue;
+      }
+      if (field.type !== 'media') continue;
       const value = data[field.name];
       if (value === undefined || value === null) continue;
 
@@ -244,8 +253,17 @@ export class ContentService {
   }
 
   private static async validateAuthorFields(fields: FieldDefinition[], data: Record<string, unknown>) {
-    const authorFields = fields.filter((f) => f.type === 'author');
-    for (const field of authorFields) {
+    for (const field of fields) {
+      if (field.type === 'repeatable' && field.subFields) {
+        const items = data[field.name];
+        if (Array.isArray(items)) {
+          for (const item of items) {
+            await this.validateAuthorFields(field.subFields, item as Record<string, unknown>);
+          }
+        }
+        continue;
+      }
+      if (field.type !== 'author') continue;
       const value = data[field.name];
       if (value === undefined || value === null) continue;
       if (typeof value === 'string') {

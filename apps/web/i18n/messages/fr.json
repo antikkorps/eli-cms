@@ -170,7 +170,11 @@
     "fieldMultiple": "Multiple",
     "fieldAccept": "Types acceptés",
     "fieldAcceptPlaceholder": "Tous les types acceptés",
-    "fieldAcceptHint": "Laissez vide pour accepter tous les types de fichiers"
+    "fieldAcceptHint": "Laissez vide pour accepter tous les types de fichiers",
+    "subFields": "Sous-champs",
+    "addSubField": "Ajouter un sous-champ",
+    "addItem": "Ajouter un élément",
+    "removeItem": "Supprimer l'élément"
   },
   "contents": {
     "title": "Contenus",

@@ -170,7 +170,11 @@
     "fieldMultiple": "Multiple",
     "fieldAccept": "Accepted types",
     "fieldAcceptPlaceholder": "All types accepted",
-    "fieldAcceptHint": "Leave empty to accept all file types"
+    "fieldAcceptHint": "Leave empty to accept all file types",
+    "subFields": "Sub-fields",
+    "addSubField": "Add sub-field",
+    "addItem": "Add item",
+    "removeItem": "Remove item"
   },
   "contents": {
     "title": "Contents",

@@ -42,7 +42,7 @@
 - [x] User profile page (card-based layout, email/password change, DiceBear avatar picker with 12 styles + seed variations, persisted in DB)
 - [ ] Password reset flow (forgot password → email link → reset form)
 - [ ] Content duplication endpoint (`POST /contents/:id/duplicate`)
-- [ ] Repeatable fields / arrays (lists of structured sub-objects — FAQ items, feature lists, gallery)
+- [x] Repeatable fields / arrays (lists of structured sub-objects — FAQ items, feature lists, gallery)
 - [ ] Default values for fields (add `default` to FieldDefinition + schema builder + field builder UI)
 - [x] Singleton content types (`isSingleton` column, enforce single entry 409, auto-redirect in contents list, sidebar icon)
 - [ ] Client-side form validation (reuse shared Zod schemas, show field-level errors instead of generic toasts)

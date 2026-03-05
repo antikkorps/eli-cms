@@ -39,15 +39,35 @@ export const updateProfileSchema = z.object({
 });
 
 // Content Type schemas
-const fieldDefinitionSchema = z.object({
+const scalarFieldTypes = ['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media', 'richtext', 'author'] as const;
+
+const baseFieldDefinitionSchema = z.object({
   name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
-  type: z.enum(['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media', 'richtext', 'author']),
+  type: z.enum([...scalarFieldTypes, 'repeatable']),
   required: z.boolean(),
   label: safeString(255).pipe(z.string().min(1)),
   options: z.array(safeString(255)).optional(),
   multiple: z.boolean().optional(),
   accept: z.array(z.string()).optional(),
+  subFields: z.lazy(() =>
+    z.array(
+      z.object({
+        name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
+        type: z.enum(scalarFieldTypes),
+        required: z.boolean(),
+        label: safeString(255).pipe(z.string().min(1)),
+        options: z.array(safeString(255)).optional(),
+        multiple: z.boolean().optional(),
+        accept: z.array(z.string()).optional(),
+      }),
+    ).min(1),
+  ).optional(),
 });
+
+const fieldDefinitionSchema = baseFieldDefinitionSchema.refine(
+  (field) => field.type !== 'repeatable' || (field.subFields && field.subFields.length > 0),
+  { message: 'Repeatable fields must have at least one sub-field', path: ['subFields'] },
+);
 
 export const createContentTypeSchema = z.object({
   slug: z.string().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
@@ -123,6 +143,14 @@ export function buildContentDataSchema(fields: FieldDefinition[]): z.ZodObject<R
         break;
       case 'author':
         fieldSchema = z.string().uuid();
+        break;
+      case 'repeatable':
+        if (field.subFields && field.subFields.length > 0) {
+          const itemSchema = buildContentDataSchema(field.subFields);
+          fieldSchema = z.array(itemSchema);
+        } else {
+          fieldSchema = z.array(z.unknown());
+        }
         break;
       default:
         fieldSchema = z.unknown();
