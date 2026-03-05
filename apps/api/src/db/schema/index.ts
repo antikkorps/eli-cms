@@ -29,6 +29,19 @@ export const users = pgTable('users', {
   index('idx_users_role_id').on(table.roleId),
 ]);
 
+// ─── Password Reset Tokens ─────────────────────────────
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: varchar('token_hash', { length: 64 }).notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('idx_password_reset_tokens_user_id').on(table.userId),
+  index('idx_password_reset_tokens_token_hash').on(table.tokenHash),
+]);
+
 // ─── Content Types ──────────────────────────────────────
 export const contentTypes = pgTable('content_types', {
   id: uuid('id').defaultRandom().primaryKey(),

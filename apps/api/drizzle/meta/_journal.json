@@ -99,6 +99,13 @@
       "when": 1773300000000,
       "tag": "0013_login_brute_force",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1773400000000,
+      "tag": "0014_password_reset_tokens",
+      "breakpoints": true
     }
   ]
 }

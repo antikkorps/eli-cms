@@ -10,6 +10,7 @@ const envSchema = z.object({
   API_PORT: z.coerce.number().default(8080),
   CORS_ORIGINS: z.string().default('*'),
   COOKIE_SECURE: z.enum(['true', 'false']).default('true').transform(v => v === 'true'),
+  FRONTEND_URL: z.string().url().default('http://localhost:3000'),
 });
 
 export const env = envSchema.parse(process.env);

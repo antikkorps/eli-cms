@@ -13,3 +13,5 @@ authRouter.post('/logout-all', authenticate, AuthController.logoutAll);
 authRouter.put('/change-password', authenticate, AuthController.changePassword);
 authRouter.put('/profile', authenticate, AuthController.updateProfile);
 authRouter.get('/me', authenticate, AuthController.me);
+authRouter.post('/forgot-password', authRateLimit, AuthController.forgotPassword);
+authRouter.post('/reset-password', authRateLimit, AuthController.resetPassword);

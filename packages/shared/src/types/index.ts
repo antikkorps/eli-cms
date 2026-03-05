@@ -20,7 +20,7 @@ export interface User {
   updatedAt: Date;
 }
 
-export type FieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'email' | 'url' | 'select' | 'media' | 'richtext' | 'author';
+export type FieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'email' | 'url' | 'select' | 'media' | 'richtext' | 'author' | 'repeatable';
 
 export interface FieldDefinition {
   name: string;
@@ -30,6 +30,7 @@ export interface FieldDefinition {
   options?: string[]; // for select type
   multiple?: boolean; // for media type
   accept?: string[]; // MIME filter for media type (e.g. ['image/*', 'application/pdf'])
+  subFields?: FieldDefinition[]; // for repeatable type
 }
 
 export interface ContentType {
@@ -165,6 +166,23 @@ export interface MediaFolder {
 
 export interface MediaFolderTree extends MediaFolder {
   children: MediaFolderTree[];
+}
+
+// ─── SMTP ───────────────────────────────────────────────
+export type SmtpAuthType = 'password' | 'oauth2' | 'none';
+
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  authType: SmtpAuthType;
+  user?: string;
+  password?: string;
+  clientId?: string;
+  clientSecret?: string;
+  refreshToken?: string;
+  fromName: string;
+  fromAddress: string;
 }
 
 // ─── Webhooks ───────────────────────────────────────────

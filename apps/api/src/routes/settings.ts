@@ -8,3 +8,7 @@ export const settingsRouter = new Router({ prefix: '/api/v1/settings' });
 
 settingsRouter.get('/storage', authenticate, requirePermission(SETTINGS_READ), SettingsController.getStorage);
 settingsRouter.put('/storage', authenticate, requirePermission(SETTINGS_UPDATE), SettingsController.updateStorage);
+
+settingsRouter.get('/smtp', authenticate, requirePermission(SETTINGS_READ), SettingsController.getSmtp);
+settingsRouter.put('/smtp', authenticate, requirePermission(SETTINGS_UPDATE), SettingsController.updateSmtp);
+settingsRouter.post('/smtp/test', authenticate, requirePermission(SETTINGS_UPDATE), SettingsController.testSmtp);
