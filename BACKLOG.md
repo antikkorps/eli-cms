@@ -56,7 +56,7 @@
 - [~] Image crop/resize before upload (server-side transforms done — remaining: client-side crop UI before upload)
 - [ ] i18n labels in FieldBuilder (translate field type names)
 - [ ] Configurable slug patterns (e.g. `{year}/{slug}`, `{category}/{slug}`)
-- [ ] Drag-and-drop field reordering in FieldBuilder
+- [x] Drag-and-drop field reordering in FieldBuilder
 
 ## Low Priority
 
