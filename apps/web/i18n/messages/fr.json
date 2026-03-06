@@ -196,7 +196,11 @@
     "subFields": "Sous-champs",
     "addSubField": "Ajouter un sous-champ",
     "addItem": "Ajouter un élément",
-    "removeItem": "Supprimer l'élément"
+    "removeItem": "Supprimer l'élément",
+    "fieldDefault": "Valeur par défaut",
+    "fieldDefaultPlaceholder": "Laisser vide pour aucune valeur",
+    "fieldDefaultHint": "Pré-rempli à la création de contenu",
+    "noDefault": "Aucune valeur par défaut"
   },
   "contents": {
     "title": "Contenus",

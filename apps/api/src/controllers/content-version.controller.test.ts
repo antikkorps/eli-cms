@@ -119,11 +119,11 @@ describe('Content Versions API', () => {
       const listRes = await agent()
         .get(`/api/v1/contents/${contentId}/versions`)
         .set('Authorization', `Bearer ${token}`);
-      const versionId = listRes.body.data[0].id;
+      const versionNumber = listRes.body.data[0].versionNumber;
 
       // Restore it
       const res = await agent()
-        .post(`/api/v1/contents/${contentId}/versions/${versionId}/restore`)
+        .post(`/api/v1/contents/${contentId}/versions/${versionNumber}/restore`)
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);

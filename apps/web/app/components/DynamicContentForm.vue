@@ -35,6 +35,7 @@ interface FieldDefinition {
   multiple?: boolean;
   accept?: string[];
   subFields?: FieldDefinition[];
+  defaultValue?: unknown;
 }
 
 const props = withDefaults(

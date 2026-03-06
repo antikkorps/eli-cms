@@ -43,7 +43,7 @@
 - [x] Password reset flow (forgot password → email link → reset form, SMTP config with password/OAuth2/none auth)
 - [ ] Content duplication endpoint (`POST /contents/:id/duplicate`)
 - [x] Repeatable fields / arrays (lists of structured sub-objects — FAQ items, feature lists, gallery)
-- [ ] Default values for fields (add `default` to FieldDefinition + schema builder + field builder UI)
+- [x] Default values for fields (add `default` to FieldDefinition + schema builder + field builder UI)
 - [x] Singleton content types (`isSingleton` column, enforce single entry 409, auto-redirect in contents list, sidebar icon)
 - [x] Client-side form validation (reuse shared Zod schemas, show field-level errors instead of generic toasts)
 - [~] HTTP caching on public API (Cache-Control + ETag on `/uploads/:id/serve` — remaining: content endpoints)
@@ -56,7 +56,7 @@
 - [~] Image crop/resize before upload (server-side transforms done — remaining: client-side crop UI before upload)
 - [ ] i18n labels in FieldBuilder (translate field type names)
 - [ ] Configurable slug patterns (e.g. `{year}/{slug}`, `{category}/{slug}`)
-- [ ] Drag-and-drop field reordering in FieldBuilder
+- [x] Drag-and-drop field reordering in FieldBuilder
 
 ## Low Priority
 

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import draggable from 'vuedraggable';
+
 const { t } = useI18n();
 
 interface FieldDefinition {
@@ -10,9 +12,24 @@ interface FieldDefinition {
   multiple?: boolean;
   accept?: string[];
   subFields?: FieldDefinition[];
+  defaultValue?: unknown;
 }
 
 const model = defineModel<FieldDefinition[]>({ default: () => [] });
+
+let uidCounter = 0;
+function ensureUid(field: FieldDefinition): FieldDefinition {
+  const f = field as unknown as Record<string, unknown>;
+  if (!f._uid) f._uid = `f_${++uidCounter}`;
+  for (const sub of field.subFields ?? []) {
+    const s = sub as unknown as Record<string, unknown>;
+    if (!s._uid) s._uid = `s_${++uidCounter}`;
+  }
+  return field;
+}
+
+// Ensure existing fields get UIDs
+watch(model, (fields) => { fields.forEach(ensureUid); }, { immediate: true, deep: false });
 
 const props = defineProps<{
   /** When true, hides the repeatable type (used for sub-field builders) */
@@ -41,10 +58,9 @@ const fieldTypes = computed(() =>
 );
 
 function addField() {
-  model.value = [
-    ...model.value,
-    { name: '', type: 'text', required: false, label: '' },
-  ];
+  const field = { name: '', type: 'text', required: false, label: '' } as FieldDefinition;
+  ensureUid(field);
+  model.value = [...model.value, field];
 }
 
 function removeField(index: number) {
@@ -100,7 +116,9 @@ function updateAcceptFromSelect(index: number, selected: string[]) {
 function addSubField(index: number) {
   const updated = [...model.value];
   const field = { ...updated[index] };
-  field.subFields = [...(field.subFields ?? []), { name: '', type: 'text', required: false, label: '' }];
+  const sub = { name: '', type: 'text', required: false, label: '' } as FieldDefinition;
+  ensureUid(sub);
+  field.subFields = [...(field.subFields ?? []), sub];
   updated[index] = field;
   model.value = updated;
 }
@@ -163,17 +181,36 @@ function nameError(index: number): string | undefined {
   if (name && !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) return t('fieldBuilder.invalidName');
   return undefined;
 }
+
+function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[]) {
+  const updated = [...model.value];
+  updated[fieldIndex] = { ...updated[fieldIndex], subFields: newSubFields };
+  model.value = updated;
+}
 </script>
 
 <template>
   <div class="space-y-4">
-    <div
-      v-for="(field, index) in model"
-      :key="index"
-      class="border rounded-lg p-4 space-y-3"
+    <draggable
+      :model-value="model"
+      item-key="_uid"
+      handle=".drag-handle"
+      animation="200"
+      ghost-class="opacity-30"
+      class="space-y-4"
+      @update:model-value="(v: FieldDefinition[]) => model = v"
     >
-      <div class="flex items-start gap-3">
-        <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <template #item="{ element: field, index }">
+        <div class="border border-accented rounded-lg p-4 space-y-3">
+          <div class="flex items-start gap-3">
+            <UButton
+              icon="i-lucide-grip-vertical"
+              variant="ghost"
+              color="neutral"
+              size="sm"
+              class="drag-handle cursor-grab mt-6"
+            />
+            <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
           <UFormField :label="$t('fieldBuilder.fieldName')" :error="nameError(index)">
             <UInput
               :model-value="field.name"
@@ -221,6 +258,46 @@ function nameError(index: number): string | undefined {
         />
       </div>
 
+      <!-- Default value -->
+      <div v-if="!['media', 'author', 'richtext', 'repeatable'].includes(field.type)" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <UFormField :label="$t('fieldBuilder.fieldDefault')" :hint="$t('fieldBuilder.fieldDefaultHint')">
+          <UInput
+            v-if="['text', 'textarea', 'email', 'url'].includes(field.type)"
+            :model-value="(field.defaultValue as string) ?? ''"
+            :placeholder="$t('fieldBuilder.fieldDefaultPlaceholder')"
+            class="w-full"
+            @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
+          />
+          <UInput
+            v-else-if="field.type === 'number'"
+            :model-value="(field.defaultValue as number) ?? ''"
+            type="number"
+            :placeholder="$t('fieldBuilder.fieldDefaultPlaceholder')"
+            class="w-full"
+            @update:model-value="(v: number | string) => updateField(index, 'defaultValue', v === '' ? undefined : Number(v))"
+          />
+          <USwitch
+            v-else-if="field.type === 'boolean'"
+            :model-value="(field.defaultValue as boolean) ?? false"
+            @update:model-value="(v: boolean) => updateField(index, 'defaultValue', v)"
+          />
+          <UInput
+            v-else-if="field.type === 'date'"
+            :model-value="(field.defaultValue as string) ?? ''"
+            type="date"
+            class="w-full"
+            @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
+          />
+          <USelect
+            v-else-if="field.type === 'select'"
+            :model-value="(field.defaultValue as string) ?? ''"
+            :items="[{ label: $t('fieldBuilder.noDefault'), value: '' }, ...(field.options ?? []).map((o) => ({ label: o, value: o }))]"
+            class="w-full"
+            @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
+          />
+        </UFormField>
+      </div>
+
       <UFormField v-if="field.type === 'select'" :label="$t('fieldBuilder.fieldOptions')">
         <UTextarea
           :model-value="getOptionsRaw(index)"
@@ -254,13 +331,26 @@ function nameError(index: number): string | undefined {
       <div v-if="field.type === 'repeatable'" class="mt-3 ml-4 border-l-2 border-primary-200 dark:border-primary-800 pl-4 space-y-3">
         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ $t('fieldBuilder.subFields') }}</p>
 
-        <div
-          v-for="(sub, si) in (field.subFields ?? [])"
-          :key="si"
-          class="border rounded-lg p-3 space-y-3 bg-gray-50 dark:bg-gray-900"
+        <draggable
+          :model-value="field.subFields ?? []"
+          item-key="_uid"
+          handle=".sub-drag-handle"
+          animation="200"
+          ghost-class="opacity-30"
+          class="space-y-3"
+          @update:model-value="(v: FieldDefinition[]) => onSubFieldsReorder(index, v)"
         >
-          <div class="flex items-start gap-3">
-            <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <template #item="{ element: sub, index: si }">
+            <div class="border border-accented rounded-lg p-3 space-y-3 bg-gray-50 dark:bg-gray-900">
+              <div class="flex items-start gap-3">
+                <UButton
+                  icon="i-lucide-grip-vertical"
+                  variant="ghost"
+                  color="neutral"
+                  size="xs"
+                  class="sub-drag-handle cursor-grab mt-6"
+                />
+                <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <UFormField :label="$t('fieldBuilder.fieldName')" :error="subFieldNameError(index, si)">
                 <UInput
                   :model-value="sub.name"
@@ -317,13 +407,17 @@ function nameError(index: number): string | undefined {
               @update:model-value="(v: string) => updateSubFieldOptions(index, si, v)"
             />
           </UFormField>
-        </div>
+            </div>
+          </template>
+        </draggable>
 
         <UButton variant="outline" size="sm" icon="i-lucide-plus" @click="addSubField(index)">
           {{ $t('fieldBuilder.addSubField') }}
         </UButton>
       </div>
-    </div>
+        </div>
+      </template>
+    </draggable>
 
     <UButton variant="outline" icon="i-lucide-plus" @click="addField">
       {{ $t('fieldBuilder.addField') }}
