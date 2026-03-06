@@ -33,8 +33,21 @@ const statusItems = [
 
 watch(data, () => clearErrors(), { deep: true });
 
+function buildDefaults(fields: Array<{ name: string; defaultValue?: unknown }>): Record<string, unknown> {
+  const defaults: Record<string, unknown> = {};
+  for (const field of fields) {
+    if (field.defaultValue !== undefined && field.defaultValue !== null) {
+      defaults[field.name] = field.defaultValue;
+    }
+  }
+  return defaults;
+}
+
 watch(selectedTypeId, async () => {
-  if (!route.query.duplicate) data.value = {};
+  if (!route.query.duplicate) {
+    const ct = contentTypeItems.value.find((c) => c.id === selectedTypeId.value);
+    data.value = ct?.fields ? buildDefaults(ct.fields) : {};
+  }
 
   // If singleton type is selected, check if content already exists
   if (selectedTypeId.value) {

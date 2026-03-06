@@ -31,6 +31,7 @@ export interface FieldDefinition {
   multiple?: boolean; // for media type
   accept?: string[]; // MIME filter for media type (e.g. ['image/*', 'application/pdf'])
   subFields?: FieldDefinition[]; // for repeatable type
+  defaultValue?: unknown; // pre-filled value when creating new content
 }
 
 export interface ContentType {

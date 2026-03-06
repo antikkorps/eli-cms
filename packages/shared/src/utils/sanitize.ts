@@ -6,14 +6,35 @@
  */
 export function sanitize(input: string): string {
   // Character-level tag stripping — no regex backtracking risk
+  // Also strips content inside <script> and <style> tags
   let result = '';
   let inTag = false;
+  let tagName = '';
+  let collectingTagName = false;
+  let skipUntilClose = ''; // non-empty when inside <script> or <style>
   for (let i = 0; i < input.length; i++) {
     if (input[i] === '<') {
       inTag = true;
+      tagName = '';
+      collectingTagName = true;
     } else if (input[i] === '>') {
       inTag = false;
-    } else if (!inTag) {
+      collectingTagName = false;
+      const lower = tagName.toLowerCase().replace(/^\//, '');
+      if (lower === 'script' || lower === 'style') {
+        if (tagName.startsWith('/')) {
+          skipUntilClose = ''; // closing tag — stop skipping
+        } else {
+          skipUntilClose = lower; // opening tag — start skipping content
+        }
+      }
+    } else if (inTag && collectingTagName) {
+      if (input[i] === ' ' || input[i] === '\t' || input[i] === '\n') {
+        collectingTagName = false;
+      } else {
+        tagName += input[i];
+      }
+    } else if (!inTag && !skipUntilClose) {
       result += input[i];
     }
   }

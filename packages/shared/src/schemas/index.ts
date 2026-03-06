@@ -49,6 +49,7 @@ const baseFieldDefinitionSchema = z.object({
   options: z.array(safeString(255)).optional(),
   multiple: z.boolean().optional(),
   accept: z.array(z.string()).optional(),
+  defaultValue: z.unknown().optional(),
   subFields: z.lazy(() =>
     z.array(
       z.object({
@@ -59,6 +60,7 @@ const baseFieldDefinitionSchema = z.object({
         options: z.array(safeString(255)).optional(),
         multiple: z.boolean().optional(),
         accept: z.array(z.string()).optional(),
+        defaultValue: z.unknown().optional(),
       }),
     ).min(1),
   ).optional(),
@@ -154,6 +156,10 @@ export function buildContentDataSchema(fields: FieldDefinition[]): z.ZodObject<R
         break;
       default:
         fieldSchema = z.unknown();
+    }
+
+    if (field.defaultValue !== undefined && field.defaultValue !== null) {
+      fieldSchema = fieldSchema.default(field.defaultValue);
     }
 
     shape[field.name] = field.required ? fieldSchema : fieldSchema.optional();

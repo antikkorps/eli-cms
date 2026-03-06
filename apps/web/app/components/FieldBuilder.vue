@@ -10,6 +10,7 @@ interface FieldDefinition {
   multiple?: boolean;
   accept?: string[];
   subFields?: FieldDefinition[];
+  defaultValue?: unknown;
 }
 
 const model = defineModel<FieldDefinition[]>({ default: () => [] });
@@ -219,6 +220,46 @@ function nameError(index: number): string | undefined {
           class="mt-6"
           @click="removeField(index)"
         />
+      </div>
+
+      <!-- Default value -->
+      <div v-if="!['media', 'author', 'richtext', 'repeatable'].includes(field.type)" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <UFormField :label="$t('fieldBuilder.fieldDefault')" :hint="$t('fieldBuilder.fieldDefaultHint')">
+          <UInput
+            v-if="['text', 'textarea', 'email', 'url'].includes(field.type)"
+            :model-value="(field.defaultValue as string) ?? ''"
+            :placeholder="$t('fieldBuilder.fieldDefaultPlaceholder')"
+            class="w-full"
+            @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
+          />
+          <UInput
+            v-else-if="field.type === 'number'"
+            :model-value="(field.defaultValue as number) ?? ''"
+            type="number"
+            :placeholder="$t('fieldBuilder.fieldDefaultPlaceholder')"
+            class="w-full"
+            @update:model-value="(v: number | string) => updateField(index, 'defaultValue', v === '' ? undefined : Number(v))"
+          />
+          <USwitch
+            v-else-if="field.type === 'boolean'"
+            :model-value="(field.defaultValue as boolean) ?? false"
+            @update:model-value="(v: boolean) => updateField(index, 'defaultValue', v)"
+          />
+          <UInput
+            v-else-if="field.type === 'date'"
+            :model-value="(field.defaultValue as string) ?? ''"
+            type="date"
+            class="w-full"
+            @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
+          />
+          <USelect
+            v-else-if="field.type === 'select'"
+            :model-value="(field.defaultValue as string) ?? ''"
+            :items="[{ label: $t('fieldBuilder.noDefault'), value: '' }, ...(field.options ?? []).map((o) => ({ label: o, value: o }))]"
+            class="w-full"
+            @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
+          />
+        </UFormField>
       </div>
 
       <UFormField v-if="field.type === 'select'" :label="$t('fieldBuilder.fieldOptions')">

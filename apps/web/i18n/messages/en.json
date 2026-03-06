@@ -196,7 +196,11 @@
     "subFields": "Sub-fields",
     "addSubField": "Add sub-field",
     "addItem": "Add item",
-    "removeItem": "Remove item"
+    "removeItem": "Remove item",
+    "fieldDefault": "Default value",
+    "fieldDefaultPlaceholder": "Leave empty for no default",
+    "fieldDefaultHint": "Pre-filled when creating content",
+    "noDefault": "No default"
   },
   "contents": {
     "title": "Contents",
