@@ -201,7 +201,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
       @update:model-value="(v: FieldDefinition[]) => model = v"
     >
       <template #item="{ element: field, index }">
-        <div class="border rounded-lg p-4 space-y-3">
+        <div class="border border-accented rounded-lg p-4 space-y-3">
           <div class="flex items-start gap-3">
             <UButton
               icon="i-lucide-grip-vertical"
@@ -341,7 +341,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
           @update:model-value="(v: FieldDefinition[]) => onSubFieldsReorder(index, v)"
         >
           <template #item="{ element: sub, index: si }">
-            <div class="border rounded-lg p-3 space-y-3 bg-gray-50 dark:bg-gray-900">
+            <div class="border border-accented rounded-lg p-3 space-y-3 bg-gray-50 dark:bg-gray-900">
               <div class="flex items-start gap-3">
                 <UButton
                   icon="i-lucide-grip-vertical"
