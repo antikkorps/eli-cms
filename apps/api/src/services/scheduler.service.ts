@@ -3,6 +3,7 @@ import { contents } from '../db/schema/index.js';
 import { eq, and, lte, isNull, isNotNull } from 'drizzle-orm';
 import { eventBus } from './event-bus.js';
 import { LockService } from './lock.service.js';
+import { logger } from '../utils/logger.js';
 
 const POLL_INTERVAL_MS = 60_000; // 60 seconds
 const TRASH_RETENTION_DAYS = 30;
@@ -12,23 +13,23 @@ export class SchedulerService {
 
   static start() {
     if (this.timer) return;
-    console.log('Scheduler started (polling every 60s)');
+    logger.info('Scheduler started (polling every 60s)');
     this.timer = setInterval(() => {
-      this.publishScheduled().catch(console.error);
-      this.purgeExpiredTrash().catch(console.error);
-      LockService.cleanExpired().catch(console.error);
+      this.publishScheduled().catch((err) => logger.error(err, 'Scheduler: publishScheduled failed'));
+      this.purgeExpiredTrash().catch((err) => logger.error(err, 'Scheduler: purgeExpiredTrash failed'));
+      LockService.cleanExpired().catch((err) => logger.error(err, 'Scheduler: cleanExpired failed'));
     }, POLL_INTERVAL_MS);
     // Run once immediately
-    this.publishScheduled().catch(console.error);
-    this.purgeExpiredTrash().catch(console.error);
-    LockService.cleanExpired().catch(console.error);
+    this.publishScheduled().catch((err) => logger.error(err, 'Scheduler: publishScheduled failed'));
+    this.purgeExpiredTrash().catch((err) => logger.error(err, 'Scheduler: purgeExpiredTrash failed'));
+    LockService.cleanExpired().catch((err) => logger.error(err, 'Scheduler: cleanExpired failed'));
   }
 
   static shutdown() {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
-      console.log('Scheduler stopped');
+      logger.info('Scheduler stopped');
     }
   }
 
@@ -59,7 +60,7 @@ export class SchedulerService {
         actorId: 'system',
         actorType: 'system',
       });
-      console.log(`Auto-published content ${content.id}`);
+      logger.info({ contentId: content.id }, 'Auto-published scheduled content');
     }
   }
 
@@ -86,6 +87,6 @@ export class SchedulerService {
         actorType: 'system',
       });
     }
-    console.log(`Purged ${expired.length} expired trashed content(s)`);
+    logger.info({ count: expired.length }, 'Purged expired trashed contents');
   }
 }
