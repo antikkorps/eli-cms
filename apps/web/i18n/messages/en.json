@@ -241,6 +241,7 @@
     "columnSlug": "Slug",
     "duplicate": "Duplicate",
     "duplicatePrefix": "Copy of",
+    "duplicated": "Content duplicated",
     "bulkActions": "Bulk actions",
     "bulkDelete": "Delete selected",
     "bulkPublish": "Publish selected",

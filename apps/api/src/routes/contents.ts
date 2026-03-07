@@ -31,6 +31,7 @@ contentsRouter.get('/trash/count', authenticate, requirePermission(CONTENT_READ)
 contentsRouter.post('/trash/:id/restore', authenticate, requirePermission(CONTENT_UPDATE), ContentController.restore);
 contentsRouter.delete('/trash/:id', authenticate, requirePermission(CONTENT_DELETE), ContentController.permanentDelete);
 
+contentsRouter.post('/:id/duplicate', authenticate, requirePermission(CONTENT_CREATE), ContentController.duplicate);
 contentsRouter.get('/:id', authenticate, requirePermission(CONTENT_READ), ContentController.get);
 contentsRouter.post('/', authenticate, requirePermission(CONTENT_CREATE), ContentController.create);
 contentsRouter.put('/:id', authenticate, requirePermission(CONTENT_UPDATE), ContentController.update);

@@ -40,6 +40,12 @@ export class ContentController {
     ctx.body = { success: true, data };
   }
 
+  static async duplicate(ctx: Context) {
+    const data = await ContentService.duplicate(ctx.params.id, extractActor(ctx));
+    ctx.status = 201;
+    ctx.body = { success: true, data };
+  }
+
   static async delete(ctx: Context) {
     await ContentService.delete(ctx.params.id, extractActor(ctx));
     ctx.status = 204;

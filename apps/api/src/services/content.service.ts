@@ -344,6 +344,36 @@ export class ContentService {
     return content;
   }
 
+  static async duplicate(id: string, actor?: Actor) {
+    const existing = await this.findById(id);
+    const contentType = await ContentTypeService.findById(existing.contentTypeId);
+
+    // Singleton check
+    if (contentType.isSingleton) {
+      throw new AppError(409, `"${contentType.name}" is a singleton and cannot be duplicated`);
+    }
+
+    // Build slug from existing slug or first text field
+    let slug = existing.slug ? `${existing.slug}-copy` : null;
+    if (!slug) {
+      const text = extractFirstTextField(contentType.fields, existing.data as Record<string, unknown>);
+      if (text) slug = toSlug(`${text} copy`);
+    }
+    if (slug) {
+      slug = await this.ensureUniqueSlug(slug, existing.contentTypeId);
+    }
+
+    const [content] = await db
+      .insert(contents)
+      .values({ contentTypeId: existing.contentTypeId, slug, status: 'draft', data: existing.data })
+      .returning();
+
+    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    eventBus.emit('content.created', { content, ...actorData });
+
+    return content;
+  }
+
   static async update(id: string, input: UpdateContentInput, userId?: string, actor?: Actor, userPermissions?: string[]) {
     const existing = await this.findById(id);
 

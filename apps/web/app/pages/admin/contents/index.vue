@@ -68,6 +68,18 @@ const canCreate = computed(() => hasPermission('content:create'));
 const canDelete = computed(() => hasPermission('content:delete'));
 const canUpdate = computed(() => hasPermission('content:update'));
 
+// Duplicate via API
+const toast = useToast();
+async function duplicateContent(id: string) {
+  try {
+    const res = await apiFetch<{ success: boolean; data: { id: string } }>(`/contents/${id}/duplicate`, { method: 'POST' });
+    toast.add({ title: t('contents.duplicated'), color: 'success' });
+    router.push(`/admin/contents/${res.data.id}`);
+  } catch {
+    toast.add({ title: t('common.error'), color: 'error' });
+  }
+}
+
 // Export/Import
 const exportFormat = ref<'json' | 'csv' | 'xml'>('json');
 const importOpen = ref(false);
@@ -129,6 +141,17 @@ function getPreviewText(data: Record<string, unknown>): string {
   return JSON.stringify(data).substring(0, 60) + '...';
 }
 
+function highlightVNodes(text: string) {
+  const q = search.value.trim();
+  if (!q) return [text];
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+  const parts = text.split(regex);
+  return parts.map((part) =>
+    regex.test(part) ? h('mark', { class: 'bg-yellow-300/50 dark:bg-yellow-500/30 rounded-sm px-0.5' }, part) : part,
+  );
+}
+
 function getMediaPreviewId(item: ContentItem): string | null {
   const ct = contentTypeItems.value.find((c) => c.id === item.contentTypeId);
   if (!ct?.fields) return null;
@@ -182,6 +205,7 @@ const columns = computed(() => [
     cell: ({ row }: { row: { original: ContentItem } }) => {
       const mediaId = getMediaPreviewId(row.original);
       const text = getPreviewText(row.original.data);
+      const highlighted = highlightVNodes(text);
       if (mediaId) {
         return h('div', { class: 'flex items-center gap-2' }, [
           h('img', {
@@ -189,10 +213,10 @@ const columns = computed(() => [
             class: 'size-8 rounded object-cover shrink-0',
             alt: '',
           }),
-          h('span', text),
+          h('span', highlighted),
         ]);
       }
-      return text;
+      return h('span', highlighted);
     },
   },
   {
@@ -204,7 +228,7 @@ const columns = computed(() => [
       ]),
     cell: ({ row }: { row: { original: ContentItem } }) =>
       row.original.slug
-        ? h('code', { class: 'text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded' }, row.original.slug)
+        ? h('code', { class: 'text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded' }, highlightVNodes(row.original.slug))
         : h('span', { class: 'text-muted text-xs' }, '—'),
   },
   {
@@ -257,7 +281,7 @@ const columns = computed(() => [
             color: 'neutral',
             size: 'sm',
             title: t('contents.duplicate'),
-            to: `/admin/contents/new?duplicate=${row.original.id}`,
+            onClick: () => duplicateContent(row.original.id),
           }),
         );
       }
