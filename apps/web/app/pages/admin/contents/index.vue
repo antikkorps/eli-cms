@@ -80,6 +80,13 @@ async function duplicateContent(id: string) {
   }
 }
 
+// Image preview lightbox
+const previewMediaId = ref<string | null>(null);
+const previewOpen = computed({
+  get: () => previewMediaId.value !== null,
+  set: (v) => { if (!v) previewMediaId.value = null; },
+});
+
 // Export/Import
 const exportFormat = ref<'json' | 'csv' | 'xml'>('json');
 const importOpen = ref(false);
@@ -209,9 +216,10 @@ const columns = computed(() => [
       if (mediaId) {
         return h('div', { class: 'flex items-center gap-2' }, [
           h('img', {
-            src: `${baseURL}/uploads/${mediaId}/serve`,
-            class: 'size-8 rounded object-cover shrink-0',
+            src: `${baseURL}/uploads/${mediaId}/serve?w=64&format=webp`,
+            class: 'size-8 rounded object-cover shrink-0 cursor-pointer hover:ring-2 hover:ring-primary transition-shadow',
             alt: '',
+            onClick: (e: Event) => { e.stopPropagation(); previewMediaId.value = mediaId; },
           }),
           h('span', highlighted),
         ]);
@@ -480,5 +488,19 @@ onMounted(async () => {
 
     <!-- Import modal -->
     <ImportModal v-model:open="importOpen" :content-types="contentTypeItems" @imported="page = 1" />
+
+    <!-- Image preview lightbox -->
+    <UModal v-model:open="previewOpen">
+      <template #content>
+        <div class="flex items-center justify-center p-2" @click="previewOpen = false">
+          <img
+            v-if="previewMediaId"
+            :src="`${baseURL}/uploads/${previewMediaId}/serve?w=1024&format=webp`"
+            class="max-h-[80vh] max-w-full rounded-lg object-contain"
+            alt=""
+          />
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
