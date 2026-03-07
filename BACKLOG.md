@@ -23,6 +23,8 @@
 - [x] Fix race condition in lock acquisition (`db.transaction()` + `SELECT … FOR UPDATE`)
 - [x] Wrap content update in DB transaction (snapshot + update + lock release atomic)
 - [x] Cap pagination limit in shared schemas (`.max(100)` on `paginationSchema.limit`)
+- [x] Fix trash count badge not updating reactively in sidebar after delete/restore
+- [x] Image lightbox preview (click thumbnail to enlarge) on uploads and contents list pages
 
 ## Medium Priority
 
@@ -41,7 +43,7 @@
 - [x] Keyboard shortcuts (Cmd+S save, Cmd+N new content, Cmd+K command palette)
 - [x] User profile page (card-based layout, email/password change, DiceBear avatar picker with 12 styles + seed variations, persisted in DB)
 - [x] Password reset flow (forgot password → email link → reset form, SMTP config with password/OAuth2/none auth)
-- [ ] Content duplication endpoint (`POST /contents/:id/duplicate`)
+- [x] Content duplication endpoint (`POST /contents/:id/duplicate`)
 - [x] Repeatable fields / arrays (lists of structured sub-objects — FAQ items, feature lists, gallery)
 - [x] Default values for fields (add `default` to FieldDefinition + schema builder + field builder UI)
 - [x] Singleton content types (`isSingleton` column, enforce single entry 409, auto-redirect in contents list, sidebar icon)
@@ -49,10 +51,10 @@
 - [~] HTTP caching on public API (Cache-Control + ETag on `/uploads/:id/serve` — remaining: content endpoints)
 - [x] Brute-force login protection (progressive delays or lockout after N failed attempts)
 - [ ] Background job queue — replace `setInterval` scheduler with BullMQ/Redis
-- [ ] Structured logging — replace `console.log` with pino (JSON, request IDs)
+- [x] Structured logging — replace `console.log` with pino (JSON, request IDs)
 - [ ] Advanced form validation (min/max length, regex patterns, unique constraints per field)
-- [ ] Content type field groups / tabs (organize fields into sections for complex content types)
-- [ ] Search result highlighting
+- [x] Content type field groups / tabs (organize fields into sections for complex content types)
+- [x] Search result highlighting
 - [~] Image crop/resize before upload (server-side transforms done — remaining: client-side crop UI before upload)
 - [ ] i18n labels in FieldBuilder (translate field type names)
 - [ ] Configurable slug patterns (e.g. `{year}/{slug}`, `{category}/{slug}`)
@@ -62,7 +64,7 @@
 
 - [ ] Component / block system (reusable field groups embeddable in any content type — hero, CTA, testimonials)
 - [ ] JSON/object field type (arbitrary nested JSON with optional schema validation)
-- [ ] Dark mode polish (ensure all custom components respect dark theme)
+- [x] Dark mode polish (ensure all custom components respect dark theme)
 - [ ] OpenAPI spec completion (add paths/endpoints, currently only schemas defined)
 - [ ] E2E tests (Playwright or Cypress)
 - [ ] Multilingual content (per-locale fields, locale switcher in content form)
