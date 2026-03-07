@@ -200,7 +200,11 @@
     "fieldDefault": "Default value",
     "fieldDefaultPlaceholder": "Leave empty for no default",
     "fieldDefaultHint": "Pre-filled when creating content",
-    "noDefault": "No default"
+    "noDefault": "No default",
+    "fieldGroup": "Group",
+    "fieldGroupPlaceholder": "e.g. SEO, Media, Settings",
+    "fieldGroupHint": "Fields with the same group are displayed in tabs",
+    "defaultGroup": "General"
   },
   "contents": {
     "title": "Contents",

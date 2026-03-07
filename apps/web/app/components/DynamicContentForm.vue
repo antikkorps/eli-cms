@@ -36,6 +36,7 @@ interface FieldDefinition {
   accept?: string[];
   subFields?: FieldDefinition[];
   defaultValue?: unknown;
+  group?: string;
 }
 
 const props = withDefaults(
@@ -89,13 +90,55 @@ function moveRepeatableItem(fieldName: string, index: number, direction: 'up' | 
 function getRepeatableSubSelectItems(field: FieldDefinition) {
   return (field.options ?? []).map((o) => ({ label: o, value: o }));
 }
+
+// ─── Field groups / tabs ────────────────────────────────
+const hasGroups = computed(() => props.fields.some((f) => f.group));
+
+const groupNames = computed(() => {
+  if (!hasGroups.value) return [];
+  const seen = new Set<string>();
+  const names: string[] = [];
+  for (const f of props.fields) {
+    const g = f.group || t('fieldBuilder.defaultGroup');
+    if (!seen.has(g)) {
+      seen.add(g);
+      names.push(g);
+    }
+  }
+  return names;
+});
+
+const fieldsByGroup = computed(() => {
+  const map = new Map<string, FieldDefinition[]>();
+  for (const f of props.fields) {
+    const g = f.group || t('fieldBuilder.defaultGroup');
+    if (!map.has(g)) map.set(g, []);
+    map.get(g)!.push(f);
+  }
+  return map;
+});
+
+const tabItems = computed(() =>
+  groupNames.value.map((name) => ({ label: name, value: name })),
+);
+
+const activeTab = ref(groupNames.value[0] ?? '');
+watch(groupNames, (names) => {
+  if (names.length && !names.includes(activeTab.value)) {
+    activeTab.value = names[0]!;
+  }
+}, { immediate: true });
 </script>
 
 <template>
   <div class="space-y-4">
+    <!-- Tabbed layout when groups exist -->
+    <template v-if="hasGroups">
+      <UTabs v-model="activeTab" :items="tabItems" class="w-full" />
+    </template>
+
+    <template v-for="field in (hasGroups ? (fieldsByGroup.get(activeTab) ?? []) : props.fields)" :key="field.name">
     <UFormField
-      v-for="field in props.fields"
-      :key="field.name"
       :label="field.label"
       :required="field.required"
       :error="props.errors[field.name]"
@@ -304,5 +347,6 @@ function getRepeatableSubSelectItems(field: FieldDefinition) {
         </div>
       </template>
     </UFormField>
+    </template>
   </div>
 </template>

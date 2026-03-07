@@ -13,6 +13,7 @@ interface FieldDefinition {
   accept?: string[];
   subFields?: FieldDefinition[];
   defaultValue?: unknown;
+  group?: string;
 }
 
 const model = defineModel<FieldDefinition[]>({ default: () => [] });
@@ -201,7 +202,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
       @update:model-value="(v: FieldDefinition[]) => model = v"
     >
       <template #item="{ element: field, index }">
-        <div class="border border-accented rounded-lg p-4 space-y-3">
+        <div class="border border-accented rounded-lg p-4 space-y-4">
           <div class="flex items-start gap-3">
             <UButton
               icon="i-lucide-grip-vertical"
@@ -210,182 +211,110 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
               size="sm"
               class="drag-handle cursor-grab mt-6"
             />
-            <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <UFormField :label="$t('fieldBuilder.fieldName')" :error="nameError(index)">
-            <UInput
-              :model-value="field.name"
-              :placeholder="$t('fieldBuilder.fieldNamePlaceholder')"
-              required
-              class="w-full"
-              @update:model-value="(v: string) => updateField(index, 'name', v)"
-            />
-          </UFormField>
 
-          <UFormField :label="$t('fieldBuilder.fieldLabel')">
-            <UInput
-              :model-value="field.label"
-              :placeholder="$t('fieldBuilder.fieldLabelPlaceholder')"
-              required
-              class="w-full"
-              @update:model-value="(v: string) => updateField(index, 'label', v)"
-            />
-          </UFormField>
+            <div class="flex-1 space-y-3">
+              <!-- Row 1: Name, Label, Type -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <UFormField :label="$t('fieldBuilder.fieldName')" :error="nameError(index)">
+                  <UInput
+                    :model-value="field.name"
+                    :placeholder="$t('fieldBuilder.fieldNamePlaceholder')"
+                    required
+                    class="w-full"
+                    @update:model-value="(v: string) => updateField(index, 'name', v)"
+                  />
+                </UFormField>
 
-          <UFormField :label="$t('fieldBuilder.fieldType')">
-            <USelect
-              :model-value="field.type"
-              :items="fieldTypes"
-              class="w-full"
-              @update:model-value="(v: string) => updateField(index, 'type', v)"
-            />
-          </UFormField>
+                <UFormField :label="$t('fieldBuilder.fieldLabel')">
+                  <UInput
+                    :model-value="field.label"
+                    :placeholder="$t('fieldBuilder.fieldLabelPlaceholder')"
+                    required
+                    class="w-full"
+                    @update:model-value="(v: string) => updateField(index, 'label', v)"
+                  />
+                </UFormField>
 
-          <UFormField :label="$t('fieldBuilder.fieldRequired')">
-            <USwitch
-              :model-value="field.required"
-              @update:model-value="(v: boolean) => updateField(index, 'required', v)"
-            />
-          </UFormField>
-        </div>
+                <UFormField :label="$t('fieldBuilder.fieldType')">
+                  <USelect
+                    :model-value="field.type"
+                    :items="fieldTypes"
+                    class="w-full"
+                    @update:model-value="(v: string) => updateField(index, 'type', v)"
+                  />
+                </UFormField>
+              </div>
 
-        <UButton
-          icon="i-lucide-trash-2"
-          variant="ghost"
-          color="error"
-          size="sm"
-          class="mt-6"
-          @click="removeField(index)"
-        />
-      </div>
+              <!-- Row 2: Required, Group, Default value -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <UFormField>
+                  <template #label>
+                    <span class="flex items-center gap-1">
+                      {{ $t('fieldBuilder.fieldGroup') }}
+                      <UTooltip :text="$t('fieldBuilder.fieldGroupHint')">
+                        <UIcon name="i-lucide-info" class="size-3.5 text-gray-400" />
+                      </UTooltip>
+                    </span>
+                  </template>
+                  <UInput
+                    :model-value="field.group ?? ''"
+                    :placeholder="$t('fieldBuilder.fieldGroupPlaceholder')"
+                    class="w-full"
+                    @update:model-value="(v: string) => updateField(index, 'group', v || undefined)"
+                  />
+                </UFormField>
 
-      <!-- Default value -->
-      <div v-if="!['media', 'author', 'richtext', 'repeatable'].includes(field.type)" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <UFormField :label="$t('fieldBuilder.fieldDefault')" :hint="$t('fieldBuilder.fieldDefaultHint')">
-          <UInput
-            v-if="['text', 'textarea', 'email', 'url'].includes(field.type)"
-            :model-value="(field.defaultValue as string) ?? ''"
-            :placeholder="$t('fieldBuilder.fieldDefaultPlaceholder')"
-            class="w-full"
-            @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
-          />
-          <UInput
-            v-else-if="field.type === 'number'"
-            :model-value="(field.defaultValue as number) ?? ''"
-            type="number"
-            :placeholder="$t('fieldBuilder.fieldDefaultPlaceholder')"
-            class="w-full"
-            @update:model-value="(v: number | string) => updateField(index, 'defaultValue', v === '' ? undefined : Number(v))"
-          />
-          <USwitch
-            v-else-if="field.type === 'boolean'"
-            :model-value="(field.defaultValue as boolean) ?? false"
-            @update:model-value="(v: boolean) => updateField(index, 'defaultValue', v)"
-          />
-          <UInput
-            v-else-if="field.type === 'date'"
-            :model-value="(field.defaultValue as string) ?? ''"
-            type="date"
-            class="w-full"
-            @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
-          />
-          <USelect
-            v-else-if="field.type === 'select'"
-            :model-value="(field.defaultValue as string) ?? ''"
-            :items="[{ label: $t('fieldBuilder.noDefault'), value: '' }, ...(field.options ?? []).map((o) => ({ label: o, value: o }))]"
-            class="w-full"
-            @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
-          />
-        </UFormField>
-      </div>
+                <UFormField
+                  v-if="!['media', 'author', 'richtext', 'repeatable', 'select'].includes(field.type)"
+                >
+                  <template #label>
+                    <span class="flex items-center gap-1">
+                      {{ $t('fieldBuilder.fieldDefault') }}
+                      <UTooltip :text="$t('fieldBuilder.fieldDefaultHint')">
+                        <UIcon name="i-lucide-info" class="size-3.5 text-gray-400" />
+                      </UTooltip>
+                    </span>
+                  </template>
+                  <UInput
+                    v-if="['text', 'textarea', 'email', 'url'].includes(field.type)"
+                    :model-value="(field.defaultValue as string) ?? ''"
+                    :placeholder="$t('fieldBuilder.fieldDefaultPlaceholder')"
+                    class="w-full"
+                    @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
+                  />
+                  <UInput
+                    v-else-if="field.type === 'number'"
+                    :model-value="(field.defaultValue as number) ?? ''"
+                    type="number"
+                    :placeholder="$t('fieldBuilder.fieldDefaultPlaceholder')"
+                    class="w-full"
+                    @update:model-value="(v: number | string) => updateField(index, 'defaultValue', v === '' ? undefined : Number(v))"
+                  />
+                  <div v-else-if="field.type === 'boolean'" class="h-9 flex items-center">
+                    <USwitch
+                      :model-value="(field.defaultValue as boolean) ?? false"
+                      @update:model-value="(v: boolean) => updateField(index, 'defaultValue', v)"
+                    />
+                  </div>
+                  <UInput
+                    v-else-if="field.type === 'date'"
+                    :model-value="(field.defaultValue as string) ?? ''"
+                    type="date"
+                    class="w-full"
+                    @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
+                  />
+                </UFormField>
 
-      <UFormField v-if="field.type === 'select'" :label="$t('fieldBuilder.fieldOptions')">
-        <UTextarea
-          :model-value="getOptionsRaw(index)"
-          :placeholder="$t('fieldBuilder.fieldOptionsPlaceholder')"
-          :rows="3"
-          class="w-full"
-          @update:model-value="(v: string) => updateOptions(index, v)"
-        />
-      </UFormField>
-
-      <div v-if="field.type === 'media'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <UFormField :label="$t('fieldBuilder.fieldMultiple')">
-          <USwitch
-            :model-value="field.multiple ?? false"
-            @update:model-value="(v: boolean) => updateField(index, 'multiple', v)"
-          />
-        </UFormField>
-        <UFormField :label="$t('fieldBuilder.fieldAccept')" :hint="$t('fieldBuilder.fieldAcceptHint')">
-          <USelectMenu
-            :model-value="getAcceptSelected(index)"
-            :items="mediaAcceptCategories"
-            multiple
-            :placeholder="$t('fieldBuilder.fieldAcceptPlaceholder')"
-            class="w-full"
-            @update:model-value="(v: string[]) => updateAcceptFromSelect(index, v)"
-          />
-        </UFormField>
-      </div>
-
-      <!-- Sub-field builder for repeatable fields -->
-      <div v-if="field.type === 'repeatable'" class="mt-3 ml-4 border-l-2 border-primary-200 dark:border-primary-800 pl-4 space-y-3">
-        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ $t('fieldBuilder.subFields') }}</p>
-
-        <draggable
-          :model-value="field.subFields ?? []"
-          item-key="_uid"
-          handle=".sub-drag-handle"
-          animation="200"
-          ghost-class="opacity-30"
-          class="space-y-3"
-          @update:model-value="(v: FieldDefinition[]) => onSubFieldsReorder(index, v)"
-        >
-          <template #item="{ element: sub, index: si }">
-            <div class="border border-accented rounded-lg p-3 space-y-3 bg-gray-50 dark:bg-gray-900">
-              <div class="flex items-start gap-3">
-                <UButton
-                  icon="i-lucide-grip-vertical"
-                  variant="ghost"
-                  color="neutral"
-                  size="xs"
-                  class="sub-drag-handle cursor-grab mt-6"
-                />
-                <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <UFormField :label="$t('fieldBuilder.fieldName')" :error="subFieldNameError(index, si)">
-                <UInput
-                  :model-value="sub.name"
-                  :placeholder="$t('fieldBuilder.fieldNamePlaceholder')"
-                  required
-                  class="w-full"
-                  @update:model-value="(v: string) => updateSubField(index, si, 'name', v)"
-                />
-              </UFormField>
-
-              <UFormField :label="$t('fieldBuilder.fieldLabel')">
-                <UInput
-                  :model-value="sub.label"
-                  :placeholder="$t('fieldBuilder.fieldLabelPlaceholder')"
-                  required
-                  class="w-full"
-                  @update:model-value="(v: string) => updateSubField(index, si, 'label', v)"
-                />
-              </UFormField>
-
-              <UFormField :label="$t('fieldBuilder.fieldType')">
-                <USelect
-                  :model-value="sub.type"
-                  :items="allFieldTypes.filter((ft) => ft.value !== 'repeatable')"
-                  class="w-full"
-                  @update:model-value="(v: string) => updateSubField(index, si, 'type', v)"
-                />
-              </UFormField>
-
-              <UFormField :label="$t('fieldBuilder.fieldRequired')">
-                <USwitch
-                  :model-value="sub.required"
-                  @update:model-value="(v: boolean) => updateSubField(index, si, 'required', v)"
-                />
-              </UFormField>
+                <div class="flex items-end h-full pb-1">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <USwitch
+                      :model-value="field.required"
+                      @update:model-value="(v: boolean) => updateField(index, 'required', v)"
+                    />
+                    <span class="text-sm font-medium">{{ $t('fieldBuilder.fieldRequired') }}</span>
+                  </label>
+                </div>
+              </div>
             </div>
 
             <UButton
@@ -394,27 +323,163 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
               color="error"
               size="sm"
               class="mt-6"
-              @click="removeSubField(index, si)"
+              @click="removeField(index)"
             />
           </div>
 
-          <UFormField v-if="sub.type === 'select'" :label="$t('fieldBuilder.fieldOptions')">
-            <UTextarea
-              :model-value="getSubFieldOptionsRaw(index, si)"
-              :placeholder="$t('fieldBuilder.fieldOptionsPlaceholder')"
-              :rows="3"
-              class="w-full"
-              @update:model-value="(v: string) => updateSubFieldOptions(index, si, v)"
-            />
-          </UFormField>
+          <!-- Select: default value + options (separate row since they need more space) -->
+          <template v-if="field.type === 'select'">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <UFormField>
+                <template #label>
+                  <span class="flex items-center gap-1">
+                    {{ $t('fieldBuilder.fieldDefault') }}
+                    <UTooltip :text="$t('fieldBuilder.fieldDefaultHint')">
+                      <UIcon name="i-lucide-info" class="size-3.5 text-gray-400" />
+                    </UTooltip>
+                  </span>
+                </template>
+                <USelect
+                  :model-value="(field.defaultValue as string) ?? ''"
+                  :items="[{ label: $t('fieldBuilder.noDefault'), value: '' }, ...(field.options ?? []).map((o) => ({ label: o, value: o }))]"
+                  class="w-full"
+                  @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
+                />
+              </UFormField>
+
+              <UFormField :label="$t('fieldBuilder.fieldOptions')">
+                <UTextarea
+                  :model-value="getOptionsRaw(index)"
+                  :placeholder="$t('fieldBuilder.fieldOptionsPlaceholder')"
+                  :rows="3"
+                  class="w-full"
+                  @update:model-value="(v: string) => updateOptions(index, v)"
+                />
+              </UFormField>
             </div>
           </template>
-        </draggable>
 
-        <UButton variant="outline" size="sm" icon="i-lucide-plus" @click="addSubField(index)">
-          {{ $t('fieldBuilder.addSubField') }}
-        </UButton>
-      </div>
+          <!-- Media options -->
+          <div v-if="field.type === 'media'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <UFormField :label="$t('fieldBuilder.fieldMultiple')">
+              <USwitch
+                :model-value="field.multiple ?? false"
+                @update:model-value="(v: boolean) => updateField(index, 'multiple', v)"
+              />
+            </UFormField>
+            <UFormField>
+              <template #label>
+                <span class="flex items-center gap-1">
+                  {{ $t('fieldBuilder.fieldAccept') }}
+                  <UTooltip :text="$t('fieldBuilder.fieldAcceptHint')">
+                    <UIcon name="i-lucide-info" class="size-3.5 text-gray-400" />
+                  </UTooltip>
+                </span>
+              </template>
+              <USelectMenu
+                :model-value="getAcceptSelected(index)"
+                :items="mediaAcceptCategories"
+                multiple
+                :placeholder="$t('fieldBuilder.fieldAcceptPlaceholder')"
+                class="w-full"
+                @update:model-value="(v: string[]) => updateAcceptFromSelect(index, v)"
+              />
+            </UFormField>
+          </div>
+
+          <!-- Sub-field builder for repeatable fields -->
+          <div v-if="field.type === 'repeatable'" class="mt-1 ml-4 border-l-2 border-primary-200 dark:border-primary-800 pl-4 space-y-3">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ $t('fieldBuilder.subFields') }}</p>
+
+            <draggable
+              :model-value="field.subFields ?? []"
+              item-key="_uid"
+              handle=".sub-drag-handle"
+              animation="200"
+              ghost-class="opacity-30"
+              class="space-y-3"
+              @update:model-value="(v: FieldDefinition[]) => onSubFieldsReorder(index, v)"
+            >
+              <template #item="{ element: sub, index: si }">
+                <div class="border border-accented rounded-lg p-3 space-y-3 bg-gray-50 dark:bg-gray-900">
+                  <div class="flex items-start gap-3">
+                    <UButton
+                      icon="i-lucide-grip-vertical"
+                      variant="ghost"
+                      color="neutral"
+                      size="xs"
+                      class="sub-drag-handle cursor-grab mt-6"
+                    />
+
+                    <div class="flex-1 space-y-3">
+                      <!-- Sub row 1: Name, Label, Type -->
+                      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <UFormField :label="$t('fieldBuilder.fieldName')" :error="subFieldNameError(index, si)">
+                          <UInput
+                            :model-value="sub.name"
+                            :placeholder="$t('fieldBuilder.fieldNamePlaceholder')"
+                            required
+                            class="w-full"
+                            @update:model-value="(v: string) => updateSubField(index, si, 'name', v)"
+                          />
+                        </UFormField>
+
+                        <UFormField :label="$t('fieldBuilder.fieldLabel')">
+                          <UInput
+                            :model-value="sub.label"
+                            :placeholder="$t('fieldBuilder.fieldLabelPlaceholder')"
+                            required
+                            class="w-full"
+                            @update:model-value="(v: string) => updateSubField(index, si, 'label', v)"
+                          />
+                        </UFormField>
+
+                        <UFormField :label="$t('fieldBuilder.fieldType')">
+                          <USelect
+                            :model-value="sub.type"
+                            :items="allFieldTypes.filter((ft) => ft.value !== 'repeatable')"
+                            class="w-full"
+                            @update:model-value="(v: string) => updateSubField(index, si, 'type', v)"
+                          />
+                        </UFormField>
+                      </div>
+
+                      <!-- Sub row 2: Required -->
+                      <UFormField :label="$t('fieldBuilder.fieldRequired')">
+                        <USwitch
+                          :model-value="sub.required"
+                          @update:model-value="(v: boolean) => updateSubField(index, si, 'required', v)"
+                        />
+                      </UFormField>
+                    </div>
+
+                    <UButton
+                      icon="i-lucide-trash-2"
+                      variant="ghost"
+                      color="error"
+                      size="sm"
+                      class="mt-6"
+                      @click="removeSubField(index, si)"
+                    />
+                  </div>
+
+                  <UFormField v-if="sub.type === 'select'" :label="$t('fieldBuilder.fieldOptions')">
+                    <UTextarea
+                      :model-value="getSubFieldOptionsRaw(index, si)"
+                      :placeholder="$t('fieldBuilder.fieldOptionsPlaceholder')"
+                      :rows="3"
+                      class="w-full"
+                      @update:model-value="(v: string) => updateSubFieldOptions(index, si, v)"
+                    />
+                  </UFormField>
+                </div>
+              </template>
+            </draggable>
+
+            <UButton variant="outline" size="sm" icon="i-lucide-plus" @click="addSubField(index)">
+              {{ $t('fieldBuilder.addSubField') }}
+            </UButton>
+          </div>
         </div>
       </template>
     </draggable>

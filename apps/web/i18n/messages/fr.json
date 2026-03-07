@@ -200,7 +200,11 @@
     "fieldDefault": "Valeur par défaut",
     "fieldDefaultPlaceholder": "Laisser vide pour aucune valeur",
     "fieldDefaultHint": "Pré-rempli à la création de contenu",
-    "noDefault": "Aucune valeur par défaut"
+    "noDefault": "Aucune valeur par défaut",
+    "fieldGroup": "Groupe",
+    "fieldGroupPlaceholder": "ex. SEO, Médias, Paramètres",
+    "fieldGroupHint": "Les champs du même groupe sont affichés en onglets",
+    "defaultGroup": "Général"
   },
   "contents": {
     "title": "Contenus",

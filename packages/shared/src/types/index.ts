@@ -32,6 +32,7 @@ export interface FieldDefinition {
   accept?: string[]; // MIME filter for media type (e.g. ['image/*', 'application/pdf'])
   subFields?: FieldDefinition[]; // for repeatable type
   defaultValue?: unknown; // pre-filled value when creating new content
+  group?: string; // field group/tab name for UI organization
 }
 
 export interface ContentType {
