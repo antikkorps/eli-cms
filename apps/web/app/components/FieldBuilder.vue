@@ -252,7 +252,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                     <span class="flex items-center gap-1">
                       {{ $t('fieldBuilder.fieldGroup') }}
                       <UTooltip :text="$t('fieldBuilder.fieldGroupHint')">
-                        <UIcon name="i-lucide-info" class="size-3.5 text-gray-400" />
+                        <UIcon name="i-lucide-info" class="size-3.5 text-gray-400 dark:text-gray-500" />
                       </UTooltip>
                     </span>
                   </template>
@@ -271,7 +271,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                     <span class="flex items-center gap-1">
                       {{ $t('fieldBuilder.fieldDefault') }}
                       <UTooltip :text="$t('fieldBuilder.fieldDefaultHint')">
-                        <UIcon name="i-lucide-info" class="size-3.5 text-gray-400" />
+                        <UIcon name="i-lucide-info" class="size-3.5 text-gray-400 dark:text-gray-500" />
                       </UTooltip>
                     </span>
                   </template>
@@ -335,7 +335,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                   <span class="flex items-center gap-1">
                     {{ $t('fieldBuilder.fieldDefault') }}
                     <UTooltip :text="$t('fieldBuilder.fieldDefaultHint')">
-                      <UIcon name="i-lucide-info" class="size-3.5 text-gray-400" />
+                      <UIcon name="i-lucide-info" class="size-3.5 text-gray-400 dark:text-gray-500" />
                     </UTooltip>
                   </span>
                 </template>
@@ -372,7 +372,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                 <span class="flex items-center gap-1">
                   {{ $t('fieldBuilder.fieldAccept') }}
                   <UTooltip :text="$t('fieldBuilder.fieldAcceptHint')">
-                    <UIcon name="i-lucide-info" class="size-3.5 text-gray-400" />
+                    <UIcon name="i-lucide-info" class="size-3.5 text-gray-400 dark:text-gray-500" />
                   </UTooltip>
                 </span>
               </template>

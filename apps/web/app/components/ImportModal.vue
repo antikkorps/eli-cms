@@ -93,7 +93,7 @@ function reset() {
           <p class="text-sm text-green-600 dark:text-green-400">{{ $t('export.imported') }}: {{ result.imported }}</p>
           <p v-if="result.failed > 0" class="text-sm text-red-600 dark:text-red-400">{{ $t('export.failed') }}: {{ result.failed }}</p>
           <div v-if="result.errors.length > 0" class="max-h-40 overflow-y-auto">
-            <p v-for="(err, i) in result.errors" :key="i" class="text-xs text-red-500">{{ err }}</p>
+            <p v-for="(err, i) in result.errors" :key="i" class="text-xs text-red-500 dark:text-red-400">{{ err }}</p>
           </div>
         </div>
 

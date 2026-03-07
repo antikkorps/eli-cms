@@ -229,7 +229,7 @@ watch(groupNames, (names) => {
             class="border rounded-lg p-4 space-y-3 bg-gray-50 dark:bg-gray-900"
           >
             <div class="flex items-center justify-between mb-2">
-              <span class="text-sm font-medium text-gray-500">#{{ itemIndex + 1 }}</span>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">#{{ itemIndex + 1 }}</span>
               <div class="flex gap-1">
                 <UButton
                   icon="i-lucide-arrow-up"
