@@ -42,6 +42,10 @@ const navigation = computed(() => {
 
   if (!mounted.value) return items;
 
+  if (hasPermission('content-types:read') || hasPermission('content-types:create')) {
+    items.push({ label: t('nav.contentTypes'), icon: 'i-lucide-blocks', to: '/admin/content-types' });
+  }
+
   if (hasPermission('content:read')) {
     const children: Array<Record<string, unknown>> = [
       { label: t('nav.allContents'), to: '/admin/contents' },
@@ -75,10 +79,6 @@ const navigation = computed(() => {
       defaultOpen: true,
       children,
     });
-  }
-
-  if (hasPermission('content-types:read') || hasPermission('content-types:create')) {
-    items.push({ label: t('nav.contentTypes'), icon: 'i-lucide-blocks', to: '/admin/content-types' });
   }
   if (hasPermission('uploads:read')) {
     const folderChildren: Array<Record<string, unknown>> = [
