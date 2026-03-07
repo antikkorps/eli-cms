@@ -3,6 +3,7 @@ import { eq, and, count as drizzleCount, lte, isNotNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { webhooks, webhookDeliveries } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
+import { logger } from '../utils/logger.js';
 import { buildMeta } from '../utils/pagination.js';
 import { eventBus } from './event-bus.js';
 import type { CmsEvent } from './event-bus.js';
@@ -142,10 +143,10 @@ export class WebhookService {
     // Start retry poller
     if (retryTimer) clearInterval(retryTimer);
     retryTimer = setInterval(() => {
-      this.processRetries().catch(console.error);
+      this.processRetries().catch((err) => logger.error(err, 'Webhook retry processing failed'));
     }, RETRY_POLL_INTERVAL);
 
-    console.log(`Webhooks initialized: ${activeWebhooks.length} active`);
+    logger.info({ count: activeWebhooks.length }, 'Webhooks initialized');
   }
 
   static shutdown() {
@@ -158,7 +159,7 @@ export class WebhookService {
   private static registerWebhookListeners(webhook: typeof webhooks.$inferSelect) {
     for (const evt of webhook.events) {
       const listener = (cmsEvent: CmsEvent) => {
-        this.deliver(webhook, cmsEvent).catch(console.error);
+        this.deliver(webhook, cmsEvent).catch((err) => logger.error(err, 'Webhook delivery failed'));
       };
       eventBus.on(evt, listener);
       webhookListeners.push({ event: evt, listener: listener as (...args: unknown[]) => void });

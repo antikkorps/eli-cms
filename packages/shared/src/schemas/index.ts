@@ -50,6 +50,7 @@ const baseFieldDefinitionSchema = z.object({
   multiple: z.boolean().optional(),
   accept: z.array(z.string()).optional(),
   defaultValue: z.unknown().optional(),
+  group: z.string().max(255).optional(),
   subFields: z.lazy(() =>
     z.array(
       z.object({

@@ -3,6 +3,7 @@ import { db } from '../db/index.js';
 import { auditLogs } from '../db/schema/index.js';
 import { buildMeta } from '../utils/pagination.js';
 import { eventBus } from './event-bus.js';
+import { logger } from '../utils/logger.js';
 import type { CmsEvent } from './event-bus.js';
 import type { AuditLogListQuery, ActorType } from '@eli-cms/shared';
 
@@ -58,10 +59,10 @@ export class AuditService {
   static initialize() {
     for (const event of KNOWN_EVENTS) {
       eventBus.on(event, (cmsEvent: CmsEvent) => {
-        this.handleEvent(cmsEvent).catch(console.error);
+        this.handleEvent(cmsEvent).catch((err) => logger.error(err, 'Audit event handling failed'));
       });
     }
-    console.log(`Audit service initialized: listening to ${KNOWN_EVENTS.length} events`);
+    logger.info({ eventCount: KNOWN_EVENTS.length }, 'Audit service initialized');
   }
 
   private static async handleEvent(cmsEvent: CmsEvent) {

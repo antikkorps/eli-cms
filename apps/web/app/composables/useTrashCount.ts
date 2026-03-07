@@ -23,8 +23,9 @@ export function useTrashCount() {
     }
   }
 
-  function invalidate() {
+  async function invalidate() {
     state.loaded = false;
+    await fetch();
   }
 
   return {

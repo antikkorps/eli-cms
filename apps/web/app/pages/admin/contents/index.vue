@@ -68,6 +68,25 @@ const canCreate = computed(() => hasPermission('content:create'));
 const canDelete = computed(() => hasPermission('content:delete'));
 const canUpdate = computed(() => hasPermission('content:update'));
 
+// Duplicate via API
+const toast = useToast();
+async function duplicateContent(id: string) {
+  try {
+    const res = await apiFetch<{ success: boolean; data: { id: string } }>(`/contents/${id}/duplicate`, { method: 'POST' });
+    toast.add({ title: t('contents.duplicated'), color: 'success' });
+    router.push(`/admin/contents/${res.data.id}`);
+  } catch {
+    toast.add({ title: t('common.error'), color: 'error' });
+  }
+}
+
+// Image preview lightbox
+const previewMediaId = ref<string | null>(null);
+const previewOpen = computed({
+  get: () => previewMediaId.value !== null,
+  set: (v) => { if (!v) previewMediaId.value = null; },
+});
+
 // Export/Import
 const exportFormat = ref<'json' | 'csv' | 'xml'>('json');
 const importOpen = ref(false);
@@ -129,6 +148,17 @@ function getPreviewText(data: Record<string, unknown>): string {
   return JSON.stringify(data).substring(0, 60) + '...';
 }
 
+function highlightVNodes(text: string) {
+  const q = search.value.trim();
+  if (!q) return [text];
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+  const parts = text.split(regex);
+  return parts.map((part) =>
+    regex.test(part) ? h('mark', { class: 'bg-yellow-300/50 dark:bg-yellow-500/30 rounded-sm px-0.5' }, part) : part,
+  );
+}
+
 function getMediaPreviewId(item: ContentItem): string | null {
   const ct = contentTypeItems.value.find((c) => c.id === item.contentTypeId);
   if (!ct?.fields) return null;
@@ -182,17 +212,19 @@ const columns = computed(() => [
     cell: ({ row }: { row: { original: ContentItem } }) => {
       const mediaId = getMediaPreviewId(row.original);
       const text = getPreviewText(row.original.data);
+      const highlighted = highlightVNodes(text);
       if (mediaId) {
         return h('div', { class: 'flex items-center gap-2' }, [
           h('img', {
-            src: `${baseURL}/uploads/${mediaId}/serve`,
-            class: 'size-8 rounded object-cover shrink-0',
+            src: `${baseURL}/uploads/${mediaId}/serve?w=64&format=webp`,
+            class: 'size-8 rounded object-cover shrink-0 cursor-pointer hover:ring-2 hover:ring-primary transition-shadow',
             alt: '',
+            onClick: (e: Event) => { e.stopPropagation(); previewMediaId.value = mediaId; },
           }),
-          h('span', text),
+          h('span', highlighted),
         ]);
       }
-      return text;
+      return h('span', highlighted);
     },
   },
   {
@@ -204,7 +236,7 @@ const columns = computed(() => [
       ]),
     cell: ({ row }: { row: { original: ContentItem } }) =>
       row.original.slug
-        ? h('code', { class: 'text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded' }, row.original.slug)
+        ? h('code', { class: 'text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded' }, highlightVNodes(row.original.slug))
         : h('span', { class: 'text-muted text-xs' }, '—'),
   },
   {
@@ -257,7 +289,7 @@ const columns = computed(() => [
             color: 'neutral',
             size: 'sm',
             title: t('contents.duplicate'),
-            to: `/admin/contents/new?duplicate=${row.original.id}`,
+            onClick: () => duplicateContent(row.original.id),
           }),
         );
       }
@@ -456,5 +488,19 @@ onMounted(async () => {
 
     <!-- Import modal -->
     <ImportModal v-model:open="importOpen" :content-types="contentTypeItems" @imported="page = 1" />
+
+    <!-- Image preview lightbox -->
+    <UModal v-model:open="previewOpen">
+      <template #content>
+        <div class="flex items-center justify-center p-2" @click="previewOpen = false">
+          <img
+            v-if="previewMediaId"
+            :src="`${baseURL}/uploads/${previewMediaId}/serve?w=1024&format=webp`"
+            class="max-h-[80vh] max-w-full rounded-lg object-contain"
+            alt=""
+          />
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>

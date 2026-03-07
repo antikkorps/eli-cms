@@ -1,6 +1,7 @@
 import type { Context, Next } from 'koa';
 import { AppError } from '../utils/app-error.js';
 import type { ApiResponse } from '@eli-cms/shared';
+import { logger } from '../utils/logger.js';
 
 export async function errorHandler(ctx: Context, next: Next) {
   try {
@@ -12,7 +13,7 @@ export async function errorHandler(ctx: Context, next: Next) {
       return;
     }
 
-    console.error('Unhandled error:', err);
+    logger.error({ err, method: ctx.method, url: ctx.url }, 'Unhandled error');
     ctx.status = 500;
     ctx.body = { success: false, error: 'Internal server error' } satisfies ApiResponse;
   }

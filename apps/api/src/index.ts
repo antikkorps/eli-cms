@@ -4,17 +4,18 @@ import { pool } from './db/index.js';
 import { WebhookService } from './services/webhook.service.js';
 import { AuditService } from './services/audit.service.js';
 import { SchedulerService } from './services/scheduler.service.js';
+import { logger } from './utils/logger.js';
 
 const app = createApp();
 
 const server = app.listen(env.API_PORT, () => {
-  console.log(`API running on http://localhost:${env.API_PORT}`);
+  logger.info({ port: env.API_PORT }, 'API started');
 
   // Initialize audit logging (must be before webhooks to register listeners first)
   AuditService.initialize();
 
   // Initialize webhooks after server starts
-  WebhookService.initialize().catch(console.error);
+  WebhookService.initialize().catch((err) => logger.error(err, 'Webhook initialization failed'));
 
   // Start content scheduler (auto-publish scheduled contents)
   SchedulerService.start();
@@ -22,7 +23,7 @@ const server = app.listen(env.API_PORT, () => {
 
 // Graceful shutdown
 async function shutdown() {
-  console.log('\nShutting down gracefully...');
+  logger.info('Shutting down gracefully');
   SchedulerService.shutdown();
   WebhookService.shutdown();
   server.close();

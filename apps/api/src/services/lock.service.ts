@@ -2,6 +2,7 @@ import { eq, and, lte, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { contentLocks, users } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
+import { logger } from '../utils/logger.js';
 
 const LOCK_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -113,7 +114,7 @@ export class LockService {
       .returning();
 
     if (result.length > 0) {
-      console.log(`Cleaned ${result.length} expired content lock(s)`);
+      logger.info({ count: result.length }, 'Cleaned expired content locks');
     }
   }
 }

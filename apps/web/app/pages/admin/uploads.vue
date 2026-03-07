@@ -62,6 +62,13 @@ const canDelete = computed(() => hasPermission('uploads:delete'));
 const uploading = ref(false);
 const dragging = ref(false);
 
+// Image preview lightbox
+const previewItem = ref<MediaItem | null>(null);
+const previewOpen = computed({
+  get: () => previewItem.value !== null,
+  set: (v) => { if (!v) previewItem.value = null; },
+});
+
 // Edit media state
 const editOpen = ref(false);
 const editTarget = ref<MediaItem | null>(null);
@@ -196,9 +203,10 @@ const columns = computed(() => [
       if (isImage(row.original.mimeType)) {
         return h('img', {
           src: getThumbUrl(row.original),
-          class: 'w-10 h-10 rounded object-cover',
+          class: 'w-10 h-10 rounded object-cover cursor-pointer hover:ring-2 hover:ring-primary transition-shadow',
           alt: row.original.alt || row.original.originalName,
           loading: 'lazy',
+          onClick: () => { previewItem.value = row.original; },
         });
       }
       return h('div', { class: 'w-10 h-10 rounded bg-muted flex items-center justify-center' }, [
@@ -408,6 +416,26 @@ const columns = computed(() => [
             <UButton :loading="saving" :disabled="!editOriginalName.trim()" @click="handleEdit">
               {{ $t('common.save') }}
             </UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
+
+    <!-- Image preview lightbox -->
+    <UModal v-model:open="previewOpen">
+      <template #content>
+        <div class="p-2 space-y-3">
+          <img
+            v-if="previewItem"
+            :src="`${baseURL}/uploads/${previewItem.id}/serve?w=1024&format=webp`"
+            :alt="previewItem.alt || previewItem.originalName"
+            class="max-h-[75vh] max-w-full rounded-lg object-contain mx-auto"
+          />
+          <div v-if="previewItem" class="flex items-center justify-between px-2 pb-1 text-sm text-muted">
+            <span class="truncate">{{ previewItem.originalName }}</span>
+            <span v-if="previewItem.width && previewItem.height" class="shrink-0 ml-3">
+              {{ previewItem.width }} × {{ previewItem.height }}
+            </span>
           </div>
         </div>
       </template>
