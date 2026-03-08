@@ -402,6 +402,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                 :model-value="field.componentSlugs ?? []"
                 :items="componentSelectItems"
                 multiple
+                value-key="value"
                 :placeholder="$t('fieldBuilder.allowedComponentsPlaceholder')"
                 class="w-full"
                 @update:model-value="(v: string[]) => updateField(index, 'componentSlugs', v)"

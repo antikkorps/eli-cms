@@ -1,20 +1,52 @@
 <script setup lang="ts">
+import { ALL_PERMISSIONS } from '@eli-cms/shared';
+
 const props = defineProps<{ disabled?: boolean }>();
 const model = defineModel<string[]>({ required: true });
 
-const ALL_ACTIONS = ['create', 'read', 'update', 'delete', 'publish'] as const;
+// Icon map — only cosmetic config, everything else is derived from ALL_PERMISSIONS
+const GROUP_ICONS: Record<string, string> = {
+  'content': 'i-lucide-file-text',
+  'content-types': 'i-lucide-blocks',
+  'users': 'i-lucide-users',
+  'uploads': 'i-lucide-upload',
+  'roles': 'i-lucide-shield',
+  'components': 'i-lucide-component',
+  'webhooks': 'i-lucide-webhook',
+  'settings': 'i-lucide-settings',
+  'audit-logs': 'i-lucide-scroll-text',
+  'api-keys': 'i-lucide-key',
+};
 
-const PERMISSION_GROUPS = [
-  { key: 'content', icon: 'i-lucide-file-text', actions: ['create', 'read', 'update', 'delete', 'publish'] },
-  { key: 'content-types', icon: 'i-lucide-blocks', actions: ['create', 'read', 'update', 'delete'] },
-  { key: 'users', icon: 'i-lucide-users', actions: ['read', 'delete'] },
-  { key: 'uploads', icon: 'i-lucide-upload', actions: ['create', 'read', 'delete'] },
-  { key: 'roles', icon: 'i-lucide-shield', actions: ['create', 'read', 'update', 'delete'] },
-  { key: 'webhooks', icon: 'i-lucide-webhook', actions: ['create', 'read', 'update', 'delete'] },
-  { key: 'settings', icon: 'i-lucide-settings', actions: ['read', 'update'] },
-  { key: 'audit-logs', icon: 'i-lucide-scroll-text', actions: ['read'] },
-  { key: 'api-keys', icon: 'i-lucide-key', actions: ['create', 'read', 'update', 'delete'] },
-] as const;
+interface PermissionGroup {
+  key: string;
+  icon: string;
+  actions: string[];
+}
+
+// Build groups dynamically from ALL_PERMISSIONS
+const PERMISSION_GROUPS: PermissionGroup[] = (() => {
+  const map = new Map<string, string[]>();
+  const order: string[] = [];
+  for (const perm of ALL_PERMISSIONS) {
+    const sep = perm.lastIndexOf(':');
+    const resource = perm.slice(0, sep);
+    const action = perm.slice(sep + 1);
+    if (!map.has(resource)) {
+      map.set(resource, []);
+      order.push(resource);
+    }
+    map.get(resource)!.push(action);
+  }
+  return order.map((key) => ({
+    key,
+    icon: GROUP_ICONS[key] ?? 'i-lucide-lock',
+    actions: map.get(key)!,
+  }));
+})();
+
+// Collect all unique actions across groups (for column headers)
+const ALL_ACTIONS = [...new Set(PERMISSION_GROUPS.flatMap((g) => g.actions))];
 
 function permKey(group: string, action: string) {
   return `${group}:${action}`;
@@ -32,20 +64,20 @@ function toggle(perm: string) {
   }
 }
 
-function hasAction(group: (typeof PERMISSION_GROUPS)[number], action: string) {
-  return (group.actions as readonly string[]).includes(action);
+function hasAction(group: PermissionGroup, action: string) {
+  return group.actions.includes(action);
 }
 
-function isGroupAllChecked(group: (typeof PERMISSION_GROUPS)[number]) {
+function isGroupAllChecked(group: PermissionGroup) {
   return group.actions.every((a) => model.value.includes(permKey(group.key, a)));
 }
 
-function isGroupPartial(group: (typeof PERMISSION_GROUPS)[number]) {
+function isGroupPartial(group: PermissionGroup) {
   const some = group.actions.some((a) => model.value.includes(permKey(group.key, a)));
   return some && !isGroupAllChecked(group);
 }
 
-function toggleGroup(group: (typeof PERMISSION_GROUPS)[number]) {
+function toggleGroup(group: PermissionGroup) {
   const perms = group.actions.map((a) => permKey(group.key, a));
   if (isGroupAllChecked(group)) {
     model.value = model.value.filter((p) => !perms.includes(p));

@@ -46,6 +46,7 @@
     "trash": "Corbeille",
     "seeAllFolders": "Voir tous les dossiers...",
     "components": "Composants",
+    "structure": "Structure",
     "logout": "Déconnexion",
     "profile": "Profil"
   },
@@ -195,7 +196,8 @@
     "slugLabel": "Slug",
     "slugPlaceholder": "ex. hero-section",
     "iconLabel": "Icône",
-    "iconPlaceholder": "ex. i-lucide-layout",
+    "iconPlaceholder": "Choisir une icône",
+    "iconPickerTitle": "Choisir une icône",
     "fieldsLabel": "Champs",
     "deleteTitle": "Supprimer le composant",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ? Les types de contenu utilisant ce composant devront être mis à jour."
@@ -450,6 +452,7 @@
       "users": "Utilisateurs",
       "uploads": "Fichiers",
       "roles": "Rôles",
+      "components": "Composants",
       "webhooks": "Webhooks",
       "settings": "Paramètres",
       "audit-logs": "Journal d'audit",
@@ -462,6 +465,7 @@
       "delete": "Supprimer",
       "publish": "Publier",
       "review": "Réviser",
+      "preview": "Aperçu",
       "manage": "Gérer"
     }
   },

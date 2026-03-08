@@ -81,7 +81,7 @@ async function submit() {
       </div>
 
       <UFormField :label="$t('components.iconLabel')">
-        <UInput v-model="form.icon" :placeholder="$t('components.iconPlaceholder')" class="w-full" />
+        <IconPicker v-model="form.icon" />
       </UFormField>
 
       <UFormField :label="$t('components.fieldsLabel')">

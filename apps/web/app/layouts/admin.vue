@@ -42,13 +42,6 @@ const navigation = computed(() => {
 
   if (!mounted.value) return items;
 
-  if (hasPermission('content-types:read') || hasPermission('content-types:create')) {
-    items.push({ label: t('nav.contentTypes'), icon: 'i-lucide-blocks', to: '/admin/content-types' });
-  }
-  if (hasPermission('components:read') || hasPermission('components:create')) {
-    items.push({ label: t('nav.components'), icon: 'i-lucide-component', to: '/admin/components' });
-  }
-
   if (hasPermission('content:read')) {
     const children: Array<Record<string, unknown>> = [
       { label: t('nav.allContents'), to: '/admin/contents' },
@@ -79,7 +72,6 @@ const navigation = computed(() => {
     items.push({
       label: t('nav.content'),
       icon: 'i-lucide-file-text',
-      defaultOpen: true,
       children,
     });
   }
@@ -117,10 +109,25 @@ const navigation = computed(() => {
     items.push({
       label: t('nav.uploads'),
       icon: 'i-lucide-image',
-      defaultOpen: false,
       children: folderChildren,
     });
   }
+  // Structure group (Content Types + Components)
+  const structureChildren: Array<Record<string, unknown>> = [];
+  if (hasPermission('content-types:read') || hasPermission('content-types:create')) {
+    structureChildren.push({ label: t('nav.contentTypes'), icon: 'i-lucide-blocks', to: '/admin/content-types' });
+  }
+  if (hasPermission('components:read') || hasPermission('components:create')) {
+    structureChildren.push({ label: t('nav.components'), icon: 'i-lucide-component', to: '/admin/components' });
+  }
+  if (structureChildren.length > 0) {
+    items.push({
+      label: t('nav.structure'),
+      icon: 'i-lucide-puzzle',
+      children: structureChildren,
+    });
+  }
+
   if (hasPermission('users:read') || hasPermission('users:delete')) {
     items.push({ label: t('nav.users'), icon: 'i-lucide-users', to: '/admin/users' });
   }

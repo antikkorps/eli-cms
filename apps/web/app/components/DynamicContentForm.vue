@@ -74,8 +74,28 @@ function getComponentBlocks(fieldName: string): Array<Record<string, unknown>> {
   return Array.isArray(val) ? val : [];
 }
 
+function buildDefaultBlock(componentSlug: string): Record<string, unknown> {
+  const comp = componentMap.value.get(componentSlug);
+  const block: Record<string, unknown> = { _component: componentSlug };
+  if (!comp) return block;
+  for (const f of comp.fields) {
+    if (f.defaultValue !== undefined && f.defaultValue !== null) {
+      block[f.name] = f.defaultValue;
+    } else {
+      switch (f.type) {
+        case 'boolean': block[f.name] = false; break;
+        case 'number': block[f.name] = undefined; break;
+        case 'repeatable': block[f.name] = []; break;
+        case 'media': block[f.name] = f.multiple ? [] : null; break;
+        default: block[f.name] = ''; break;
+      }
+    }
+  }
+  return block;
+}
+
 function addComponentBlock(fieldName: string, componentSlug: string) {
-  const blocks = [...getComponentBlocks(fieldName), { _component: componentSlug }];
+  const blocks = [...getComponentBlocks(fieldName), buildDefaultBlock(componentSlug)];
   updateValue(fieldName, blocks);
 }
 

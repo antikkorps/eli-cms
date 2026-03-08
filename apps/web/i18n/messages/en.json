@@ -46,6 +46,7 @@
     "trash": "Trash",
     "seeAllFolders": "See all folders...",
     "components": "Components",
+    "structure": "Structure",
     "logout": "Log out",
     "profile": "Profile"
   },
@@ -195,7 +196,8 @@
     "slugLabel": "Slug",
     "slugPlaceholder": "e.g. hero-section",
     "iconLabel": "Icon",
-    "iconPlaceholder": "e.g. i-lucide-layout",
+    "iconPlaceholder": "Choose an icon",
+    "iconPickerTitle": "Choose an icon",
     "fieldsLabel": "Fields",
     "deleteTitle": "Delete Component",
     "deleteConfirm": "Are you sure you want to delete {name}? Content types using this component will need to be updated."
@@ -450,6 +452,7 @@
       "users": "Users",
       "uploads": "Uploads",
       "roles": "Roles",
+      "components": "Components",
       "webhooks": "Webhooks",
       "settings": "Settings",
       "audit-logs": "Audit Logs",
@@ -462,6 +465,7 @@
       "delete": "Delete",
       "publish": "Publish",
       "review": "Review",
+      "preview": "Preview",
       "manage": "Manage"
     }
   },
