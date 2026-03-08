@@ -45,6 +45,7 @@
     "seeAllTypes": "See all types...",
     "trash": "Trash",
     "seeAllFolders": "See all folders...",
+    "components": "Components",
     "logout": "Log out",
     "profile": "Profile"
   },
@@ -177,6 +178,25 @@
     "singletonLabel": "Singleton",
     "singletonHint": "Only one entry allowed — ideal for pages like Homepage or Settings"
   },
+  "components": {
+    "title": "Components",
+    "subtitle": "Reusable field groups for page builder blocks",
+    "create": "Create Component",
+    "editTitle": "Edit Component",
+    "newTitle": "New Component",
+    "columnName": "Name",
+    "columnSlug": "Slug",
+    "columnFields": "Fields",
+    "nameLabel": "Name",
+    "namePlaceholder": "e.g. Hero Section",
+    "slugLabel": "Slug",
+    "slugPlaceholder": "e.g. hero-section",
+    "iconLabel": "Icon",
+    "iconPlaceholder": "e.g. i-lucide-layout",
+    "fieldsLabel": "Fields",
+    "deleteTitle": "Delete Component",
+    "deleteConfirm": "Are you sure you want to delete {name}? Content types using this component will need to be updated."
+  },
   "fieldBuilder": {
     "addField": "Add Field",
     "fieldName": "Field name",
@@ -204,7 +224,10 @@
     "fieldGroup": "Group",
     "fieldGroupPlaceholder": "e.g. SEO, Media, Settings",
     "fieldGroupHint": "Fields with the same group are displayed in tabs",
-    "defaultGroup": "General"
+    "defaultGroup": "General",
+    "allowedComponents": "Allowed components",
+    "allowedComponentsPlaceholder": "Select components...",
+    "addBlock": "Add {name}"
   },
   "contents": {
     "title": "Contents",

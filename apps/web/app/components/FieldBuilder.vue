@@ -2,6 +2,8 @@
 import draggable from 'vuedraggable';
 
 const { t } = useI18n();
+const { items: availableComponents, fetch: fetchComponents } = useComponents();
+onMounted(fetchComponents);
 
 interface FieldDefinition {
   name: string;
@@ -14,6 +16,7 @@ interface FieldDefinition {
   subFields?: FieldDefinition[];
   defaultValue?: unknown;
   group?: string;
+  componentSlugs?: string[];
 }
 
 const model = defineModel<FieldDefinition[]>({ default: () => [] });
@@ -50,12 +53,17 @@ const allFieldTypes = [
   { label: 'Rich Text', value: 'richtext' },
   { label: 'Author', value: 'author' },
   { label: 'Repeatable', value: 'repeatable' },
+  { label: 'Component', value: 'component' },
 ];
 
 const fieldTypes = computed(() =>
   props.disableRepeatable
-    ? allFieldTypes.filter((ft) => ft.value !== 'repeatable')
+    ? allFieldTypes.filter((ft) => ft.value !== 'repeatable' && ft.value !== 'component')
     : allFieldTypes,
+);
+
+const componentSelectItems = computed(() =>
+  availableComponents.value.map((c) => ({ label: c.name, value: c.slug })),
 );
 
 function addField() {
@@ -383,6 +391,20 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                 :placeholder="$t('fieldBuilder.fieldAcceptPlaceholder')"
                 class="w-full"
                 @update:model-value="(v: string[]) => updateAcceptFromSelect(index, v)"
+              />
+            </UFormField>
+          </div>
+
+          <!-- Component type: select allowed components -->
+          <div v-if="field.type === 'component'" class="grid grid-cols-1 gap-3">
+            <UFormField :label="$t('fieldBuilder.allowedComponents')">
+              <USelectMenu
+                :model-value="field.componentSlugs ?? []"
+                :items="componentSelectItems"
+                multiple
+                :placeholder="$t('fieldBuilder.allowedComponentsPlaceholder')"
+                class="w-full"
+                @update:model-value="(v: string[]) => updateField(index, 'componentSlugs', v)"
               />
             </UFormField>
           </div>

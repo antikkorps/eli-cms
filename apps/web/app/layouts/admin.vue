@@ -45,6 +45,9 @@ const navigation = computed(() => {
   if (hasPermission('content-types:read') || hasPermission('content-types:create')) {
     items.push({ label: t('nav.contentTypes'), icon: 'i-lucide-blocks', to: '/admin/content-types' });
   }
+  if (hasPermission('components:read') || hasPermission('components:create')) {
+    items.push({ label: t('nav.components'), icon: 'i-lucide-component', to: '/admin/components' });
+  }
 
   if (hasPermission('content:read')) {
     const children: Array<Record<string, unknown>> = [

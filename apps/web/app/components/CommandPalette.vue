@@ -40,6 +40,9 @@ const groups = computed(() => {
   if (hasPermission('settings:read') || hasPermission('settings:update')) {
     navItems.push({ id: 'settings', label: t('nav.settings'), icon: 'i-lucide-settings', to: '/admin/settings' });
   }
+  if (hasPermission('components:read') || hasPermission('components:create')) {
+    navItems.push({ id: 'components', label: t('nav.components'), icon: 'i-lucide-component', to: '/admin/components' });
+  }
   if (hasPermission('audit-logs:read')) {
     navItems.push({ id: 'audit-logs', label: t('nav.auditLogs'), icon: 'i-lucide-scroll-text', to: '/admin/audit-logs' });
   }

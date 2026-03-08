@@ -45,6 +45,7 @@
     "seeAllTypes": "Voir tous les types...",
     "trash": "Corbeille",
     "seeAllFolders": "Voir tous les dossiers...",
+    "components": "Composants",
     "logout": "Déconnexion",
     "profile": "Profil"
   },
@@ -177,6 +178,25 @@
     "singletonLabel": "Singleton",
     "singletonHint": "Une seule entrée autorisée — idéal pour les pages comme Accueil ou Paramètres"
   },
+  "components": {
+    "title": "Composants",
+    "subtitle": "Groupes de champs réutilisables pour les blocs de page",
+    "create": "Créer un composant",
+    "editTitle": "Modifier le composant",
+    "newTitle": "Nouveau composant",
+    "columnName": "Nom",
+    "columnSlug": "Slug",
+    "columnFields": "Champs",
+    "nameLabel": "Nom",
+    "namePlaceholder": "ex. Section Hero",
+    "slugLabel": "Slug",
+    "slugPlaceholder": "ex. hero-section",
+    "iconLabel": "Icône",
+    "iconPlaceholder": "ex. i-lucide-layout",
+    "fieldsLabel": "Champs",
+    "deleteTitle": "Supprimer le composant",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ? Les types de contenu utilisant ce composant devront être mis à jour."
+  },
   "fieldBuilder": {
     "addField": "Ajouter un champ",
     "fieldName": "Nom du champ",
@@ -204,7 +224,10 @@
     "fieldGroup": "Groupe",
     "fieldGroupPlaceholder": "ex. SEO, Médias, Paramètres",
     "fieldGroupHint": "Les champs du même groupe sont affichés en onglets",
-    "defaultGroup": "Général"
+    "defaultGroup": "Général",
+    "allowedComponents": "Composants autorisés",
+    "allowedComponentsPlaceholder": "Sélectionner des composants...",
+    "addBlock": "Ajouter {name}"
   },
   "contents": {
     "title": "Contenus",

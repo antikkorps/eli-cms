@@ -62,7 +62,7 @@
 
 ## Low Priority
 
-- [ ] Component / block system (reusable field groups embeddable in any content type — hero, CTA, testimonials)
+- [x] Component / block system (reusable field groups embeddable in any content type — hero, CTA, testimonials)
 - [ ] JSON/object field type (arbitrary nested JSON with optional schema validation)
 - [x] Dark mode polish (ensure all custom components respect dark theme)
 - [ ] OpenAPI spec completion (add paths/endpoints, currently only schemas defined)

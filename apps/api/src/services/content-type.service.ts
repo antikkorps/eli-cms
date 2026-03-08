@@ -120,6 +120,15 @@ export class ContentTypeService {
 
   static async delete(id: string, actor?: Actor) {
     const ct = await this.findById(id);
+
+    const [{ total }] = await db
+      .select({ total: drizzleCount() })
+      .from(contents)
+      .where(and(eq(contents.contentTypeId, id), isNull(contents.deletedAt)));
+    if (total > 0) {
+      throw new AppError(409, `Cannot delete: ${total} content(s) still exist. Delete them first.`);
+    }
+
     await db.delete(contentTypes).where(eq(contentTypes.id, id));
     const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
     eventBus.emit('content_type.deleted', { contentType: ct, ...actorData });

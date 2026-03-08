@@ -33,6 +33,11 @@ export const ROLES_READ = 'roles:read';
 export const ROLES_UPDATE = 'roles:update';
 export const ROLES_DELETE = 'roles:delete';
 
+export const COMPONENTS_CREATE = 'components:create';
+export const COMPONENTS_READ = 'components:read';
+export const COMPONENTS_UPDATE = 'components:update';
+export const COMPONENTS_DELETE = 'components:delete';
+
 export const AUDIT_LOGS_READ = 'audit-logs:read';
 
 export const API_KEYS_CREATE = 'api-keys:create';
@@ -68,6 +73,10 @@ export const ALL_PERMISSIONS = [
   ROLES_READ,
   ROLES_UPDATE,
   ROLES_DELETE,
+  COMPONENTS_CREATE,
+  COMPONENTS_READ,
+  COMPONENTS_UPDATE,
+  COMPONENTS_DELETE,
   AUDIT_LOGS_READ,
   API_KEYS_CREATE,
   API_KEYS_READ,
@@ -88,6 +97,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, readonly Permission[]> = {
     CONTENT_PUBLISH,
     CONTENT_REVIEW,
     CONTENT_TYPES_READ,
+    COMPONENTS_READ,
     UPLOADS_CREATE,
     UPLOADS_READ,
     UPLOADS_UPDATE,
@@ -99,6 +109,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, readonly Permission[]> = {
     CONTENT_DELETE,
     CONTENT_REVIEW,
     CONTENT_TYPES_READ,
+    COMPONENTS_READ,
     UPLOADS_CREATE,
     UPLOADS_READ,
     UPLOADS_UPDATE,

@@ -4,7 +4,8 @@ import { contents, contentLocks, contentTypes } from '../db/schema/index.js';
 import { ContentTypeService } from './content-type.service.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
-import { buildContentDataSchema } from '@eli-cms/shared';
+import { buildContentDataSchema, type ComponentFieldsMap } from '@eli-cms/shared';
+import { ComponentService } from './component.service.js';
 import { ContentVersionService } from './content-version.service.js';
 import { LockService } from './lock.service.js';
 import type { CreateContentInput, UpdateContentInput, ContentListQuery, PublicContentListQuery, TrashListQuery, ActorType, FieldDefinition } from '@eli-cms/shared';
@@ -219,13 +220,26 @@ export class ContentService {
     return content;
   }
 
-  private static async validateMediaFields(fields: FieldDefinition[], data: Record<string, unknown>) {
+  private static async validateMediaFields(fields: FieldDefinition[], data: Record<string, unknown>, componentMap?: ComponentFieldsMap) {
     for (const field of fields) {
       if (field.type === 'repeatable' && field.subFields) {
         const items = data[field.name];
         if (Array.isArray(items)) {
           for (const item of items) {
-            await this.validateMediaFields(field.subFields, item as Record<string, unknown>);
+            await this.validateMediaFields(field.subFields, item as Record<string, unknown>, componentMap);
+          }
+        }
+        continue;
+      }
+      if (field.type === 'component' && componentMap) {
+        const blocks = data[field.name];
+        if (Array.isArray(blocks)) {
+          for (const block of blocks) {
+            const b = block as Record<string, unknown>;
+            const compFields = componentMap.get(b._component as string);
+            if (compFields) {
+              await this.validateMediaFields(compFields, b, componentMap);
+            }
           }
         }
         continue;
@@ -252,13 +266,26 @@ export class ContentService {
     }
   }
 
-  private static async validateAuthorFields(fields: FieldDefinition[], data: Record<string, unknown>) {
+  private static async validateAuthorFields(fields: FieldDefinition[], data: Record<string, unknown>, componentMap?: ComponentFieldsMap) {
     for (const field of fields) {
       if (field.type === 'repeatable' && field.subFields) {
         const items = data[field.name];
         if (Array.isArray(items)) {
           for (const item of items) {
-            await this.validateAuthorFields(field.subFields, item as Record<string, unknown>);
+            await this.validateAuthorFields(field.subFields, item as Record<string, unknown>, componentMap);
+          }
+        }
+        continue;
+      }
+      if (field.type === 'component' && componentMap) {
+        const blocks = data[field.name];
+        if (Array.isArray(blocks)) {
+          for (const block of blocks) {
+            const b = block as Record<string, unknown>;
+            const compFields = componentMap.get(b._component as string);
+            if (compFields) {
+              await this.validateAuthorFields(compFields, b, componentMap);
+            }
           }
         }
         continue;
@@ -274,6 +301,28 @@ export class ContentService {
         }
       }
     }
+  }
+
+  private static async buildComponentMap(fields: FieldDefinition[]): Promise<ComponentFieldsMap> {
+    const slugs = new Set<string>();
+    const collectSlugs = (defs: FieldDefinition[]) => {
+      for (const f of defs) {
+        if (f.type === 'component' && f.componentSlugs) {
+          for (const s of f.componentSlugs) slugs.add(s);
+        }
+        if (f.type === 'repeatable' && f.subFields) collectSlugs(f.subFields);
+      }
+    };
+    collectSlugs(fields);
+
+    const map: ComponentFieldsMap = new Map();
+    if (slugs.size === 0) return map;
+
+    const comps = await ComponentService.findBySlugs([...slugs]);
+    for (const c of comps) {
+      map.set(c.slug, c.fields);
+    }
+    return map;
   }
 
   static async findBySlug(slug: string, contentTypeId: string) {
@@ -310,15 +359,16 @@ export class ContentService {
       }
     }
 
-    // Dynamic validation
-    const dataSchema = buildContentDataSchema(contentType.fields);
+    // Dynamic validation (with component resolution)
+    const componentMap = await this.buildComponentMap(contentType.fields);
+    const dataSchema = buildContentDataSchema(contentType.fields, componentMap);
     const dataResult = dataSchema.safeParse(input.data);
     if (!dataResult.success) {
       throw new AppError(400, `Data validation: ${dataResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')}`);
     }
 
-    await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>);
-    await this.validateAuthorFields(contentType.fields, dataResult.data as Record<string, unknown>);
+    await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
+    await this.validateAuthorFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
 
     // Auto-generate slug from first text field if not provided
     let slug = (input as Record<string, unknown>).slug as string | undefined;
@@ -389,13 +439,14 @@ export class ContentService {
 
     if (input.data) {
       const contentType = await ContentTypeService.findById(existing.contentTypeId);
-      const dataSchema = buildContentDataSchema(contentType.fields);
+      const componentMap = await this.buildComponentMap(contentType.fields);
+      const dataSchema = buildContentDataSchema(contentType.fields, componentMap);
       const dataResult = dataSchema.safeParse(input.data);
       if (!dataResult.success) {
         throw new AppError(400, `Data validation: ${dataResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')}`);
       }
-      await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>);
-      await this.validateAuthorFields(contentType.fields, dataResult.data as Record<string, unknown>);
+      await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
+      await this.validateAuthorFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
       input.data = dataResult.data as Record<string, unknown>;
     }
 

@@ -21,6 +21,7 @@ import { webhooksRouter } from './routes/webhooks.js';
 import { auditLogsRouter } from './routes/audit-logs.js';
 import { apiKeysRouter } from './routes/api-keys.js';
 import { mediaFoldersRouter } from './routes/media-folders.js';
+import { componentsRouter } from './routes/components.js';
 
 export function createApp() {
   const app = new Koa();
@@ -81,6 +82,7 @@ export function createApp() {
   app.use(auditLogsRouter.routes()).use(auditLogsRouter.allowedMethods());
   app.use(apiKeysRouter.routes()).use(apiKeysRouter.allowedMethods());
   app.use(mediaFoldersRouter.routes()).use(mediaFoldersRouter.allowedMethods());
+  app.use(componentsRouter.routes()).use(componentsRouter.allowedMethods());
 
   return app;
 }
