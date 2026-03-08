@@ -78,6 +78,7 @@ export const createContentTypeSchema = z.object({
   name: safeString(255).pipe(z.string().min(1)),
   fields: z.array(fieldDefinitionSchema).min(1),
   isSingleton: z.boolean().default(false),
+  slugPattern: z.string().max(500).nullable().optional(),
 });
 
 export const updateContentTypeSchema = createContentTypeSchema.partial();
@@ -87,14 +88,14 @@ export const CONTENT_STATUSES = ['draft', 'in-review', 'approved', 'scheduled', 
 
 export const createContentSchema = z.object({
   contentTypeId: z.string().uuid(),
-  slug: z.string().max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case').optional(),
+  slug: z.string().max(255).regex(/^[a-z0-9]+(?:[-/][a-z0-9]+)*$/, 'Slug must be lowercase with hyphens or slashes').optional(),
   status: z.enum(CONTENT_STATUSES).default('draft'),
   data: z.record(z.unknown()),
   publishedAt: z.string().datetime({ offset: true }).optional(),
 });
 
 export const updateContentSchema = z.object({
-  slug: z.string().max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case').nullable().optional(),
+  slug: z.string().max(255).regex(/^[a-z0-9]+(?:[-/][a-z0-9]+)*$/, 'Slug must be lowercase with hyphens or slashes').nullable().optional(),
   status: z.enum(CONTENT_STATUSES).optional(),
   data: z.record(z.unknown()).optional(),
   publishedAt: z.string().datetime({ offset: true }).nullable().optional(),

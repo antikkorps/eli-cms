@@ -47,6 +47,23 @@ function extractFirstTextField(fields: FieldDefinition[], data: Record<string, u
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
+function resolveSlugPattern(pattern: string, data: Record<string, unknown>): string {
+  const now = new Date();
+  const resolved = pattern.replace(/\{(\w+)\}/g, (_, token: string) => {
+    switch (token) {
+      case 'year': return String(now.getFullYear());
+      case 'month': return String(now.getMonth() + 1).padStart(2, '0');
+      case 'day': return String(now.getDate()).padStart(2, '0');
+      default: {
+        const val = data[token];
+        return typeof val === 'string' && val.length > 0 ? toSlug(val) : '';
+      }
+    }
+  });
+  // Clean up double separators and trim
+  return resolved.replace(/\/+/g, '/').replace(/^\/|\/$/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
+}
+
 function sanitizeSearchTerms(raw: string): string | null {
   const terms = raw
     .split(/\s+/)
@@ -370,11 +387,16 @@ export class ContentService {
     await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
     await this.validateAuthorFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
 
-    // Auto-generate slug from first text field if not provided
+    // Auto-generate slug from pattern or first text field if not provided
     let slug = (input as Record<string, unknown>).slug as string | undefined;
     if (!slug) {
-      const text = extractFirstTextField(contentType.fields, dataResult.data as Record<string, unknown>);
-      if (text) slug = toSlug(text);
+      if (contentType.slugPattern) {
+        const resolved = resolveSlugPattern(contentType.slugPattern, dataResult.data as Record<string, unknown>);
+        if (resolved) slug = resolved;
+      } else {
+        const text = extractFirstTextField(contentType.fields, dataResult.data as Record<string, unknown>);
+        if (text) slug = toSlug(text);
+      }
     }
     if (slug) {
       slug = await this.ensureUniqueSlug(slug, input.contentTypeId);

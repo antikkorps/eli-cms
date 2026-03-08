@@ -56,8 +56,8 @@
 - [x] Content type field groups / tabs (organize fields into sections for complex content types)
 - [x] Search result highlighting
 - [~] Image crop/resize before upload (server-side transforms done — remaining: client-side crop UI before upload)
-- [ ] i18n labels in FieldBuilder (translate field type names)
-- [ ] Configurable slug patterns (e.g. `{year}/{slug}`, `{category}/{slug}`)
+- [x] i18n labels in FieldBuilder (translate field type names)
+- [x] Configurable slug patterns (e.g. `{year}/{slug}`, `{category}/{slug}`)
 - [x] Drag-and-drop field reordering in FieldBuilder
 
 ## Low Priority

@@ -60,6 +60,7 @@ export const contentTypes = pgTable('content_types', {
   name: varchar('name', { length: 255 }).notNull(),
   fields: jsonb('fields').notNull().$type<FieldDefinition[]>(),
   isSingleton: boolean('is_singleton').notNull().default(false),
+  slugPattern: varchar('slug_pattern', { length: 500 }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

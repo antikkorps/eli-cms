@@ -40,26 +40,26 @@ const props = defineProps<{
   disableRepeatable?: boolean;
 }>();
 
-const allFieldTypes = [
-  { label: 'Text', value: 'text' },
-  { label: 'Textarea', value: 'textarea' },
-  { label: 'Number', value: 'number' },
-  { label: 'Boolean', value: 'boolean' },
-  { label: 'Date', value: 'date' },
-  { label: 'Email', value: 'email' },
-  { label: 'URL', value: 'url' },
-  { label: 'Select', value: 'select' },
-  { label: 'Media', value: 'media' },
-  { label: 'Rich Text', value: 'richtext' },
-  { label: 'Author', value: 'author' },
-  { label: 'Repeatable', value: 'repeatable' },
-  { label: 'Component', value: 'component' },
-];
+const allFieldTypes = computed(() => [
+  { label: t('fieldTypes.text'), value: 'text' },
+  { label: t('fieldTypes.textarea'), value: 'textarea' },
+  { label: t('fieldTypes.number'), value: 'number' },
+  { label: t('fieldTypes.boolean'), value: 'boolean' },
+  { label: t('fieldTypes.date'), value: 'date' },
+  { label: t('fieldTypes.email'), value: 'email' },
+  { label: t('fieldTypes.url'), value: 'url' },
+  { label: t('fieldTypes.select'), value: 'select' },
+  { label: t('fieldTypes.media'), value: 'media' },
+  { label: t('fieldTypes.richtext'), value: 'richtext' },
+  { label: t('fieldTypes.author'), value: 'author' },
+  { label: t('fieldTypes.repeatable'), value: 'repeatable' },
+  { label: t('fieldTypes.component'), value: 'component' },
+]);
 
 const fieldTypes = computed(() =>
   props.disableRepeatable
-    ? allFieldTypes.filter((ft) => ft.value !== 'repeatable' && ft.value !== 'component')
-    : allFieldTypes,
+    ? allFieldTypes.value.filter((ft) => ft.value !== 'repeatable' && ft.value !== 'component')
+    : allFieldTypes.value,
 );
 
 const componentSelectItems = computed(() =>
@@ -459,7 +459,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                         <UFormField :label="$t('fieldBuilder.fieldType')">
                           <USelect
                             :model-value="sub.type"
-                            :items="allFieldTypes.filter((ft) => ft.value !== 'repeatable')"
+                            :items="allFieldTypes.value.filter((ft) => ft.value !== 'repeatable' && ft.value !== 'component')"
                             class="w-full"
                             @update:model-value="(v: string) => updateSubField(index, si, 'type', v)"
                           />

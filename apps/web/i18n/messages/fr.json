@@ -176,7 +176,10 @@
     "deleteTitle": "Supprimer le type de contenu",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ? Tous les contenus associés seront perdus.",
     "singletonLabel": "Singleton",
-    "singletonHint": "Une seule entrée autorisée — idéal pour les pages comme Accueil ou Paramètres"
+    "singletonHint": "Une seule entrée autorisée — idéal pour les pages comme Accueil ou Paramètres",
+    "slugPatternLabel": "Modèle de slug",
+    "slugPatternPlaceholder": "ex. {year}/{month}/{title}",
+    "slugPatternHint": "Jetons : {year}, {month}, {day}, {nomDuChamp}. Laisser vide pour utiliser le premier champ texte."
   },
   "components": {
     "title": "Composants",
@@ -196,6 +199,21 @@
     "fieldsLabel": "Champs",
     "deleteTitle": "Supprimer le composant",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ? Les types de contenu utilisant ce composant devront être mis à jour."
+  },
+  "fieldTypes": {
+    "text": "Texte",
+    "textarea": "Zone de texte",
+    "number": "Nombre",
+    "boolean": "Booléen",
+    "date": "Date",
+    "email": "E-mail",
+    "url": "URL",
+    "select": "Sélection",
+    "media": "Média",
+    "richtext": "Texte riche",
+    "author": "Auteur",
+    "repeatable": "Répétable",
+    "component": "Composant"
   },
   "fieldBuilder": {
     "addField": "Ajouter un champ",

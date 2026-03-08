@@ -176,7 +176,10 @@
     "deleteTitle": "Delete Content Type",
     "deleteConfirm": "Are you sure you want to delete {name}? All associated content will be lost.",
     "singletonLabel": "Singleton",
-    "singletonHint": "Only one entry allowed — ideal for pages like Homepage or Settings"
+    "singletonHint": "Only one entry allowed — ideal for pages like Homepage or Settings",
+    "slugPatternLabel": "Slug pattern",
+    "slugPatternPlaceholder": "e.g. {year}/{month}/{title}",
+    "slugPatternHint": "Tokens: {year}, {month}, {day}, {fieldName}. Leave empty to use the first text field."
   },
   "components": {
     "title": "Components",
@@ -196,6 +199,21 @@
     "fieldsLabel": "Fields",
     "deleteTitle": "Delete Component",
     "deleteConfirm": "Are you sure you want to delete {name}? Content types using this component will need to be updated."
+  },
+  "fieldTypes": {
+    "text": "Text",
+    "textarea": "Textarea",
+    "number": "Number",
+    "boolean": "Boolean",
+    "date": "Date",
+    "email": "Email",
+    "url": "URL",
+    "select": "Select",
+    "media": "Media",
+    "richtext": "Rich Text",
+    "author": "Author",
+    "repeatable": "Repeatable",
+    "component": "Component"
   },
   "fieldBuilder": {
     "addField": "Add Field",

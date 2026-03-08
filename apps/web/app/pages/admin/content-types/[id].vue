@@ -23,6 +23,7 @@ const form = reactive({
   name: '',
   slug: '',
   isSingleton: false,
+  slugPattern: '',
   fields: [] as FieldDefinition[],
 });
 
@@ -34,11 +35,12 @@ async function fetchContentType() {
   try {
     const res = await apiFetch<{
       success: boolean;
-      data: { id: string; name: string; slug: string; isSingleton?: boolean; fields: FieldDefinition[] };
+      data: { id: string; name: string; slug: string; isSingleton?: boolean; slugPattern?: string | null; fields: FieldDefinition[] };
     }>(`/content-types/${route.params.id}`);
     form.name = res.data.name;
     form.slug = res.data.slug;
     form.isSingleton = res.data.isSingleton ?? false;
+    form.slugPattern = res.data.slugPattern ?? '';
     form.fields = res.data.fields;
   } catch {
     toast.add({ title: t('common.error'), color: 'error' });
@@ -57,6 +59,7 @@ async function submit() {
         name: form.name,
         slug: form.slug,
         isSingleton: form.isSingleton,
+        slugPattern: form.slugPattern || null,
         fields: form.fields,
       },
     });
@@ -104,6 +107,18 @@ onMounted(fetchContentType);
             <p class="text-xs text-muted">{{ $t('contentTypes.singletonHint') }}</p>
           </div>
         </div>
+      </UFormField>
+
+      <UFormField>
+        <template #label>
+          <span class="flex items-center gap-1">
+            {{ $t('contentTypes.slugPatternLabel') }}
+            <UTooltip :text="$t('contentTypes.slugPatternHint')">
+              <UIcon name="i-lucide-info" class="size-3.5 text-gray-400 dark:text-gray-500" />
+            </UTooltip>
+          </span>
+        </template>
+        <UInput v-model="form.slugPattern" :placeholder="$t('contentTypes.slugPatternPlaceholder')" class="w-full" />
       </UFormField>
 
       <UFormField :label="$t('contentTypes.fieldsLabel')">

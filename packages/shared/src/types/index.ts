@@ -42,6 +42,7 @@ export interface ContentType {
   name: string;
   fields: FieldDefinition[];
   isSingleton: boolean;
+  slugPattern: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
