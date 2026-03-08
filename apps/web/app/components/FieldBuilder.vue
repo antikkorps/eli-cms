@@ -2,6 +2,8 @@
 import draggable from 'vuedraggable';
 
 const { t } = useI18n();
+const { items: availableComponents, fetch: fetchComponents } = useComponents();
+onMounted(fetchComponents);
 
 interface FieldDefinition {
   name: string;
@@ -14,6 +16,7 @@ interface FieldDefinition {
   subFields?: FieldDefinition[];
   defaultValue?: unknown;
   group?: string;
+  componentSlugs?: string[];
 }
 
 const model = defineModel<FieldDefinition[]>({ default: () => [] });
@@ -37,25 +40,30 @@ const props = defineProps<{
   disableRepeatable?: boolean;
 }>();
 
-const allFieldTypes = [
-  { label: 'Text', value: 'text' },
-  { label: 'Textarea', value: 'textarea' },
-  { label: 'Number', value: 'number' },
-  { label: 'Boolean', value: 'boolean' },
-  { label: 'Date', value: 'date' },
-  { label: 'Email', value: 'email' },
-  { label: 'URL', value: 'url' },
-  { label: 'Select', value: 'select' },
-  { label: 'Media', value: 'media' },
-  { label: 'Rich Text', value: 'richtext' },
-  { label: 'Author', value: 'author' },
-  { label: 'Repeatable', value: 'repeatable' },
-];
+const allFieldTypes = computed(() => [
+  { label: t('fieldTypes.text'), value: 'text' },
+  { label: t('fieldTypes.textarea'), value: 'textarea' },
+  { label: t('fieldTypes.number'), value: 'number' },
+  { label: t('fieldTypes.boolean'), value: 'boolean' },
+  { label: t('fieldTypes.date'), value: 'date' },
+  { label: t('fieldTypes.email'), value: 'email' },
+  { label: t('fieldTypes.url'), value: 'url' },
+  { label: t('fieldTypes.select'), value: 'select' },
+  { label: t('fieldTypes.media'), value: 'media' },
+  { label: t('fieldTypes.richtext'), value: 'richtext' },
+  { label: t('fieldTypes.author'), value: 'author' },
+  { label: t('fieldTypes.repeatable'), value: 'repeatable' },
+  { label: t('fieldTypes.component'), value: 'component' },
+]);
 
 const fieldTypes = computed(() =>
   props.disableRepeatable
-    ? allFieldTypes.filter((ft) => ft.value !== 'repeatable')
-    : allFieldTypes,
+    ? allFieldTypes.value.filter((ft) => ft.value !== 'repeatable' && ft.value !== 'component')
+    : allFieldTypes.value,
+);
+
+const componentSelectItems = computed(() =>
+  availableComponents.value.map((c) => ({ label: c.name, value: c.slug })),
 );
 
 function addField() {
@@ -387,6 +395,21 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
             </UFormField>
           </div>
 
+          <!-- Component type: select allowed components -->
+          <div v-if="field.type === 'component'" class="grid grid-cols-1 gap-3">
+            <UFormField :label="$t('fieldBuilder.allowedComponents')">
+              <USelectMenu
+                :model-value="field.componentSlugs ?? []"
+                :items="componentSelectItems"
+                multiple
+                value-key="value"
+                :placeholder="$t('fieldBuilder.allowedComponentsPlaceholder')"
+                class="w-full"
+                @update:model-value="(v: string[]) => updateField(index, 'componentSlugs', v)"
+              />
+            </UFormField>
+          </div>
+
           <!-- Sub-field builder for repeatable fields -->
           <div v-if="field.type === 'repeatable'" class="mt-1 ml-4 border-l-2 border-primary-200 dark:border-primary-800 pl-4 space-y-3">
             <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ $t('fieldBuilder.subFields') }}</p>
@@ -437,7 +460,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                         <UFormField :label="$t('fieldBuilder.fieldType')">
                           <USelect
                             :model-value="sub.type"
-                            :items="allFieldTypes.filter((ft) => ft.value !== 'repeatable')"
+                            :items="allFieldTypes.value.filter((ft) => ft.value !== 'repeatable' && ft.value !== 'component')"
                             class="w-full"
                             @update:model-value="(v: string) => updateSubField(index, si, 'type', v)"
                           />

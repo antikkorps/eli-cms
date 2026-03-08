@@ -45,6 +45,8 @@
     "seeAllTypes": "Voir tous les types...",
     "trash": "Corbeille",
     "seeAllFolders": "Voir tous les dossiers...",
+    "components": "Composants",
+    "structure": "Structure",
     "logout": "Déconnexion",
     "profile": "Profil"
   },
@@ -175,7 +177,45 @@
     "deleteTitle": "Supprimer le type de contenu",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ? Tous les contenus associés seront perdus.",
     "singletonLabel": "Singleton",
-    "singletonHint": "Une seule entrée autorisée — idéal pour les pages comme Accueil ou Paramètres"
+    "singletonHint": "Une seule entrée autorisée — idéal pour les pages comme Accueil ou Paramètres",
+    "slugPatternLabel": "Modèle de slug",
+    "slugPatternPlaceholder": "ex. {year}/{month}/{title}",
+    "slugPatternHint": "Jetons : {year}, {month}, {day}, {nomDuChamp}. Laisser vide pour utiliser le premier champ texte."
+  },
+  "components": {
+    "title": "Composants",
+    "subtitle": "Groupes de champs réutilisables pour les blocs de page",
+    "create": "Créer un composant",
+    "editTitle": "Modifier le composant",
+    "newTitle": "Nouveau composant",
+    "columnName": "Nom",
+    "columnSlug": "Slug",
+    "columnFields": "Champs",
+    "nameLabel": "Nom",
+    "namePlaceholder": "ex. Section Hero",
+    "slugLabel": "Slug",
+    "slugPlaceholder": "ex. hero-section",
+    "iconLabel": "Icône",
+    "iconPlaceholder": "Choisir une icône",
+    "iconPickerTitle": "Choisir une icône",
+    "fieldsLabel": "Champs",
+    "deleteTitle": "Supprimer le composant",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ? Les types de contenu utilisant ce composant devront être mis à jour."
+  },
+  "fieldTypes": {
+    "text": "Texte",
+    "textarea": "Zone de texte",
+    "number": "Nombre",
+    "boolean": "Booléen",
+    "date": "Date",
+    "email": "E-mail",
+    "url": "URL",
+    "select": "Sélection",
+    "media": "Média",
+    "richtext": "Texte riche",
+    "author": "Auteur",
+    "repeatable": "Répétable",
+    "component": "Composant"
   },
   "fieldBuilder": {
     "addField": "Ajouter un champ",
@@ -204,7 +244,10 @@
     "fieldGroup": "Groupe",
     "fieldGroupPlaceholder": "ex. SEO, Médias, Paramètres",
     "fieldGroupHint": "Les champs du même groupe sont affichés en onglets",
-    "defaultGroup": "Général"
+    "defaultGroup": "Général",
+    "allowedComponents": "Composants autorisés",
+    "allowedComponentsPlaceholder": "Sélectionner des composants...",
+    "addBlock": "Ajouter {name}"
   },
   "contents": {
     "title": "Contenus",
@@ -409,6 +452,7 @@
       "users": "Utilisateurs",
       "uploads": "Fichiers",
       "roles": "Rôles",
+      "components": "Composants",
       "webhooks": "Webhooks",
       "settings": "Paramètres",
       "audit-logs": "Journal d'audit",
@@ -421,6 +465,7 @@
       "delete": "Supprimer",
       "publish": "Publier",
       "review": "Réviser",
+      "preview": "Aperçu",
       "manage": "Gérer"
     }
   },

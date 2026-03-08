@@ -42,6 +42,17 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
   index('idx_password_reset_tokens_token_hash').on(table.tokenHash),
 ]);
 
+// ─── Components (reusable field groups / blocks) ───────
+export const components = pgTable('components', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  slug: varchar('slug', { length: 255 }).notNull().unique(),
+  name: varchar('name', { length: 255 }).notNull(),
+  icon: varchar('icon', { length: 255 }),
+  fields: jsonb('fields').notNull().$type<FieldDefinition[]>(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+});
+
 // ─── Content Types ──────────────────────────────────────
 export const contentTypes = pgTable('content_types', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -49,6 +60,7 @@ export const contentTypes = pgTable('content_types', {
   name: varchar('name', { length: 255 }).notNull(),
   fields: jsonb('fields').notNull().$type<FieldDefinition[]>(),
   isSingleton: boolean('is_singleton').notNull().default(false),
+  slugPattern: varchar('slug_pattern', { length: 500 }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

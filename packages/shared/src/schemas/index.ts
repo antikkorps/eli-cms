@@ -39,7 +39,7 @@ export const updateProfileSchema = z.object({
 });
 
 // Content Type schemas
-const scalarFieldTypes = ['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media', 'richtext', 'author'] as const;
+const scalarFieldTypes = ['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media', 'richtext', 'author', 'component'] as const;
 
 const baseFieldDefinitionSchema = z.object({
   name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
@@ -51,6 +51,7 @@ const baseFieldDefinitionSchema = z.object({
   accept: z.array(z.string()).optional(),
   defaultValue: z.unknown().optional(),
   group: z.string().max(255).optional(),
+  componentSlugs: z.array(z.string().max(255)).optional(),
   subFields: z.lazy(() =>
     z.array(
       z.object({
@@ -77,6 +78,7 @@ export const createContentTypeSchema = z.object({
   name: safeString(255).pipe(z.string().min(1)),
   fields: z.array(fieldDefinitionSchema).min(1),
   isSingleton: z.boolean().default(false),
+  slugPattern: z.string().max(500).nullable().optional(),
 });
 
 export const updateContentTypeSchema = createContentTypeSchema.partial();
@@ -86,24 +88,30 @@ export const CONTENT_STATUSES = ['draft', 'in-review', 'approved', 'scheduled', 
 
 export const createContentSchema = z.object({
   contentTypeId: z.string().uuid(),
-  slug: z.string().max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case').optional(),
+  slug: z.string().max(255).regex(/^[a-z0-9]+(?:[-/][a-z0-9]+)*$/, 'Slug must be lowercase with hyphens or slashes').optional(),
   status: z.enum(CONTENT_STATUSES).default('draft'),
   data: z.record(z.unknown()),
   publishedAt: z.string().datetime({ offset: true }).optional(),
 });
 
 export const updateContentSchema = z.object({
-  slug: z.string().max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case').nullable().optional(),
+  slug: z.string().max(255).regex(/^[a-z0-9]+(?:[-/][a-z0-9]+)*$/, 'Slug must be lowercase with hyphens or slashes').nullable().optional(),
   status: z.enum(CONTENT_STATUSES).optional(),
   data: z.record(z.unknown()).optional(),
   publishedAt: z.string().datetime({ offset: true }).nullable().optional(),
 });
 
 /**
+ * Component definitions map, keyed by slug → fields.
+ * Pass this to buildContentDataSchema when content types reference components.
+ */
+export type ComponentFieldsMap = Map<string, FieldDefinition[]>;
+
+/**
  * Builds a Zod schema dynamically from field definitions.
  * This is the core of the CPT system — zero code, zero migration.
  */
-export function buildContentDataSchema(fields: FieldDefinition[]): z.ZodObject<Record<string, z.ZodTypeAny>> {
+export function buildContentDataSchema(fields: FieldDefinition[], componentMap?: ComponentFieldsMap): z.ZodObject<Record<string, z.ZodTypeAny>> {
   const shape: Record<string, z.ZodTypeAny> = {};
 
   for (const field of fields) {
@@ -149,12 +157,36 @@ export function buildContentDataSchema(fields: FieldDefinition[]): z.ZodObject<R
         break;
       case 'repeatable':
         if (field.subFields && field.subFields.length > 0) {
-          const itemSchema = buildContentDataSchema(field.subFields);
+          const itemSchema = buildContentDataSchema(field.subFields, componentMap);
           fieldSchema = z.array(itemSchema);
         } else {
           fieldSchema = z.array(z.unknown());
         }
         break;
+      case 'component': {
+        // Each block: { _component: slug, ...fieldData }
+        const allowedSlugs = field.componentSlugs ?? [];
+        if (componentMap && allowedSlugs.length > 0) {
+          const blockSchemas = allowedSlugs
+            .filter((slug) => componentMap.has(slug))
+            .map((slug) => {
+              const compFields = componentMap.get(slug)!;
+              const dataSchema = buildContentDataSchema(compFields, componentMap);
+              return dataSchema.extend({ _component: z.literal(slug) });
+            });
+
+          if (blockSchemas.length === 1) {
+            fieldSchema = z.array(blockSchemas[0]!);
+          } else if (blockSchemas.length > 1) {
+            fieldSchema = z.array(z.discriminatedUnion('_component', blockSchemas as [z.ZodObject<any>, z.ZodObject<any>, ...z.ZodObject<any>[]]));
+          } else {
+            fieldSchema = z.array(z.object({ _component: z.string() }).passthrough());
+          }
+        } else {
+          fieldSchema = z.array(z.object({ _component: z.string() }).passthrough());
+        }
+        break;
+      }
       default:
         fieldSchema = z.unknown();
     }
@@ -190,6 +222,20 @@ export type ExportContentQuery = z.infer<typeof exportContentQuerySchema>;
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+// Component schemas
+export const createComponentSchema = z.object({
+  slug: z.string().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
+  name: safeString(255).pipe(z.string().min(1)),
+  icon: z.string().max(255).nullable().optional(),
+  fields: z.array(fieldDefinitionSchema).min(1),
+});
+
+export const updateComponentSchema = createComponentSchema.partial();
+
+export const componentListQuerySchema = paginationSchema.extend({
+  search: z.string().max(200).optional(),
 });
 
 export const contentTypeListQuerySchema = paginationSchema.extend({
@@ -507,6 +553,10 @@ export type ApiKeyListQuery = z.infer<typeof apiKeyListQuerySchema>;
 export type CreateMediaFolderInput = z.infer<typeof createMediaFolderSchema>;
 export type UpdateMediaFolderInput = z.infer<typeof updateMediaFolderSchema>;
 export type MediaFolderListQuery = z.infer<typeof mediaFolderListQuerySchema>;
+
+export type CreateComponentInput = z.infer<typeof createComponentSchema>;
+export type UpdateComponentInput = z.infer<typeof updateComponentSchema>;
+export type ComponentListQuery = z.infer<typeof componentListQuerySchema>;
 
 export type SmtpConfigInput = z.infer<typeof smtpConfigSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;

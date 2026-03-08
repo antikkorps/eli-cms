@@ -20,7 +20,7 @@ export interface User {
   updatedAt: Date;
 }
 
-export type FieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'email' | 'url' | 'select' | 'media' | 'richtext' | 'author' | 'repeatable';
+export type FieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'email' | 'url' | 'select' | 'media' | 'richtext' | 'author' | 'repeatable' | 'component';
 
 export interface FieldDefinition {
   name: string;
@@ -33,6 +33,7 @@ export interface FieldDefinition {
   subFields?: FieldDefinition[]; // for repeatable type
   defaultValue?: unknown; // pre-filled value when creating new content
   group?: string; // field group/tab name for UI organization
+  componentSlugs?: string[]; // for component type — allowed component slugs
 }
 
 export interface ContentType {
@@ -41,8 +42,25 @@ export interface ContentType {
   name: string;
   fields: FieldDefinition[];
   isSingleton: boolean;
+  slugPattern: string | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// ─── Components (reusable field groups / blocks) ───────
+export interface Component {
+  id: string;
+  slug: string;
+  name: string;
+  icon: string | null;
+  fields: FieldDefinition[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ComponentBlock {
+  _component: string; // component slug
+  [key: string]: unknown;
 }
 
 export type ContentStatus = 'draft' | 'in-review' | 'approved' | 'scheduled' | 'published';

@@ -45,6 +45,8 @@
     "seeAllTypes": "See all types...",
     "trash": "Trash",
     "seeAllFolders": "See all folders...",
+    "components": "Components",
+    "structure": "Structure",
     "logout": "Log out",
     "profile": "Profile"
   },
@@ -175,7 +177,45 @@
     "deleteTitle": "Delete Content Type",
     "deleteConfirm": "Are you sure you want to delete {name}? All associated content will be lost.",
     "singletonLabel": "Singleton",
-    "singletonHint": "Only one entry allowed — ideal for pages like Homepage or Settings"
+    "singletonHint": "Only one entry allowed — ideal for pages like Homepage or Settings",
+    "slugPatternLabel": "Slug pattern",
+    "slugPatternPlaceholder": "e.g. {year}/{month}/{title}",
+    "slugPatternHint": "Tokens: {year}, {month}, {day}, {fieldName}. Leave empty to use the first text field."
+  },
+  "components": {
+    "title": "Components",
+    "subtitle": "Reusable field groups for page builder blocks",
+    "create": "Create Component",
+    "editTitle": "Edit Component",
+    "newTitle": "New Component",
+    "columnName": "Name",
+    "columnSlug": "Slug",
+    "columnFields": "Fields",
+    "nameLabel": "Name",
+    "namePlaceholder": "e.g. Hero Section",
+    "slugLabel": "Slug",
+    "slugPlaceholder": "e.g. hero-section",
+    "iconLabel": "Icon",
+    "iconPlaceholder": "Choose an icon",
+    "iconPickerTitle": "Choose an icon",
+    "fieldsLabel": "Fields",
+    "deleteTitle": "Delete Component",
+    "deleteConfirm": "Are you sure you want to delete {name}? Content types using this component will need to be updated."
+  },
+  "fieldTypes": {
+    "text": "Text",
+    "textarea": "Textarea",
+    "number": "Number",
+    "boolean": "Boolean",
+    "date": "Date",
+    "email": "Email",
+    "url": "URL",
+    "select": "Select",
+    "media": "Media",
+    "richtext": "Rich Text",
+    "author": "Author",
+    "repeatable": "Repeatable",
+    "component": "Component"
   },
   "fieldBuilder": {
     "addField": "Add Field",
@@ -204,7 +244,10 @@
     "fieldGroup": "Group",
     "fieldGroupPlaceholder": "e.g. SEO, Media, Settings",
     "fieldGroupHint": "Fields with the same group are displayed in tabs",
-    "defaultGroup": "General"
+    "defaultGroup": "General",
+    "allowedComponents": "Allowed components",
+    "allowedComponentsPlaceholder": "Select components...",
+    "addBlock": "Add {name}"
   },
   "contents": {
     "title": "Contents",
@@ -409,6 +452,7 @@
       "users": "Users",
       "uploads": "Uploads",
       "roles": "Roles",
+      "components": "Components",
       "webhooks": "Webhooks",
       "settings": "Settings",
       "audit-logs": "Audit Logs",
@@ -421,6 +465,7 @@
       "delete": "Delete",
       "publish": "Publish",
       "review": "Review",
+      "preview": "Preview",
       "manage": "Manage"
     }
   },
