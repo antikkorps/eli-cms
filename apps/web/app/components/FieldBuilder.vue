@@ -463,9 +463,12 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
           </div>
 
           <!-- Validation rules (collapsible) -->
-          <UAccordion v-if="showValidation(field.type)" class="mt-1">
-            <UAccordionItem :label="$t('fieldBuilder.validation')" icon="i-lucide-shield-check">
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-1">
+          <UCollapsible v-if="showValidation(field.type)" class="mt-1">
+            <UButton variant="ghost" color="neutral" size="sm" icon="i-lucide-shield-check" trailing-icon="i-lucide-chevron-down" block class="justify-start">
+              {{ $t('fieldBuilder.validation') }}
+            </UButton>
+            <template #content>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-2 mt-1 border border-accented rounded-lg">
                 <UFormField v-if="validatableStringTypes.includes(field.type)" :label="$t('fieldBuilder.validationMinLength')">
                   <UInput
                     type="number"
@@ -529,8 +532,8 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                   </label>
                 </div>
               </div>
-            </UAccordionItem>
-          </UAccordion>
+            </template>
+          </UCollapsible>
 
           <!-- Sub-field builder for repeatable fields -->
           <div v-if="field.type === 'repeatable'" class="mt-1 ml-4 border-l-2 border-primary-200 dark:border-primary-800 pl-4 space-y-3">
@@ -619,9 +622,12 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                   </UFormField>
 
                   <!-- Sub-field validation rules -->
-                  <UAccordion v-if="showValidation(sub.type)" class="mt-1">
-                    <UAccordionItem :label="$t('fieldBuilder.validation')" icon="i-lucide-shield-check">
-                      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-1">
+                  <UCollapsible v-if="showValidation(sub.type)" class="mt-1">
+                    <UButton variant="ghost" color="neutral" size="xs" icon="i-lucide-shield-check" trailing-icon="i-lucide-chevron-down" block class="justify-start">
+                      {{ $t('fieldBuilder.validation') }}
+                    </UButton>
+                    <template #content>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-2 mt-1 border border-accented rounded-lg">
                         <UFormField v-if="validatableStringTypes.includes(sub.type)" :label="$t('fieldBuilder.validationMinLength')">
                           <UInput
                             type="number"
@@ -673,8 +679,8 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                           />
                         </UFormField>
                       </div>
-                    </UAccordionItem>
-                  </UAccordion>
+                    </template>
+                  </UCollapsible>
                 </div>
               </template>
             </draggable>
