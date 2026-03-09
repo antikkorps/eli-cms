@@ -29,8 +29,8 @@ const limit = 20;
 const total = ref(0);
 
 const filters = reactive({
-  action: null as string | null,
-  resourceType: null as string | null,
+  action: undefined as string | undefined,
+  resourceType: undefined as string | undefined,
 });
 
 const actionOptions = [

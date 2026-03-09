@@ -95,7 +95,7 @@ function updateField(index: number, key: keyof FieldDefinition, value: unknown) 
 
 function updateOptions(index: number, raw: string) {
   const updated = [...model.value];
-  updated[index] = Object.assign({}, updated[index], {
+  updated[index] = Object.assign({}, updated[index]!, {
     options: raw.split('\n').map((s) => s.trim()).filter(Boolean),
   });
   model.value = updated;
@@ -125,17 +125,17 @@ function getAcceptSelected(index: number): string[] {
 function updateAcceptFromSelect(index: number, selected: string[]) {
   const updated = [...model.value];
   if (!selected.length) {
-    updated[index] = Object.assign({}, updated[index], { accept: undefined });
+    updated[index] = Object.assign({}, updated[index]!, { accept: undefined });
   } else {
     const mimes = selected.flatMap((v) => v.split(', ').map((s) => s.trim()));
-    updated[index] = Object.assign({}, updated[index], { accept: mimes });
+    updated[index] = Object.assign({}, updated[index]!, { accept: mimes });
   }
   model.value = updated;
 }
 
 function addSubField(index: number) {
   const updated = [...model.value];
-  const field = { ...updated[index] };
+  const field = { ...updated[index]! };
   const sub = { name: '', type: 'text', required: false, label: '' } as FieldDefinition;
   ensureUid(sub);
   field.subFields = [...(field.subFields ?? []), sub];
@@ -145,7 +145,7 @@ function addSubField(index: number) {
 
 function removeSubField(fieldIndex: number, subIndex: number) {
   const updated = [...model.value];
-  const field = { ...updated[fieldIndex] };
+  const field = { ...updated[fieldIndex]! };
   field.subFields = (field.subFields ?? []).filter((_, i) => i !== subIndex);
   updated[fieldIndex] = field;
   model.value = updated;
@@ -153,9 +153,9 @@ function removeSubField(fieldIndex: number, subIndex: number) {
 
 function updateSubField(fieldIndex: number, subIndex: number, key: keyof FieldDefinition, value: unknown) {
   const updated = [...model.value];
-  const field = { ...updated[fieldIndex] };
+  const field = { ...updated[fieldIndex]! };
   const subs = [...(field.subFields ?? [])];
-  subs[subIndex] = { ...subs[subIndex], [key]: value };
+  subs[subIndex] = { ...subs[subIndex]!, [key]: value };
   field.subFields = subs;
   updated[fieldIndex] = field;
   model.value = updated;
@@ -163,9 +163,9 @@ function updateSubField(fieldIndex: number, subIndex: number, key: keyof FieldDe
 
 function updateSubFieldOptions(fieldIndex: number, subIndex: number, raw: string) {
   const updated = [...model.value];
-  const field = { ...updated[fieldIndex] };
+  const field = { ...updated[fieldIndex]! };
   const subs = [...(field.subFields ?? [])];
-  subs[subIndex] = { ...subs[subIndex], options: raw.split('\n').map((s) => s.trim()).filter(Boolean) };
+  subs[subIndex] = { ...subs[subIndex]!, options: raw.split('\n').map((s) => s.trim()).filter(Boolean) };
   field.subFields = subs;
   updated[fieldIndex] = field;
   model.value = updated;
@@ -204,7 +204,7 @@ function nameError(index: number): string | undefined {
 
 function updateValidation(index: number, key: keyof FieldValidation, value: unknown) {
   const updated = [...model.value];
-  const field = { ...updated[index] };
+  const field = { ...updated[index]! };
   const v = { ...(field.validation ?? {}) } as Record<string, unknown>;
   if (value === '' || value === undefined || value === null) {
     delete v[key];
@@ -218,9 +218,9 @@ function updateValidation(index: number, key: keyof FieldValidation, value: unkn
 
 function updateSubFieldValidation(fieldIndex: number, subIndex: number, key: keyof FieldValidation, value: unknown) {
   const updated = [...model.value];
-  const field = { ...updated[fieldIndex] };
+  const field = { ...updated[fieldIndex]! };
   const subs = [...(field.subFields ?? [])];
-  const sub = { ...subs[subIndex] };
+  const sub = { ...subs[subIndex]! };
   const v = { ...(sub.validation ?? {}) } as Record<string, unknown>;
   if (value === '' || value === undefined || value === null) {
     delete v[key];
@@ -244,7 +244,7 @@ function showValidation(type: string): boolean {
 
 function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[]) {
   const updated = [...model.value];
-  updated[fieldIndex] = { ...updated[fieldIndex], subFields: newSubFields };
+  updated[fieldIndex] = { ...updated[fieldIndex]!, subFields: newSubFields };
   model.value = updated;
 }
 </script>
@@ -400,7 +400,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                 </template>
                 <USelect
                   :model-value="(field.defaultValue as string) ?? ''"
-                  :items="[{ label: $t('fieldBuilder.noDefault'), value: '' }, ...(field.options ?? []).map((o) => ({ label: o, value: o }))]"
+                  :items="[{ label: $t('fieldBuilder.noDefault'), value: '' }, ...(field.options ?? []).map((o: string) => ({ label: o, value: o }))]"
                   class="w-full"
                   @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
                 />
@@ -439,6 +439,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                 :model-value="getAcceptSelected(index)"
                 :items="mediaAcceptCategories"
                 multiple
+                value-key="value"
                 :placeholder="$t('fieldBuilder.fieldAcceptPlaceholder')"
                 class="w-full"
                 @update:model-value="(v: string[]) => updateAcceptFromSelect(index, v)"

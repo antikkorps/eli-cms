@@ -26,7 +26,7 @@ interface RoleOption {
 }
 
 const search = ref('');
-const roleFilter = ref<string | null>(null);
+const roleFilter = ref<string | undefined>(undefined);
 const roleOptions = ref<RoleOption[]>([]);
 
 const {
@@ -120,7 +120,7 @@ onMounted(fetchRoles);
       <UInput v-model="search" :placeholder="$t('common.search')" icon="i-lucide-search" class="w-64" />
       <div class="flex items-center gap-1">
         <USelect v-model="roleFilter" nullable :items="roleFilterItems" :placeholder="$t('users.allRoles')" class="w-48" />
-        <UButton v-if="roleFilter" icon="i-lucide-x" variant="ghost" color="neutral" size="xs" @click="roleFilter = null" />
+        <UButton v-if="roleFilter" icon="i-lucide-x" variant="ghost" color="neutral" size="xs" @click="roleFilter = undefined" />
       </div>
     </div>
 

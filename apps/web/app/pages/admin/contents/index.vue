@@ -34,8 +34,8 @@ interface FieldDefinition {
 }
 
 const search = ref('');
-const contentTypeFilter = ref<string | null>(null);
-const statusFilter = ref<string | null>(null);
+const contentTypeFilter = ref<string | undefined>(undefined);
+const statusFilter = ref<string | undefined>(undefined);
 const bulkOpen = ref(false);
 const bulkActionType = ref('');
 
@@ -262,8 +262,8 @@ const columns = computed(() => [
         scheduled: { color: 'primary', label: t('contents.scheduled') },
         published: { color: 'success', label: t('contents.published') },
       };
-      const cfg = statusMap[row.original.status] ?? statusMap.draft;
-      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: cfg.color, size: 'sm' }, () => cfg.label);
+      const cfg = statusMap[row.original.status] ?? statusMap.draft!;
+      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: cfg!.color, size: 'sm' }, () => cfg!.label);
     },
   },
   {
@@ -337,9 +337,9 @@ watch(
     syncingFromUrl = true;
     if (slug) {
       const ct = contentTypeItems.value.find((c) => c.slug === slug);
-      contentTypeFilter.value = ct ? ct.id : null;
+      contentTypeFilter.value = ct ? ct.id : undefined;
     } else {
-      contentTypeFilter.value = null;
+      contentTypeFilter.value = undefined;
     }
     nextTick(() => { syncingFromUrl = false; });
   },
@@ -372,7 +372,7 @@ onMounted(async () => {
             `/contents?contentTypeId=${ct.id}&limit=1`,
           );
           if (res.data.length > 0) {
-            return navigateTo(`/admin/contents/${res.data[0].id}`, { replace: true });
+            return navigateTo(`/admin/contents/${res.data[0]!.id}`, { replace: true });
           } else {
             return navigateTo(`/admin/contents/new?type=${ct.slug}`, { replace: true });
           }

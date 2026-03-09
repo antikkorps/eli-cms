@@ -25,7 +25,7 @@ interface ContentItem {
 }
 
 const search = ref('');
-const contentTypeFilter = ref<string | null>(null);
+const contentTypeFilter = ref<string | undefined>(undefined);
 
 const {
   items: contents,
@@ -188,8 +188,8 @@ const columns = computed(() => [
         scheduled: { color: 'primary', label: t('contents.scheduled') },
         published: { color: 'success', label: t('contents.published') },
       };
-      const cfg = statusMap[row.original.status] ?? statusMap.draft;
-      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: cfg.color, size: 'sm' }, () => cfg.label);
+      const cfg = statusMap[row.original.status] ?? statusMap.draft!;
+      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: cfg!.color, size: 'sm' }, () => cfg!.label);
     },
   },
   {
