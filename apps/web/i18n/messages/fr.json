@@ -178,9 +178,12 @@
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ? Tous les contenus associés seront perdus.",
     "singletonLabel": "Singleton",
     "singletonHint": "Une seule entrée autorisée — idéal pour les pages comme Accueil ou Paramètres",
-    "slugPatternLabel": "Modèle de slug",
-    "slugPatternPlaceholder": "ex. {year}/{month}/{title}",
-    "slugPatternHint": "Jetons : {year}, {month}, {day}, {nomDuChamp}. Laisser vide pour utiliser le premier champ texte."
+    "slugPatternLabel": "Modèle de slug"
+  },
+  "slugPattern": {
+    "auto": "Automatique (premier champ texte)",
+    "example": "Exemple :",
+    "custom": "Personnalisé…"
   },
   "components": {
     "title": "Composants",

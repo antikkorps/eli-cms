@@ -92,16 +92,8 @@ async function submit() {
         </div>
       </UFormField>
 
-      <UFormField>
-        <template #label>
-          <span class="flex items-center gap-1">
-            {{ $t('contentTypes.slugPatternLabel') }}
-            <UTooltip :text="$t('contentTypes.slugPatternHint')">
-              <UIcon name="i-lucide-info" class="size-3.5 text-gray-400 dark:text-gray-500" />
-            </UTooltip>
-          </span>
-        </template>
-        <UInput v-model="form.slugPattern" :placeholder="$t('contentTypes.slugPatternPlaceholder')" class="w-full" />
+      <UFormField :label="$t('contentTypes.slugPatternLabel')">
+        <SlugPatternPicker v-model="form.slugPattern" />
       </UFormField>
 
       <UFormField :label="$t('contentTypes.fieldsLabel')">
