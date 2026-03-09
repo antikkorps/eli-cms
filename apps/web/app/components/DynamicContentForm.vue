@@ -309,7 +309,10 @@ watch(groupNames, (names) => {
         class="w-full min-h-48 border border-accented rounded-md"
         @update:model-value="(v: string) => updateValue(field.name, v)"
       >
-        <UEditorToolbar :editor="editor" :items="editorToolbarItems" class="border-b border-accented" />
+        <div class="flex items-center border-b border-accented">
+          <UEditorToolbar :editor="editor" :items="editorToolbarItems" class="flex-1" />
+          <EditorImageButton :editor="editor" class="mr-1" />
+        </div>
       </UEditor>
 
       <!-- Repeatable field -->
@@ -428,7 +431,10 @@ watch(groupNames, (names) => {
                 class="w-full min-h-32 border border-accented rounded-md"
                 @update:model-value="(v: string) => updateRepeatableItem(field.name, itemIndex, sub.name, v)"
               >
-                <UEditorToolbar :editor="subEditor" :items="editorToolbarItems" class="border-b border-accented" />
+                <div class="flex items-center border-b border-accented">
+                  <UEditorToolbar :editor="subEditor" :items="editorToolbarItems" class="flex-1" />
+                  <EditorImageButton :editor="subEditor" class="mr-1" />
+                </div>
               </UEditor>
             </UFormField>
           </div>
@@ -557,7 +563,10 @@ watch(groupNames, (names) => {
                     class="w-full min-h-32 border border-accented rounded-md"
                     @update:model-value="(v: string) => updateComponentBlockField(field.name, blockIndex, compField.name, v)"
                   >
-                    <UEditorToolbar :editor="blockEditor" :items="editorToolbarItems" class="border-b border-accented" />
+                    <div class="flex items-center border-b border-accented">
+                      <UEditorToolbar :editor="blockEditor" :items="editorToolbarItems" class="flex-1" />
+                      <EditorImageButton :editor="blockEditor" class="mr-1" />
+                    </div>
                   </UEditor>
                 </UFormField>
               </template>

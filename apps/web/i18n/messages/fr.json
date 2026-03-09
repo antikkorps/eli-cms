@@ -48,7 +48,9 @@
     "components": "Composants",
     "structure": "Structure",
     "logout": "Déconnexion",
-    "profile": "Profil"
+    "profile": "Profil",
+    "newContent": "Nouveau contenu",
+    "uploadFile": "Téléverser un fichier"
   },
   "login": {
     "tagline": "CMS headless avec des types de contenu dynamiques. Zéro migration, flexibilité infinie.",
@@ -179,6 +181,12 @@
     "singletonLabel": "Singleton",
     "singletonHint": "Une seule entrée autorisée — idéal pour les pages comme Accueil ou Paramètres",
     "slugPatternLabel": "Modèle de slug"
+  },
+  "imageCrop": {
+    "title": "Recadrer l'image",
+    "free": "Libre",
+    "skipCrop": "Uploader sans recadrer",
+    "cropAndUpload": "Recadrer et uploader"
   },
   "slugPattern": {
     "auto": "Automatique (premier champ texte)",
@@ -587,6 +595,10 @@
     "submit": "Envoyer le lien",
     "success": "Si un compte existe avec cet e-mail, nous avons envoyé un lien de réinitialisation.",
     "backToLogin": "Retour à la connexion"
+  },
+  "editor": {
+    "insertImage": "Insérer une image",
+    "insertImageDescription": "Sélectionnez ou téléversez une image à insérer dans l'éditeur"
   },
   "resetPassword": {
     "title": "Définir un nouveau mot de passe",

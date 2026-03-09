@@ -43,9 +43,17 @@ const navigation = computed(() => {
   if (!mounted.value) return items;
 
   if (hasPermission('content:read')) {
-    const children: Array<Record<string, unknown>> = [
-      { label: t('nav.allContents'), to: '/admin/contents' },
-    ];
+    const children: Array<Record<string, unknown>> = [];
+
+    if (hasPermission('content:create')) {
+      children.push({
+        label: t('nav.newContent'),
+        icon: 'i-lucide-plus',
+        to: '/admin/contents/new',
+      });
+    }
+
+    children.push({ label: t('nav.allContents'), to: '/admin/contents' });
 
     const types = contentTypeItems.value;
     const visibleTypes = types.slice(0, MAX_SIDEBAR_TYPES);
@@ -76,9 +84,17 @@ const navigation = computed(() => {
     });
   }
   if (hasPermission('uploads:read')) {
-    const folderChildren: Array<Record<string, unknown>> = [
-      { label: t('mediaFolders.allFiles'), to: '/admin/uploads' },
-    ];
+    const folderChildren: Array<Record<string, unknown>> = [];
+
+    if (hasPermission('uploads:create')) {
+      folderChildren.push({
+        label: t('nav.uploadFile'),
+        icon: 'i-lucide-plus',
+        to: '/admin/uploads?action=upload',
+      });
+    }
+
+    folderChildren.push({ label: t('mediaFolders.allFiles'), to: '/admin/uploads' });
 
     const folders = folderTree.value;
     // Flatten top-level folders for sidebar

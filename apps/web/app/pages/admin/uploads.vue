@@ -61,6 +61,61 @@ const canUpdate = computed(() => hasPermission('uploads:update'));
 const canDelete = computed(() => hasPermission('uploads:delete'));
 const uploading = ref(false);
 const dragging = ref(false);
+const fileInputRef = ref<HTMLInputElement | null>(null);
+
+// Auto-trigger upload dialog when coming from sidebar "Upload file" link
+onMounted(() => {
+  if (route.query.action === 'upload' && canUpload.value) {
+    nextTick(() => fileInputRef.value?.click());
+  }
+});
+
+// Image crop before upload
+const cropFile = ref<File | null>(null);
+
+function isImageFile(file: File): boolean {
+  return file.type.startsWith('image/') && !file.type.includes('svg');
+}
+
+function initiateUpload(file: File) {
+  if (isImageFile(file)) {
+    cropFile.value = file;
+  } else {
+    doUploadFile(file);
+  }
+}
+
+async function doUploadFile(file: File) {
+  uploading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (selectedFolderId.value) {
+      formData.append('folderId', selectedFolderId.value);
+    }
+    await apiFetch('/uploads', { method: 'POST', body: formData });
+    toast.add({ title: t('uploads.uploaded'), color: 'success' });
+    await fetchItems();
+  } catch {
+    toast.add({ title: t('common.error'), color: 'error' });
+  } finally {
+    uploading.value = false;
+  }
+}
+
+function onCropConfirm(file: File) {
+  cropFile.value = null;
+  doUploadFile(file);
+}
+
+function onCropSkip(file: File) {
+  cropFile.value = null;
+  doUploadFile(file);
+}
+
+function onCropCancel() {
+  cropFile.value = null;
+}
 
 // Image preview lightbox
 const previewItem = ref<MediaItem | null>(null);
@@ -98,27 +153,12 @@ function getPreviewUrl(item: MediaItem): string {
   return `${baseURL}/uploads/${item.id}/serve?w=400&h=400&format=webp`;
 }
 
-async function handleUpload(event: Event) {
+function handleUpload(event: Event) {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
   if (!file) return;
-
-  uploading.value = true;
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    if (selectedFolderId.value) {
-      formData.append('folderId', selectedFolderId.value);
-    }
-    await apiFetch('/uploads', { method: 'POST', body: formData });
-    toast.add({ title: t('uploads.uploaded'), color: 'success' });
-    await fetchItems();
-  } catch {
-    toast.add({ title: t('common.error'), color: 'error' });
-  } finally {
-    uploading.value = false;
-    input.value = '';
-  }
+  input.value = '';
+  initiateUpload(file);
 }
 
 function onDragOver(e: DragEvent) {
@@ -130,26 +170,12 @@ function onDragLeave() {
   dragging.value = false;
 }
 
-async function onDrop(e: DragEvent) {
+function onDrop(e: DragEvent) {
   e.preventDefault();
   dragging.value = false;
   const file = e.dataTransfer?.files?.[0];
   if (!file || !canUpload.value) return;
-  uploading.value = true;
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    if (selectedFolderId.value) {
-      formData.append('folderId', selectedFolderId.value);
-    }
-    await apiFetch('/uploads', { method: 'POST', body: formData });
-    toast.add({ title: t('uploads.uploaded'), color: 'success' });
-    await fetchItems();
-  } catch {
-    toast.add({ title: t('common.error'), color: 'error' });
-  } finally {
-    uploading.value = false;
-  }
+  initiateUpload(file);
 }
 
 function openEdit(item: MediaItem) {
@@ -292,7 +318,7 @@ const columns = computed(() => [
           <UButton as="span" icon="i-lucide-upload" :loading="uploading">
             {{ $t('uploads.upload') }}
           </UButton>
-          <input type="file" class="hidden" @change="handleUpload" />
+          <input ref="fileInputRef" type="file" class="hidden" @change="handleUpload" />
         </label>
       </div>
     </div>
@@ -440,5 +466,13 @@ const columns = computed(() => [
         </div>
       </template>
     </UModal>
+
+    <!-- Image crop modal -->
+    <ImageCropModal
+      :file="cropFile"
+      @confirm="onCropConfirm"
+      @skip="onCropSkip"
+      @cancel="onCropCancel"
+    />
   </div>
 </template>
