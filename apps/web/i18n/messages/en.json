@@ -247,7 +247,18 @@
     "defaultGroup": "General",
     "allowedComponents": "Allowed components",
     "allowedComponentsPlaceholder": "Select components...",
-    "addBlock": "Add {name}"
+    "addBlock": "Add {name}",
+    "validation": "Validation rules",
+    "validationMinLength": "Min length",
+    "validationMaxLength": "Max length",
+    "validationMin": "Min value",
+    "validationMax": "Max value",
+    "validationPattern": "Regex pattern",
+    "validationPatternPlaceholder": "e.g. ^[A-Z].*",
+    "validationPatternMessage": "Pattern error message",
+    "validationPatternMessagePlaceholder": "Custom error when pattern fails",
+    "validationUnique": "Unique",
+    "validationUniqueHint": "No two contents of this type can have the same value"
   },
   "contents": {
     "title": "Contents",

@@ -22,6 +22,16 @@ export interface User {
 
 export type FieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'date' | 'email' | 'url' | 'select' | 'media' | 'richtext' | 'author' | 'repeatable' | 'component';
 
+export interface FieldValidation {
+  minLength?: number;       // for text, textarea, richtext, email, url
+  maxLength?: number;       // for text, textarea, richtext, email, url
+  min?: number;             // for number
+  max?: number;             // for number
+  pattern?: string;         // regex string for text, textarea, email, url
+  patternMessage?: string;  // custom error message when pattern fails
+  unique?: boolean;         // for text, email, url, number — checked server-side
+}
+
 export interface FieldDefinition {
   name: string;
   type: FieldType;
@@ -34,6 +44,7 @@ export interface FieldDefinition {
   defaultValue?: unknown; // pre-filled value when creating new content
   group?: string; // field group/tab name for UI organization
   componentSlugs?: string[]; // for component type — allowed component slugs
+  validation?: FieldValidation; // advanced validation rules
 }
 
 export interface ContentType {

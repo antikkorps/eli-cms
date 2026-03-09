@@ -247,7 +247,18 @@
     "defaultGroup": "Général",
     "allowedComponents": "Composants autorisés",
     "allowedComponentsPlaceholder": "Sélectionner des composants...",
-    "addBlock": "Ajouter {name}"
+    "addBlock": "Ajouter {name}",
+    "validation": "Règles de validation",
+    "validationMinLength": "Longueur min",
+    "validationMaxLength": "Longueur max",
+    "validationMin": "Valeur min",
+    "validationMax": "Valeur max",
+    "validationPattern": "Regex",
+    "validationPatternPlaceholder": "ex. ^[A-Z].*",
+    "validationPatternMessage": "Message d'erreur regex",
+    "validationPatternMessagePlaceholder": "Message personnalisé en cas d'erreur",
+    "validationUnique": "Unique",
+    "validationUniqueHint": "Deux contenus de ce type ne peuvent pas avoir la même valeur"
   },
   "contents": {
     "title": "Contenus",

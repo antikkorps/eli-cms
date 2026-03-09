@@ -26,6 +26,16 @@ const editorToolbarItems = [
   ],
 ];
 
+interface FieldValidation {
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  pattern?: string;
+  patternMessage?: string;
+  unique?: boolean;
+}
+
 interface FieldDefinition {
   name: string;
   type: string;
@@ -38,6 +48,7 @@ interface FieldDefinition {
   defaultValue?: unknown;
   group?: string;
   componentSlugs?: string[];
+  validation?: FieldValidation;
 }
 
 interface ComponentDef {
@@ -222,6 +233,9 @@ watch(groupNames, (names) => {
         :model-value="(model[field.name] as string) ?? ''"
         :type="field.type === 'email' ? 'email' : field.type === 'url' ? 'url' : 'text'"
         :required="field.required"
+        :minlength="field.validation?.minLength"
+        :maxlength="field.validation?.maxLength"
+        :pattern="field.validation?.pattern"
         class="w-full"
         @update:model-value="(v: string) => updateValue(field.name, v)"
       />
@@ -230,6 +244,8 @@ watch(groupNames, (names) => {
         v-else-if="field.type === 'textarea'"
         :model-value="(model[field.name] as string) ?? ''"
         :required="field.required"
+        :minlength="field.validation?.minLength"
+        :maxlength="field.validation?.maxLength"
         :rows="4"
         class="w-full"
         @update:model-value="(v: string) => updateValue(field.name, v)"
@@ -240,6 +256,8 @@ watch(groupNames, (names) => {
         :model-value="(model[field.name] as number) ?? ''"
         type="number"
         :required="field.required"
+        :min="field.validation?.min"
+        :max="field.validation?.max"
         class="w-full"
         @update:model-value="(v: number) => updateValue(field.name, v)"
       />
