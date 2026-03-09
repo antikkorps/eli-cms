@@ -52,13 +52,50 @@
 - [x] Brute-force login protection (progressive delays or lockout after N failed attempts)
 - [ ] Background job queue — replace `setInterval` scheduler with BullMQ/Redis
 - [x] Structured logging — replace `console.log` with pino (JSON, request IDs)
-- [ ] Advanced form validation (min/max length, regex patterns, unique constraints per field)
+- [x] Advanced form validation (min/max length, regex patterns, unique constraints per field)
 - [x] Content type field groups / tabs (organize fields into sections for complex content types)
 - [x] Search result highlighting
-- [~] Image crop/resize before upload (server-side transforms done — remaining: client-side crop UI before upload)
+- [x] Image crop/resize before upload (server-side Sharp transforms + client-side crop modal with vue-advanced-cropper, aspect ratio presets)
 - [x] i18n labels in FieldBuilder (translate field type names)
-- [x] Configurable slug patterns (e.g. `{year}/{slug}`, `{category}/{slug}`)
+- [x] Configurable slug patterns (e.g. `{year}/{slug}`, `{category}/{slug}`) — preset picker for non-technical users
 - [x] Drag-and-drop field reordering in FieldBuilder
+- [x] Rich text image insertion (insert images from media library into TipTap editor via toolbar button)
+- [x] Sidebar quick actions (New content + Upload file entries at top of collapsible sections)
+- [x] Version diff HTML rendering (richtext fields rendered as formatted HTML instead of raw markup)
+
+## High Priority — User Management & Onboarding
+
+- [ ] Full user CRUD — `POST /users` (create), `PUT /users/:id` (edit email/role), `users:create` + `users:update` permissions
+- [ ] Server-side self-delete/self-demote guard (prevent super-admin from deleting or downgrading themselves)
+- [ ] Admin user management UI (create user form, inline role editing, improved users page)
+- [ ] New "manager" system role — can manage users + roles:read, content + uploads access, ideal for team leads
+- [ ] Seed "Company Identity" component (company_name, logo, tagline, description, email, phone, address, social_links repeatable)
+- [ ] Seed "Site Settings" singleton content type using Company Identity component — ready-to-use header/footer data
+- [ ] Onboarding wizard — post-setup flow: "What kind of site?" (Blog, Corporate, Portfolio, E-commerce) → pre-seed content types, components, and demo content
+
+## High Priority — Quality & Security
+
+- [ ] Frontend test suite — setup Vitest + Vue Test Utils, cover critical composables and components
+- [ ] Backend service unit tests — ContentService, UploadService, WebhookService (currently only controller-level tests)
+- [ ] CSRF protection — add CSRF token middleware for cookie-based auth
+- [ ] Error boundary — add `error.vue` layout to catch unhandled errors gracefully
+- [ ] `process.on('unhandledRejection')` handler in API entrypoint
+- [ ] Rate limit forgot-password endpoint (5 req/hour per email)
+- [ ] CI/CD pipeline — GitHub Actions for lint + test + build on PR
+- [ ] Deployment guide (`DEPLOYMENT.md` — Railway, Vercel, self-hosted examples)
+
+## Medium Priority — Features
+
+- [ ] Multilingual content (per-locale fields, locale switcher in content form, default locale config)
+- [ ] Autosave drafts (periodic save while editing, every 30s if changes detected)
+- [ ] Content calendar view (visual calendar of scheduled/published content)
+- [ ] Per-content-type permissions (scope editor access to specific content types)
+- [ ] Webhook test delivery (`POST /webhooks/:id/test` — verify endpoint before going live)
+- [ ] Webhook delivery retry UI (manual retry button, delivery log detail view)
+- [ ] Dashboard charts (content created over time, storage usage, API usage)
+- [ ] Content type templates (blog, page, product — one-click presets)
+- [ ] Two-factor authentication (TOTP / authenticator app)
+- [ ] User invitation system (invite by email, set initial role)
 
 ## Low Priority
 
@@ -67,22 +104,13 @@
 - [x] Dark mode polish (ensure all custom components respect dark theme)
 - [ ] OpenAPI spec completion (add paths/endpoints, currently only schemas defined)
 - [ ] E2E tests (Playwright or Cypress)
-- [ ] Multilingual content (per-locale fields, locale switcher in content form)
-- [ ] Dashboard charts (content created over time, storage usage, API usage)
-- [ ] Webhook delivery retry UI (manual retry button, delivery log detail view)
-- [ ] Webhook test delivery (`POST /webhooks/:id/test` — verify endpoint before going live)
 - [ ] Pre-signed URLs for S3 direct uploads
-- [ ] GraphQL API endpoint (alternative to REST for frontend devs)
 - [ ] Live preview / iframe preview (preview content as rendered on the frontend before publishing)
-- [ ] Two-factor authentication (TOTP / authenticator app)
-- [ ] User invitation system (invite by email, set initial role)
-- [ ] Content type templates (blog, page, product — one-click presets)
 - [ ] Custom dashboard widgets (configurable per user)
 - [ ] API playground (in-app sandbox to test API calls, beyond Scalar docs)
 - [ ] Batch import from other CMS (WordPress, Strapi JSON export)
-- [ ] Per-content-type permissions (scope editor access to specific content types)
-- [ ] Content calendar view (visual calendar of scheduled/published content)
-- [ ] Autosave drafts (periodic save while editing, every 30s if changes detected)
+- [ ] Accessibility audit — add aria-label/aria-describedby to all custom form components
+- [ ] Database indexes — GIN index on `contents.data` JSONB, trigram index on `media.original_name`
 
 ## Nice to Have
 
@@ -93,3 +121,4 @@
 - [ ] Real-time collaboration (presence indicators, live cursors in rich text)
 - [ ] Admin UI theming (custom logo, colors, branding)
 - [ ] Auto-generated TypeScript types from content models (like Contentful's codegen)
+- [ ] Multi-database support (MySQL, SQLite via Drizzle adapters)
