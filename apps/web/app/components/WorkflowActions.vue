@@ -111,8 +111,8 @@ function onAction(action: Action) {
 
 <template>
   <div class="flex items-center gap-2 flex-wrap">
-    <UBadge :color="(currentConfig.color as any)" variant="subtle" size="md">
-      {{ t(currentConfig.label) }}
+    <UBadge :color="(currentConfig!.color as any)" variant="subtle" size="md">
+      {{ t(currentConfig!.label) }}
     </UBadge>
     <UButton
       v-for="action in actions"

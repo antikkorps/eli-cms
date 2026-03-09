@@ -342,6 +342,38 @@ export class ContentService {
     return map;
   }
 
+  private static async validateUniqueFields(
+    fields: FieldDefinition[],
+    data: Record<string, unknown>,
+    contentTypeId: string,
+    excludeContentId?: string,
+  ) {
+    for (const field of fields) {
+      if (!field.validation?.unique) continue;
+      const value = data[field.name];
+      if (value === undefined || value === null || value === '') continue;
+
+      const conditions = [
+        eq(contents.contentTypeId, contentTypeId),
+        isNull(contents.deletedAt),
+        sql`${contents.data} ->> ${field.name} = ${String(value)}`,
+      ];
+      if (excludeContentId) {
+        conditions.push(sql`${contents.id} != ${excludeContentId}`);
+      }
+
+      const [existing] = await db
+        .select({ id: contents.id })
+        .from(contents)
+        .where(and(...conditions))
+        .limit(1);
+
+      if (existing) {
+        throw new AppError(409, `Field "${field.label}" must be unique: value "${value}" already exists`);
+      }
+    }
+  }
+
   static async findBySlug(slug: string, contentTypeId: string) {
     const [content] = await db
       .select()
@@ -386,6 +418,7 @@ export class ContentService {
 
     await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
     await this.validateAuthorFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
+    await this.validateUniqueFields(contentType.fields, dataResult.data as Record<string, unknown>, input.contentTypeId);
 
     // Auto-generate slug from pattern or first text field if not provided
     let slug = (input as Record<string, unknown>).slug as string | undefined;
@@ -469,6 +502,7 @@ export class ContentService {
       }
       await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
       await this.validateAuthorFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
+      await this.validateUniqueFields(contentType.fields, dataResult.data as Record<string, unknown>, existing.contentTypeId, id);
       input.data = dataResult.data as Record<string, unknown>;
     }
 

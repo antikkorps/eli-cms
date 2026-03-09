@@ -48,7 +48,9 @@
     "components": "Components",
     "structure": "Structure",
     "logout": "Log out",
-    "profile": "Profile"
+    "profile": "Profile",
+    "newContent": "New content",
+    "uploadFile": "Upload file"
   },
   "login": {
     "tagline": "Headless CMS with dynamic content types. Zero migration, infinite flexibility.",
@@ -178,9 +180,18 @@
     "deleteConfirm": "Are you sure you want to delete {name}? All associated content will be lost.",
     "singletonLabel": "Singleton",
     "singletonHint": "Only one entry allowed — ideal for pages like Homepage or Settings",
-    "slugPatternLabel": "Slug pattern",
-    "slugPatternPlaceholder": "e.g. {year}/{month}/{title}",
-    "slugPatternHint": "Tokens: {year}, {month}, {day}, {fieldName}. Leave empty to use the first text field."
+    "slugPatternLabel": "Slug pattern"
+  },
+  "imageCrop": {
+    "title": "Crop image",
+    "free": "Free",
+    "skipCrop": "Upload without cropping",
+    "cropAndUpload": "Crop & upload"
+  },
+  "slugPattern": {
+    "auto": "Automatic (first text field)",
+    "example": "Example:",
+    "custom": "Custom pattern…"
   },
   "components": {
     "title": "Components",
@@ -247,7 +258,18 @@
     "defaultGroup": "General",
     "allowedComponents": "Allowed components",
     "allowedComponentsPlaceholder": "Select components...",
-    "addBlock": "Add {name}"
+    "addBlock": "Add {name}",
+    "validation": "Validation rules",
+    "validationMinLength": "Min length",
+    "validationMaxLength": "Max length",
+    "validationMin": "Min value",
+    "validationMax": "Max value",
+    "validationPattern": "Regex pattern",
+    "validationPatternPlaceholder": "e.g. ^[A-Z].*",
+    "validationPatternMessage": "Pattern error message",
+    "validationPatternMessagePlaceholder": "Custom error when pattern fails",
+    "validationUnique": "Unique",
+    "validationUniqueHint": "No two contents of this type can have the same value"
   },
   "contents": {
     "title": "Contents",
@@ -573,6 +595,10 @@
     "submit": "Send reset link",
     "success": "If an account exists with that email, we've sent a password reset link.",
     "backToLogin": "Back to login"
+  },
+  "editor": {
+    "insertImage": "Insert image",
+    "insertImageDescription": "Select or upload an image to insert into the editor"
   },
   "resetPassword": {
     "title": "Set a new password",

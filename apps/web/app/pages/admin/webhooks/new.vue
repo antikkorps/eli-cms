@@ -94,6 +94,7 @@ async function submit() {
           v-model="form.events"
           :items="eventOptions"
           multiple
+          value-key="value"
           :placeholder="$t('webhooks.eventsPlaceholder')"
           class="w-full"
         />

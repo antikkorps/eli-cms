@@ -48,7 +48,9 @@
     "components": "Composants",
     "structure": "Structure",
     "logout": "Déconnexion",
-    "profile": "Profil"
+    "profile": "Profil",
+    "newContent": "Nouveau contenu",
+    "uploadFile": "Téléverser un fichier"
   },
   "login": {
     "tagline": "CMS headless avec des types de contenu dynamiques. Zéro migration, flexibilité infinie.",
@@ -178,9 +180,18 @@
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ? Tous les contenus associés seront perdus.",
     "singletonLabel": "Singleton",
     "singletonHint": "Une seule entrée autorisée — idéal pour les pages comme Accueil ou Paramètres",
-    "slugPatternLabel": "Modèle de slug",
-    "slugPatternPlaceholder": "ex. {year}/{month}/{title}",
-    "slugPatternHint": "Jetons : {year}, {month}, {day}, {nomDuChamp}. Laisser vide pour utiliser le premier champ texte."
+    "slugPatternLabel": "Modèle de slug"
+  },
+  "imageCrop": {
+    "title": "Recadrer l'image",
+    "free": "Libre",
+    "skipCrop": "Uploader sans recadrer",
+    "cropAndUpload": "Recadrer et uploader"
+  },
+  "slugPattern": {
+    "auto": "Automatique (premier champ texte)",
+    "example": "Exemple :",
+    "custom": "Personnalisé…"
   },
   "components": {
     "title": "Composants",
@@ -247,7 +258,18 @@
     "defaultGroup": "Général",
     "allowedComponents": "Composants autorisés",
     "allowedComponentsPlaceholder": "Sélectionner des composants...",
-    "addBlock": "Ajouter {name}"
+    "addBlock": "Ajouter {name}",
+    "validation": "Règles de validation",
+    "validationMinLength": "Longueur min",
+    "validationMaxLength": "Longueur max",
+    "validationMin": "Valeur min",
+    "validationMax": "Valeur max",
+    "validationPattern": "Regex",
+    "validationPatternPlaceholder": "ex. ^[A-Z].*",
+    "validationPatternMessage": "Message d'erreur regex",
+    "validationPatternMessagePlaceholder": "Message personnalisé en cas d'erreur",
+    "validationUnique": "Unique",
+    "validationUniqueHint": "Deux contenus de ce type ne peuvent pas avoir la même valeur"
   },
   "contents": {
     "title": "Contenus",
@@ -573,6 +595,10 @@
     "submit": "Envoyer le lien",
     "success": "Si un compte existe avec cet e-mail, nous avons envoyé un lien de réinitialisation.",
     "backToLogin": "Retour à la connexion"
+  },
+  "editor": {
+    "insertImage": "Insérer une image",
+    "insertImageDescription": "Sélectionnez ou téléversez une image à insérer dans l'éditeur"
   },
   "resetPassword": {
     "title": "Définir un nouveau mot de passe",

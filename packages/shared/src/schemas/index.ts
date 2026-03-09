@@ -41,6 +41,34 @@ export const updateProfileSchema = z.object({
 // Content Type schemas
 const scalarFieldTypes = ['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media', 'richtext', 'author', 'component'] as const;
 
+const fieldValidationSchema = z.object({
+  minLength: z.number().int().min(0).optional(),
+  maxLength: z.number().int().min(1).optional(),
+  min: z.number().optional(),
+  max: z.number().optional(),
+  pattern: z.string().max(500).optional(),
+  patternMessage: z.string().max(255).optional(),
+  unique: z.boolean().optional(),
+}).refine(
+  (v) => {
+    if (v.minLength !== undefined && v.maxLength !== undefined) return v.minLength <= v.maxLength;
+    return true;
+  },
+  { message: 'minLength must be ≤ maxLength', path: ['minLength'] },
+).refine(
+  (v) => {
+    if (v.min !== undefined && v.max !== undefined) return v.min <= v.max;
+    return true;
+  },
+  { message: 'min must be ≤ max', path: ['min'] },
+).refine(
+  (v) => {
+    if (!v.pattern) return true;
+    try { new RegExp(v.pattern); return true; } catch { return false; }
+  },
+  { message: 'Invalid regex pattern', path: ['pattern'] },
+).optional();
+
 const baseFieldDefinitionSchema = z.object({
   name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
   type: z.enum([...scalarFieldTypes, 'repeatable']),
@@ -52,6 +80,7 @@ const baseFieldDefinitionSchema = z.object({
   defaultValue: z.unknown().optional(),
   group: z.string().max(255).optional(),
   componentSlugs: z.array(z.string().max(255)).optional(),
+  validation: fieldValidationSchema,
   subFields: z.lazy(() =>
     z.array(
       z.object({
@@ -63,6 +92,7 @@ const baseFieldDefinitionSchema = z.object({
         multiple: z.boolean().optional(),
         accept: z.array(z.string()).optional(),
         defaultValue: z.unknown().optional(),
+        validation: fieldValidationSchema,
       }),
     ).min(1),
   ).optional(),
@@ -117,28 +147,52 @@ export function buildContentDataSchema(fields: FieldDefinition[], componentMap?:
   for (const field of fields) {
     let fieldSchema: z.ZodTypeAny;
 
+    const v = field.validation;
+
     switch (field.type) {
-      case 'text':
-        fieldSchema = z.string().max(1000).transform(sanitize);
+      case 'text': {
+        let s = z.string().max(v?.maxLength ? Math.min(v.maxLength, 1000) : 1000);
+        if (v?.minLength) s = s.min(v.minLength);
+        if (v?.pattern) { try { s = s.regex(new RegExp(v.pattern), v.patternMessage || 'Invalid format'); } catch { /* skip invalid */ } }
+        fieldSchema = s.transform(sanitize);
         break;
-      case 'textarea':
-        fieldSchema = z.string().max(50000).transform(sanitize);
+      }
+      case 'textarea': {
+        let s = z.string().max(v?.maxLength ? Math.min(v.maxLength, 50000) : 50000);
+        if (v?.minLength) s = s.min(v.minLength);
+        if (v?.pattern) { try { s = s.regex(new RegExp(v.pattern), v.patternMessage || 'Invalid format'); } catch { /* skip invalid */ } }
+        fieldSchema = s.transform(sanitize);
         break;
-      case 'number':
-        fieldSchema = z.number();
+      }
+      case 'number': {
+        let n = z.number();
+        if (v?.min !== undefined) n = n.min(v.min);
+        if (v?.max !== undefined) n = n.max(v.max);
+        fieldSchema = n;
         break;
+      }
       case 'boolean':
         fieldSchema = z.boolean();
         break;
       case 'date':
         fieldSchema = z.string().datetime({ offset: true }).or(z.string().date());
         break;
-      case 'email':
-        fieldSchema = z.string().email();
+      case 'email': {
+        let s = z.string().email();
+        if (v?.maxLength) s = s.max(v.maxLength);
+        if (v?.minLength) s = s.min(v.minLength);
+        if (v?.pattern) { try { s = s.regex(new RegExp(v.pattern), v.patternMessage || 'Invalid format'); } catch { /* skip invalid */ } }
+        fieldSchema = s;
         break;
-      case 'url':
-        fieldSchema = z.string().url();
+      }
+      case 'url': {
+        let s = z.string().url();
+        if (v?.maxLength) s = s.max(v.maxLength);
+        if (v?.minLength) s = s.min(v.minLength);
+        if (v?.pattern) { try { s = s.regex(new RegExp(v.pattern), v.patternMessage || 'Invalid format'); } catch { /* skip invalid */ } }
+        fieldSchema = s;
         break;
+      }
       case 'select':
         if (field.options && field.options.length > 0) {
           fieldSchema = z.enum(field.options as [string, ...string[]]);
@@ -149,9 +203,12 @@ export function buildContentDataSchema(fields: FieldDefinition[], componentMap?:
       case 'media':
         fieldSchema = field.multiple ? z.array(z.string().uuid()) : z.string().uuid();
         break;
-      case 'richtext':
-        fieldSchema = z.string().max(200000).transform(sanitizeHtml);
+      case 'richtext': {
+        let s = z.string().max(v?.maxLength ? Math.min(v.maxLength, 200000) : 200000);
+        if (v?.minLength) s = s.min(v.minLength);
+        fieldSchema = s.transform(sanitizeHtml);
         break;
+      }
       case 'author':
         fieldSchema = z.string().uuid();
         break;

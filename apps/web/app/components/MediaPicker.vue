@@ -190,12 +190,27 @@ function removeMediaItem(id: string) {
   selectedMediaList.value = selectedMediaList.value.filter((m) => m.id !== id);
 }
 
-async function handleUpload(event: Event) {
+// Image crop before upload
+const cropFile = ref<File | null>(null);
+
+function isImageFile(file: File): boolean {
+  return file.type.startsWith('image/') && !file.type.includes('svg');
+}
+
+function initiateUpload(file: File) {
+  if (isImageFile(file)) {
+    cropFile.value = file;
+  } else {
+    doUpload(file);
+  }
+}
+
+function handleUpload(event: Event) {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
   if (!file) return;
-  await doUpload(file);
   input.value = '';
+  initiateUpload(file);
 }
 
 async function doUpload(file: File) {
@@ -215,6 +230,20 @@ async function doUpload(file: File) {
   }
 }
 
+function onCropConfirm(file: File) {
+  cropFile.value = null;
+  doUpload(file);
+}
+
+function onCropSkip(file: File) {
+  cropFile.value = null;
+  doUpload(file);
+}
+
+function onCropCancel() {
+  cropFile.value = null;
+}
+
 // Drag-and-drop handlers
 function onDragOver(e: DragEvent) {
   e.preventDefault();
@@ -225,12 +254,12 @@ function onDragLeave() {
   dragging.value = false;
 }
 
-async function onDrop(e: DragEvent) {
+function onDrop(e: DragEvent) {
   e.preventDefault();
   dragging.value = false;
   const file = e.dataTransfer?.files?.[0];
   if (!file) return;
-  await doUpload(file);
+  initiateUpload(file);
 }
 
 function isSelected(id: string): boolean {
@@ -458,5 +487,13 @@ onMounted(() => {
         </div>
       </template>
     </UModal>
+
+    <!-- Image crop modal -->
+    <ImageCropModal
+      :file="cropFile"
+      @confirm="onCropConfirm"
+      @skip="onCropSkip"
+      @cancel="onCropCancel"
+    />
   </div>
 </template>

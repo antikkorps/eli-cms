@@ -23,7 +23,7 @@ const isValid = computed(() => {
 onMounted(() => {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  scheduleDate.value = tomorrow.toISOString().split('T')[0];
+  scheduleDate.value = tomorrow.toISOString().split('T')[0]!;
 });
 
 function submit() {

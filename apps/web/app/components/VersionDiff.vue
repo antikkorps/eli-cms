@@ -11,6 +11,7 @@ const { t } = useI18n();
 interface DiffEntry {
   field: string;
   label: string;
+  type: string;
   currentValue: string;
   versionValue: string;
   changed: boolean;
@@ -23,6 +24,7 @@ const diffs = computed<DiffEntry[]>(() => {
     return {
       field: f.name,
       label: f.label,
+      type: f.type,
       currentValue: currentVal,
       versionValue: versionVal,
       changed: currentVal !== versionVal,
@@ -55,16 +57,82 @@ function formatValue(val: unknown): string {
       <div v-if="diff.changed" class="grid grid-cols-2 divide-x">
         <div class="p-3">
           <div class="text-xs text-muted mb-1">{{ t('contents.diffVersion', { n: versionNumber }) }}</div>
-          <pre class="text-sm whitespace-pre-wrap bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 p-2 rounded">{{ diff.versionValue || '(empty)' }}</pre>
+          <!-- Richtext: render as formatted HTML -->
+          <div
+            v-if="diff.type === 'richtext' && diff.versionValue"
+            class="diff-richtext text-sm bg-red-50 dark:bg-red-950/30 p-2 rounded overflow-hidden break-words"
+            v-html="diff.versionValue"
+          />
+          <pre v-else class="text-sm whitespace-pre-wrap break-words bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 p-2 rounded">{{ diff.versionValue || '(empty)' }}</pre>
         </div>
         <div class="p-3">
           <div class="text-xs text-muted mb-1">{{ t('contents.diffCurrent') }}</div>
-          <pre class="text-sm whitespace-pre-wrap bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 p-2 rounded">{{ diff.currentValue || '(empty)' }}</pre>
+          <div
+            v-if="diff.type === 'richtext' && diff.currentValue"
+            class="diff-richtext text-sm bg-green-50 dark:bg-green-950/30 p-2 rounded overflow-hidden break-words"
+            v-html="diff.currentValue"
+          />
+          <pre v-else class="text-sm whitespace-pre-wrap break-words bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 p-2 rounded">{{ diff.currentValue || '(empty)' }}</pre>
         </div>
       </div>
       <div v-else class="p-3 text-sm text-muted">
-        {{ diff.currentValue || '(empty)' }}
+        <div
+          v-if="diff.type === 'richtext' && diff.currentValue"
+          class="diff-richtext"
+          v-html="diff.currentValue"
+        />
+        <template v-else>{{ diff.currentValue || '(empty)' }}</template>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.diff-richtext :deep(p) {
+  margin: 0.25em 0;
+}
+.diff-richtext :deep(h1),
+.diff-richtext :deep(h2),
+.diff-richtext :deep(h3),
+.diff-richtext :deep(h4) {
+  font-weight: 700;
+  margin: 0.5em 0 0.25em;
+}
+.diff-richtext :deep(h1) { font-size: 1.5em; }
+.diff-richtext :deep(h2) { font-size: 1.25em; }
+.diff-richtext :deep(h3) { font-size: 1.1em; }
+.diff-richtext :deep(ul) {
+  list-style: disc;
+  padding-left: 1.5em;
+}
+.diff-richtext :deep(ol) {
+  list-style: decimal;
+  padding-left: 1.5em;
+}
+.diff-richtext :deep(blockquote) {
+  border-left: 3px solid var(--ui-border-accented);
+  padding-left: 0.75em;
+  font-style: italic;
+}
+.diff-richtext :deep(img) {
+  max-width: 100%;
+  border-radius: 0.375rem;
+  margin: 0.5em 0;
+}
+.diff-richtext :deep(a) {
+  text-decoration: underline;
+}
+.diff-richtext :deep(pre) {
+  background: var(--ui-bg-muted);
+  padding: 0.5em;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+  font-size: 0.85em;
+}
+.diff-richtext :deep(code) {
+  font-size: 0.85em;
+  background: var(--ui-bg-muted);
+  padding: 0.1em 0.3em;
+  border-radius: 0.25rem;
+}
+</style>

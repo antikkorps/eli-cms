@@ -42,7 +42,7 @@ const columns = computed(() => [
     accessorKey: 'name',
     header: t('contentTypes.columnName'),
     cell: ({ row }: { row: { original: ContentTypeItem } }) => {
-      const children = [row.original.name];
+      const children: Array<string | ReturnType<typeof h>> = [row.original.name];
       if (row.original.isSingleton) {
         children.push(
           ' ',

@@ -3,7 +3,8 @@ type FetchMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD';
 interface ApiFetchOptions {
   method?: FetchMethod;
   headers?: Record<string, string>;
-  body?: string | Record<string, unknown>;
+  body?: string | Record<string, unknown> | FormData;
+  responseType?: string;
 }
 
 export function useApi() {
@@ -17,7 +18,7 @@ export function useApi() {
     options: ApiFetchOptions = {},
   ): Promise<T> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       ...options.headers,
     };
 
