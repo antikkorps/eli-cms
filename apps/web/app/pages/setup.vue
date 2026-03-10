@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { apiFetch } = useApi();
-const { setTokens } = useAuth();
+const { setTokens, fetchUser } = useAuth();
 const { t } = useI18n();
 
 const loading = ref(false);
@@ -50,7 +50,8 @@ async function handleSubmit() {
     });
 
     setTokens(res.data.tokens.accessToken, res.data.tokens.refreshToken);
-    navigateTo('/admin');
+    await fetchUser();
+    navigateTo('/onboarding');
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : t('setup.errorGeneric');
     error.value = message;

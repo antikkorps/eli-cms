@@ -586,6 +586,14 @@ export const setupSchema = z
     path: ['confirmPassword'],
   });
 
+export const onboardingSchema = z.object({
+  template: z.enum(['blog', 'corporate', 'portfolio', 'ecommerce']),
+  siteName: z.string().max(255).optional(),
+  siteDescription: z.string().max(1000).optional(),
+  demoContent: z.boolean().default(false),
+  extraComponents: z.boolean().default(false),
+});
+
 // ─── Inferred types ─────────────────────────────────────
 export type CreateContentRelationInput = z.infer<typeof createContentRelationSchema>;
 export type ContentRelationListQuery = z.infer<typeof contentRelationListQuerySchema>;
@@ -621,6 +629,7 @@ export type WebhookListQuery = z.infer<typeof webhookListQuerySchema>;
 export type WebhookDeliveryListQuery = z.infer<typeof webhookDeliveryListQuerySchema>;
 
 export type SetupInput = z.infer<typeof setupSchema>;
+export type OnboardingInput = z.infer<typeof onboardingSchema>;
 
 export type AuditLogListQuery = z.infer<typeof auditLogListQuerySchema>;
 export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;
