@@ -29,24 +29,30 @@ async function onAvatarConfirm(style: DiceBearStyle, seed: string) {
   }
 }
 
-// Email form
+// Personal info form
 const email = ref(user.value?.email ?? '');
-const savingEmail = ref(false);
+const firstName = ref(user.value?.firstName ?? '');
+const lastName = ref(user.value?.lastName ?? '');
+const savingInfo = ref(false);
 
-watch(() => user.value?.email, (val) => {
-  if (val) email.value = val;
-});
+watch(() => user.value?.email, (val) => { if (val) email.value = val; });
+watch(() => user.value?.firstName, (val) => { firstName.value = val ?? ''; });
+watch(() => user.value?.lastName, (val) => { lastName.value = val ?? ''; });
 
-async function submitEmail() {
-  savingEmail.value = true;
+async function submitInfo() {
+  savingInfo.value = true;
   try {
-    await updateProfile({ email: email.value });
+    await updateProfile({
+      email: email.value,
+      firstName: firstName.value || null,
+      lastName: lastName.value || null,
+    });
     toast.add({ title: t('common.updated'), color: 'success' });
   } catch (err: unknown) {
     const msg = (err as { data?: { error?: string } })?.data?.error || t('common.error');
     toast.add({ title: msg, color: 'error' });
   } finally {
-    savingEmail.value = false;
+    savingInfo.value = false;
   }
 }
 
@@ -119,7 +125,8 @@ const memberSince = computed(() => {
           </button>
         </div>
         <div class="min-w-0">
-          <p class="font-semibold text-lg truncate">{{ user?.email }}</p>
+          <p v-if="user?.firstName || user?.lastName" class="font-semibold text-lg truncate">{{ [user?.firstName, user?.lastName].filter(Boolean).join(' ') }}</p>
+          <p class="truncate" :class="user?.firstName || user?.lastName ? 'text-sm text-muted' : 'font-semibold text-lg'">{{ user?.email }}</p>
           <p class="text-sm text-muted">{{ user?.role?.name }}</p>
           <p class="text-xs text-muted mt-1">{{ $t('profile.memberSince') }} {{ memberSince }}</p>
         </div>
@@ -131,19 +138,27 @@ const memberSince = computed(() => {
       </template>
     </UCard>
 
-    <!-- Email Card -->
+    <!-- Personal Info Card -->
     <UCard>
       <template #header>
         <div>
-          <h2 class="font-semibold">{{ $t('profile.emailSection') }}</h2>
-          <p class="text-sm text-muted">{{ $t('profile.emailSubtitle') }}</p>
+          <h2 class="font-semibold">{{ $t('profile.infoSection') }}</h2>
+          <p class="text-sm text-muted">{{ $t('profile.infoSubtitle') }}</p>
         </div>
       </template>
-      <form class="space-y-4" @submit.prevent="submitEmail">
+      <form class="space-y-4" @submit.prevent="submitInfo">
+        <div class="grid grid-cols-2 gap-4 max-w-sm">
+          <UFormField :label="$t('users.firstNameLabel')">
+            <UInput v-model="firstName" :placeholder="$t('users.firstNamePlaceholder')" class="w-full" />
+          </UFormField>
+          <UFormField :label="$t('users.lastNameLabel')">
+            <UInput v-model="lastName" :placeholder="$t('users.lastNamePlaceholder')" class="w-full" />
+          </UFormField>
+        </div>
         <UFormField :label="$t('profile.emailLabel')">
           <UInput v-model="email" type="email" required class="w-full max-w-sm" />
         </UFormField>
-        <UButton type="submit" :loading="savingEmail" :disabled="email === user?.email">
+        <UButton type="submit" :loading="savingInfo" :disabled="email === user?.email && firstName === (user?.firstName ?? '') && lastName === (user?.lastName ?? '')">
           {{ $t('common.save') }}
         </UButton>
       </form>

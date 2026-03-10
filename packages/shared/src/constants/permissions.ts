@@ -12,7 +12,9 @@ export const CONTENT_TYPES_READ = 'content-types:read';
 export const CONTENT_TYPES_UPDATE = 'content-types:update';
 export const CONTENT_TYPES_DELETE = 'content-types:delete';
 
+export const USERS_CREATE = 'users:create';
 export const USERS_READ = 'users:read';
+export const USERS_UPDATE = 'users:update';
 export const USERS_DELETE = 'users:delete';
 
 export const UPLOADS_CREATE = 'uploads:create';
@@ -57,7 +59,9 @@ export const ALL_PERMISSIONS = [
   CONTENT_TYPES_READ,
   CONTENT_TYPES_UPDATE,
   CONTENT_TYPES_DELETE,
+  USERS_CREATE,
   USERS_READ,
+  USERS_UPDATE,
   USERS_DELETE,
   UPLOADS_CREATE,
   UPLOADS_READ,

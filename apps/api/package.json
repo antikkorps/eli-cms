@@ -42,6 +42,7 @@
     "@types/koa__cors": "^5.0.1",
     "@types/koa__multer": "^2.0.8",
     "@types/multer": "^2.0.0",
+    "@types/node": "^25.4.0",
     "@types/nodemailer": "^7.0.11",
     "@types/pg": "^8.11.10",
     "@types/pino": "^7.0.5",

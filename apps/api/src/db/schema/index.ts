@@ -18,6 +18,8 @@ export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   password: varchar('password', { length: 255 }).notNull(),
+  firstName: varchar('first_name', { length: 100 }),
+  lastName: varchar('last_name', { length: 100 }),
   roleId: uuid('role_id').notNull().references(() => roles.id),
   avatarStyle: varchar('avatar_style', { length: 50 }),
   avatarSeed: varchar('avatar_seed', { length: 255 }),

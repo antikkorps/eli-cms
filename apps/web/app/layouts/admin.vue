@@ -144,7 +144,7 @@ const navigation = computed(() => {
     });
   }
 
-  if (hasPermission('users:read') || hasPermission('users:delete')) {
+  if (hasPermission('users:read') || hasPermission('users:create') || hasPermission('users:update') || hasPermission('users:delete')) {
     items.push({ label: t('nav.users'), icon: 'i-lucide-users', to: '/admin/users' });
   }
   if (hasPermission('roles:read')) {

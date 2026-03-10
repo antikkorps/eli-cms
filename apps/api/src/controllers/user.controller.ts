@@ -1,5 +1,5 @@
 import type { Context } from 'koa';
-import { userListQuerySchema } from '@eli-cms/shared';
+import { userListQuerySchema, createUserSchema, updateUserSchema } from '@eli-cms/shared';
 import { UserService } from '../services/user.service.js';
 import { AppError } from '../utils/app-error.js';
 import { extractActor } from '../utils/extract-actor.js';
@@ -19,7 +19,31 @@ export class UserController {
     ctx.body = { success: true, data };
   }
 
+  static async create(ctx: Context) {
+    const result = createUserSchema.safeParse(ctx.request.body);
+    if (!result.success) {
+      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+    }
+    const data = await UserService.create(result.data, extractActor(ctx));
+    ctx.status = 201;
+    ctx.body = { success: true, data };
+  }
+
+  static async update(ctx: Context) {
+    const result = updateUserSchema.safeParse(ctx.request.body);
+    if (!result.success) {
+      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+    }
+    const currentUserId = ctx.state.user.userId;
+    const data = await UserService.update(ctx.params.id, result.data, currentUserId, extractActor(ctx));
+    ctx.body = { success: true, data };
+  }
+
   static async delete(ctx: Context) {
+    const currentUserId = ctx.state.user.userId;
+    if (ctx.params.id === currentUserId) {
+      throw new AppError(403, 'You cannot delete your own account');
+    }
     await UserService.delete(ctx.params.id, extractActor(ctx));
     ctx.status = 204;
   }
