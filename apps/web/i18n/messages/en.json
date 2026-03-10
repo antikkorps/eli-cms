@@ -660,6 +660,14 @@
     "createdContents": "{count} demo content(s) created",
     "goToAdmin": "Go to dashboard"
   },
+  "errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundDescription": "The page you're looking for doesn't exist or has been moved.",
+    "genericTitle": "Something went wrong",
+    "genericDescription": "An unexpected error occurred. Please try again.",
+    "backToDashboard": "Dashboard",
+    "backToHome": "Home"
+  },
   "editor": {
     "insertImage": "Insert image",
     "insertImageDescription": "Select or upload an image to insert into the editor"

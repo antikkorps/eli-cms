@@ -660,6 +660,14 @@
     "createdContents": "{count} contenu(s) de démonstration créé(s)",
     "goToAdmin": "Aller au tableau de bord"
   },
+  "errors": {
+    "notFoundTitle": "Page introuvable",
+    "notFoundDescription": "La page que vous cherchez n'existe pas ou a été déplacée.",
+    "genericTitle": "Une erreur est survenue",
+    "genericDescription": "Une erreur inattendue s'est produite. Veuillez réessayer.",
+    "backToDashboard": "Tableau de bord",
+    "backToHome": "Accueil"
+  },
   "editor": {
     "insertImage": "Insérer une image",
     "insertImageDescription": "Sélectionnez ou téléversez une image à insérer dans l'éditeur"
