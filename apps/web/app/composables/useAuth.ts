@@ -7,6 +7,8 @@ interface AuthRole {
 interface AuthUser {
   id: string;
   email: string;
+  firstName: string | null;
+  lastName: string | null;
   roleId: string;
   avatarStyle: string | null;
   avatarSeed: string | null;
@@ -90,7 +92,7 @@ export function useAuth() {
     }
   }
 
-  async function updateProfile(input: { email?: string; avatarStyle?: string | null; avatarSeed?: string | null }) {
+  async function updateProfile(input: { email?: string; firstName?: string | null; lastName?: string | null; avatarStyle?: string | null; avatarSeed?: string | null }) {
     const res = await $fetch<{ success: boolean; data: AuthUser }>(`${baseURL}/auth/profile`, {
       method: 'PUT',
       headers: {

@@ -12,7 +12,9 @@ export const CONTENT_TYPES_READ = 'content-types:read';
 export const CONTENT_TYPES_UPDATE = 'content-types:update';
 export const CONTENT_TYPES_DELETE = 'content-types:delete';
 
+export const USERS_CREATE = 'users:create';
 export const USERS_READ = 'users:read';
+export const USERS_UPDATE = 'users:update';
 export const USERS_DELETE = 'users:delete';
 
 export const UPLOADS_CREATE = 'uploads:create';
@@ -57,7 +59,9 @@ export const ALL_PERMISSIONS = [
   CONTENT_TYPES_READ,
   CONTENT_TYPES_UPDATE,
   CONTENT_TYPES_DELETE,
+  USERS_CREATE,
   USERS_READ,
+  USERS_UPDATE,
   USERS_DELETE,
   UPLOADS_CREATE,
   UPLOADS_READ,
@@ -101,6 +105,26 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, readonly Permission[]> = {
     UPLOADS_CREATE,
     UPLOADS_READ,
     UPLOADS_UPDATE,
+  ],
+  manager: [
+    CONTENT_CREATE,
+    CONTENT_READ,
+    CONTENT_UPDATE,
+    CONTENT_DELETE,
+    CONTENT_PUBLISH,
+    CONTENT_REVIEW,
+    CONTENT_PREVIEW,
+    CONTENT_TYPES_READ,
+    USERS_CREATE,
+    USERS_READ,
+    USERS_UPDATE,
+    ROLES_READ,
+    UPLOADS_CREATE,
+    UPLOADS_READ,
+    UPLOADS_UPDATE,
+    UPLOADS_DELETE,
+    COMPONENTS_READ,
+    AUDIT_LOGS_READ,
   ],
   reviewer: [
     CONTENT_CREATE,

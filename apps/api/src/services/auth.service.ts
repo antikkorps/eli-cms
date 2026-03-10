@@ -40,7 +40,7 @@ export class AuthService {
     const [user] = await db
       .insert(users)
       .values({ email: input.email, password: hashedPassword, roleId })
-      .returning({ id: users.id, email: users.email, roleId: users.roleId, createdAt: users.createdAt });
+      .returning({ id: users.id, email: users.email, firstName: users.firstName, lastName: users.lastName, roleId: users.roleId, createdAt: users.createdAt });
 
     const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : { actorId: user.id, actorType: 'user' as const };
     eventBus.emit('auth.register', { userId: user.id, email: user.email, ...actorData });
@@ -228,6 +228,12 @@ export class AuthService {
       updates.email = input.email;
     }
 
+    if (input.firstName !== undefined) {
+      updates.firstName = input.firstName;
+    }
+    if (input.lastName !== undefined) {
+      updates.lastName = input.lastName;
+    }
     if (input.avatarStyle !== undefined) {
       updates.avatarStyle = input.avatarStyle;
     }
@@ -250,6 +256,8 @@ export class AuthService {
       .select({
         id: users.id,
         email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
         roleId: users.roleId,
         avatarStyle: users.avatarStyle,
         avatarSeed: users.avatarSeed,
@@ -269,6 +277,8 @@ export class AuthService {
     return {
       id: row.id,
       email: row.email,
+      firstName: row.firstName,
+      lastName: row.lastName,
       roleId: row.roleId,
       avatarStyle: row.avatarStyle,
       avatarSeed: row.avatarSeed,
@@ -283,6 +293,8 @@ export class AuthService {
       .select({
         id: users.id,
         email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
         roleId: users.roleId,
         avatarStyle: users.avatarStyle,
         avatarSeed: users.avatarSeed,
@@ -303,6 +315,8 @@ export class AuthService {
     return {
       id: row.id,
       email: row.email,
+      firstName: row.firstName,
+      lastName: row.lastName,
       roleId: row.roleId,
       avatarStyle: row.avatarStyle,
       avatarSeed: row.avatarSeed,

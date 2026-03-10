@@ -34,6 +34,8 @@ export const changePasswordSchema = z.object({
 
 export const updateProfileSchema = z.object({
   email: z.string().email().optional(),
+  firstName: z.string().max(100).nullable().optional(),
+  lastName: z.string().max(100).nullable().optional(),
   avatarStyle: z.enum(DICEBEAR_STYLES).nullable().optional(),
   avatarSeed: z.string().max(255).nullable().optional(),
 });
@@ -347,6 +349,22 @@ export const userListQuerySchema = paginationSchema.extend({
   search: z.string().max(200).optional(),
 });
 
+export const createUserSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  firstName: z.string().max(100).optional(),
+  lastName: z.string().max(100).optional(),
+  roleId: z.string().uuid(),
+});
+
+export const updateUserSchema = z.object({
+  email: z.string().email().optional(),
+  firstName: z.string().max(100).nullable().optional(),
+  lastName: z.string().max(100).nullable().optional(),
+  roleId: z.string().uuid().optional(),
+  password: z.string().min(6).optional(),
+});
+
 // ─── Storage / Upload schemas ───────────────────────────
 export const s3ConfigSchema = z.object({
   bucket: z.string().min(1),
@@ -568,6 +586,14 @@ export const setupSchema = z
     path: ['confirmPassword'],
   });
 
+export const onboardingSchema = z.object({
+  template: z.enum(['blog', 'corporate', 'portfolio', 'ecommerce']),
+  siteName: z.string().max(255).optional(),
+  siteDescription: z.string().max(1000).optional(),
+  demoContent: z.boolean().default(false),
+  extraComponents: z.boolean().default(false),
+});
+
 // ─── Inferred types ─────────────────────────────────────
 export type CreateContentRelationInput = z.infer<typeof createContentRelationSchema>;
 export type ContentRelationListQuery = z.infer<typeof contentRelationListQuerySchema>;
@@ -587,6 +613,8 @@ export type LogoutInput = z.infer<typeof logoutSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 export type UserListQuery = z.infer<typeof userListQuerySchema>;
+export type CreateUserInput = z.infer<typeof createUserSchema>;
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type S3ConfigInput = z.infer<typeof s3ConfigSchema>;
 export type StorageConfigInput = z.infer<typeof storageConfigSchema>;
 export type UploadListQuery = z.infer<typeof uploadListQuerySchema>;
@@ -601,6 +629,7 @@ export type WebhookListQuery = z.infer<typeof webhookListQuerySchema>;
 export type WebhookDeliveryListQuery = z.infer<typeof webhookDeliveryListQuerySchema>;
 
 export type SetupInput = z.infer<typeof setupSchema>;
+export type OnboardingInput = z.infer<typeof onboardingSchema>;
 
 export type AuditLogListQuery = z.infer<typeof auditLogListQuerySchema>;
 export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;

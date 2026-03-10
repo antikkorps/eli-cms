@@ -1,5 +1,5 @@
 import type { Context } from 'koa';
-import { setupSchema } from '@eli-cms/shared';
+import { setupSchema, onboardingSchema } from '@eli-cms/shared';
 import { SetupService } from '../services/setup.service.js';
 import { AppError } from '../utils/app-error.js';
 
@@ -22,5 +22,20 @@ export class SetupController {
 
     ctx.status = 201;
     ctx.body = { success: true, data: { user, tokens } };
+  }
+
+  static async onboarding(ctx: Context) {
+    const result = onboardingSchema.safeParse(ctx.request.body);
+    if (!result.success) {
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
+    }
+
+    const data = await SetupService.onboarding(result.data);
+    ctx.body = { success: true, data };
+  }
+
+  static async resetOnboarding(ctx: Context) {
+    await SetupService.resetOnboarding();
+    ctx.body = { success: true };
   }
 }

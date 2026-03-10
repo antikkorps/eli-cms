@@ -14,6 +14,8 @@ const toast = useToast();
 interface UserItem {
   id: string;
   email: string;
+  firstName: string | null;
+  lastName: string | null;
   roleId: string;
   roleName: string;
   roleSlug: string;
@@ -46,7 +48,9 @@ const {
   filters: { search, roleId: roleFilter },
 });
 
-const canManage = computed(() => hasPermission('users:delete'));
+const canCreate = computed(() => hasPermission('users:create'));
+const canEdit = computed(() => hasPermission('users:update'));
+const canDelete = computed(() => hasPermission('users:delete'));
 
 async function fetchRoles() {
   try {
@@ -69,11 +73,29 @@ function tryDelete(user: UserItem) {
   confirmDelete(user);
 }
 
+function displayName(user: UserItem) {
+  const parts = [user.firstName, user.lastName].filter(Boolean);
+  return parts.length > 0 ? parts.join(' ') : null;
+}
+
 const UBadge = resolveComponent('UBadge');
 const UButton = resolveComponent('UButton');
 
 const columns = computed(() => [
-  { accessorKey: 'email', header: t('users.columnEmail') },
+  {
+    accessorKey: 'email',
+    header: t('users.columnEmail'),
+    cell: ({ row }: { row: { original: UserItem } }) => {
+      const name = displayName(row.original);
+      if (name) {
+        return h('div', {}, [
+          h('div', { class: 'font-medium' }, name),
+          h('div', { class: 'text-sm text-muted' }, row.original.email),
+        ]);
+      }
+      return row.original.email;
+    },
+  },
   {
     accessorKey: 'roleName',
     header: t('users.columnRole'),
@@ -92,16 +114,31 @@ const columns = computed(() => [
     accessorKey: 'actions',
     header: '',
     cell: ({ row }: { row: { original: UserItem } }) => {
-      if (!canManage.value) return '';
-      return h('div', { class: 'flex gap-1 justify-end' }, [
-        h(UButton as ReturnType<typeof resolveComponent>, {
-          icon: 'i-lucide-trash-2',
-          variant: 'ghost',
-          color: 'error',
-          size: 'sm',
-          onClick: () => tryDelete(row.original),
-        }),
-      ]);
+      const buttons = [];
+      if (canEdit.value) {
+        buttons.push(
+          h(UButton as ReturnType<typeof resolveComponent>, {
+            icon: 'i-lucide-pencil',
+            variant: 'ghost',
+            color: 'neutral',
+            size: 'sm',
+            to: `/admin/users/${row.original.id}`,
+          }),
+        );
+      }
+      if (canDelete.value) {
+        buttons.push(
+          h(UButton as ReturnType<typeof resolveComponent>, {
+            icon: 'i-lucide-trash-2',
+            variant: 'ghost',
+            color: 'error',
+            size: 'sm',
+            onClick: () => tryDelete(row.original),
+          }),
+        );
+      }
+      if (buttons.length === 0) return '';
+      return h('div', { class: 'flex gap-1 justify-end' }, buttons);
     },
   },
 ]);
@@ -111,9 +148,14 @@ onMounted(fetchRoles);
 
 <template>
   <div class="p-6 space-y-6">
-    <div>
-      <h1 class="text-2xl font-bold">{{ $t('users.title') }}</h1>
-      <p class="text-sm text-muted mt-1">{{ $t('users.subtitle') }}</p>
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">{{ $t('users.title') }}</h1>
+        <p class="text-sm text-muted mt-1">{{ $t('users.subtitle') }}</p>
+      </div>
+      <UButton v-if="canCreate" to="/admin/users/new" icon="i-lucide-plus">
+        {{ $t('users.create') }}
+      </UButton>
     </div>
 
     <div class="flex flex-wrap gap-3">

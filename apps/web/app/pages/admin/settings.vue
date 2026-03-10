@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { resetSetupCheck } from '~/middleware/setup.global';
+
 definePageMeta({
   layout: 'admin',
   middleware: ['auth'],
@@ -8,10 +10,13 @@ const { apiFetch } = useApi();
 const { t } = useI18n();
 const toast = useToast();
 
+const { hasPermission } = useAuth();
+
 const activeTab = ref('storage');
 const tabs = computed(() => [
   { label: t('settings.storageTitle'), value: 'storage', icon: 'i-lucide-hard-drive' },
   { label: t('settings.smtpTitle'), value: 'smtp', icon: 'i-lucide-mail' },
+  ...(hasPermission('settings:update') ? [{ label: t('settings.onboardingTitle'), value: 'onboarding', icon: 'i-lucide-wand-sparkles' }] : []),
 ]);
 
 // ─── Storage ────────────────────────────────────────────
@@ -186,6 +191,23 @@ async function sendTestEmail() {
   }
 }
 
+// ─── Onboarding ────────────────────────────────────────
+const resettingOnboarding = ref(false);
+
+async function resetOnboarding() {
+  resettingOnboarding.value = true;
+  try {
+    await apiFetch('/setup/onboarding', { method: 'DELETE' });
+    resetSetupCheck();
+    toast.add({ title: t('settings.onboardingReset'), color: 'success' });
+    navigateTo('/onboarding');
+  } catch {
+    toast.add({ title: t('common.error'), color: 'error' });
+  } finally {
+    resettingOnboarding.value = false;
+  }
+}
+
 onMounted(() => {
   fetchSettings();
   fetchSmtp();
@@ -337,6 +359,14 @@ onMounted(() => {
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Onboarding tab -->
+    <div v-if="activeTab === 'onboarding'" class="space-y-4">
+      <p class="text-sm text-muted">{{ $t('settings.onboardingDescription') }}</p>
+      <UButton variant="soft" icon="i-lucide-rotate-ccw" :loading="resettingOnboarding" @click="resetOnboarding">
+        {{ $t('settings.onboardingRelaunch') }}
+      </UButton>
     </div>
   </div>
 </template>

@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { db, pool } from './index.js';
-import { users, roles, components } from './schema/index.js';
+import { users, roles, components, contentTypes } from './schema/index.js';
 import { eq } from 'drizzle-orm';
 import { DEFAULT_ROLE_PERMISSIONS } from '@eli-cms/shared';
 import type { FieldDefinition } from '@eli-cms/shared';
@@ -11,6 +11,7 @@ async function seed() {
   // 1. Ensure default roles exist
   const roleMetadata: Record<string, { name: string; description: string }> = {
     'super-admin': { name: 'Super Admin', description: 'Full access to all features' },
+    manager: { name: 'Manager', description: 'Can manage users, content, and uploads — ideal for team leads' },
     editor: { name: 'Editor', description: 'Can manage content and uploads, publish approved content' },
     reviewer: { name: 'Reviewer', description: 'Can manage content and review submissions' },
   };
@@ -94,6 +95,30 @@ async function seed() {
         { name: 'button_url', type: 'url', required: false, label: 'Button URL' },
       ],
     },
+    {
+      slug: 'company-identity',
+      name: 'Company Identity',
+      icon: 'i-lucide-building-2',
+      fields: [
+        { name: 'company_name', type: 'text', required: true, label: 'Company Name' },
+        { name: 'logo', type: 'media', required: false, label: 'Logo', accept: ['image'] },
+        { name: 'tagline', type: 'text', required: false, label: 'Tagline' },
+        { name: 'description', type: 'textarea', required: false, label: 'Description' },
+        { name: 'email', type: 'email', required: false, label: 'Contact Email' },
+        { name: 'phone', type: 'text', required: false, label: 'Phone' },
+        { name: 'address', type: 'textarea', required: false, label: 'Address' },
+        {
+          name: 'social_links',
+          type: 'repeatable',
+          required: false,
+          label: 'Social Links',
+          subFields: [
+            { name: 'platform', type: 'select', required: true, label: 'Platform', options: ['Facebook', 'Twitter / X', 'Instagram', 'LinkedIn', 'YouTube', 'TikTok', 'GitHub', 'Other'] },
+            { name: 'url', type: 'url', required: true, label: 'URL' },
+          ],
+        },
+      ],
+    },
   ];
 
   for (const comp of defaultComponents) {
@@ -103,6 +128,32 @@ async function seed() {
       console.log(`Component created: ${comp.name}`);
     } else {
       console.log(`Component "${comp.slug}" already exists, skipping.`);
+    }
+  }
+
+  // 4. Ensure default content types exist
+  const defaultContentTypes: Array<{ slug: string; name: string; isSingleton: boolean; fields: FieldDefinition[] }> = [
+    {
+      slug: 'site-settings',
+      name: 'Site Settings',
+      isSingleton: true,
+      fields: [
+        { name: 'site_name', type: 'text', required: true, label: 'Site Name', defaultValue: 'My Website' },
+        { name: 'site_description', type: 'textarea', required: false, label: 'Site Description' },
+        { name: 'favicon', type: 'media', required: false, label: 'Favicon', accept: ['image'] },
+        { name: 'company', type: 'component', required: false, label: 'Company Identity', componentSlugs: ['company-identity'] },
+        { name: 'seo', type: 'component', required: false, label: 'Default SEO', componentSlugs: ['seo'] },
+      ],
+    },
+  ];
+
+  for (const ct of defaultContentTypes) {
+    const existing = await db.select().from(contentTypes).where(eq(contentTypes.slug, ct.slug)).limit(1);
+    if (existing.length === 0) {
+      await db.insert(contentTypes).values(ct);
+      console.log(`Content type created: ${ct.name}`);
+    } else {
+      console.log(`Content type "${ct.slug}" already exists, skipping.`);
     }
   }
 

@@ -65,20 +65,20 @@
 
 ## High Priority — User Management & Onboarding
 
-- [ ] Full user CRUD — `POST /users` (create), `PUT /users/:id` (edit email/role), `users:create` + `users:update` permissions
-- [ ] Server-side self-delete/self-demote guard (prevent super-admin from deleting or downgrading themselves)
-- [ ] Admin user management UI (create user form, inline role editing, improved users page)
-- [ ] New "manager" system role — can manage users + roles:read, content + uploads access, ideal for team leads
-- [ ] Seed "Company Identity" component (company_name, logo, tagline, description, email, phone, address, social_links repeatable)
-- [ ] Seed "Site Settings" singleton content type using Company Identity component — ready-to-use header/footer data
-- [ ] Onboarding wizard — post-setup flow: "What kind of site?" (Blog, Corporate, Portfolio, E-commerce) → pre-seed content types, components, and demo content
+- [x] Full user CRUD — `POST /users` (create), `PUT /users/:id` (edit email/role/name), `users:create` + `users:update` permissions, firstName/lastName fields
+- [x] Server-side self-delete/self-demote guard (prevent deleting own account, prevent changing own role)
+- [x] Admin user management UI (create/edit user pages, role assignment, optional password reset, name display in list/sidebar/profile)
+- [x] New "manager" system role — users CRUD, content, uploads, roles:read, audit logs
+- [x] Seed "Company Identity" component (company_name, logo, tagline, description, email, phone, address, social_links repeatable)
+- [x] Seed "Site Settings" singleton content type using Company Identity component — ready-to-use header/footer data
+- [x] Onboarding wizard — 4-step post-setup flow (template picker, site info, options, summary), 4 templates (blog/corporate/portfolio/e-commerce), demo content, extra components (testimonial/FAQ/feature grid/gallery), relaunch from settings
 
 ## High Priority — Quality & Security
 
 - [ ] Frontend test suite — setup Vitest + Vue Test Utils, cover critical composables and components
 - [ ] Backend service unit tests — ContentService, UploadService, WebhookService (currently only controller-level tests)
 - [ ] CSRF protection — add CSRF token middleware for cookie-based auth
-- [ ] Error boundary — add `error.vue` layout to catch unhandled errors gracefully
+- [x] Error boundary — `error.vue` with custom 404, catch-all admin route, dark mode + i18n support
 - [ ] `process.on('unhandledRejection')` handler in API entrypoint
 - [ ] Rate limit forgot-password endpoint (5 req/hour per email)
 - [ ] CI/CD pipeline — GitHub Actions for lint + test + build on PR
