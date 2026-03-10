@@ -78,7 +78,7 @@
 - [ ] Frontend test suite — setup Vitest + Vue Test Utils, cover critical composables and components
 - [ ] Backend service unit tests — ContentService, UploadService, WebhookService (currently only controller-level tests)
 - [ ] CSRF protection — add CSRF token middleware for cookie-based auth
-- [ ] Error boundary — add `error.vue` layout to catch unhandled errors gracefully
+- [x] Error boundary — `error.vue` with custom 404, catch-all admin route, dark mode + i18n support
 - [ ] `process.on('unhandledRejection')` handler in API entrypoint
 - [ ] Rate limit forgot-password endpoint (5 req/hour per email)
 - [ ] CI/CD pipeline — GitHub Actions for lint + test + build on PR
