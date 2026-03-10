@@ -65,9 +65,9 @@
 
 ## High Priority — User Management & Onboarding
 
-- [ ] Full user CRUD — `POST /users` (create), `PUT /users/:id` (edit email/role), `users:create` + `users:update` permissions
-- [ ] Server-side self-delete/self-demote guard (prevent super-admin from deleting or downgrading themselves)
-- [ ] Admin user management UI (create user form, inline role editing, improved users page)
+- [x] Full user CRUD — `POST /users` (create), `PUT /users/:id` (edit email/role/name), `users:create` + `users:update` permissions, firstName/lastName fields
+- [x] Server-side self-delete/self-demote guard (prevent deleting own account, prevent changing own role)
+- [x] Admin user management UI (create/edit user pages, role assignment, optional password reset, name display in list/sidebar/profile)
 - [ ] New "manager" system role — can manage users + roles:read, content + uploads access, ideal for team leads
 - [ ] Seed "Company Identity" component (company_name, logo, tagline, description, email, phone, address, social_links repeatable)
 - [ ] Seed "Site Settings" singleton content type using Company Identity component — ready-to-use header/footer data
