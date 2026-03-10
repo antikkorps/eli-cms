@@ -68,10 +68,10 @@
 - [x] Full user CRUD — `POST /users` (create), `PUT /users/:id` (edit email/role/name), `users:create` + `users:update` permissions, firstName/lastName fields
 - [x] Server-side self-delete/self-demote guard (prevent deleting own account, prevent changing own role)
 - [x] Admin user management UI (create/edit user pages, role assignment, optional password reset, name display in list/sidebar/profile)
-- [ ] New "manager" system role — can manage users + roles:read, content + uploads access, ideal for team leads
-- [ ] Seed "Company Identity" component (company_name, logo, tagline, description, email, phone, address, social_links repeatable)
-- [ ] Seed "Site Settings" singleton content type using Company Identity component — ready-to-use header/footer data
-- [ ] Onboarding wizard — post-setup flow: "What kind of site?" (Blog, Corporate, Portfolio, E-commerce) → pre-seed content types, components, and demo content
+- [x] New "manager" system role — users CRUD, content, uploads, roles:read, audit logs
+- [x] Seed "Company Identity" component (company_name, logo, tagline, description, email, phone, address, social_links repeatable)
+- [x] Seed "Site Settings" singleton content type using Company Identity component — ready-to-use header/footer data
+- [x] Onboarding wizard — 4-step post-setup flow (template picker, site info, options, summary), 4 templates (blog/corporate/portfolio/e-commerce), demo content, extra components (testimonial/FAQ/feature grid/gallery), relaunch from settings
 
 ## High Priority — Quality & Security
 
