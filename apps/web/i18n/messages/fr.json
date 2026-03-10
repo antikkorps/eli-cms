@@ -177,7 +177,11 @@
     "smtpTestRecipient": "E-mail du destinataire",
     "smtpTestSend": "Envoyer un e-mail test",
     "smtpTestSuccess": "E-mail test envoyé avec succès",
-    "smtpNotConfigured": "Configurez d'abord les paramètres SMTP"
+    "smtpNotConfigured": "Configurez d'abord les paramètres SMTP",
+    "onboardingTitle": "Onboarding",
+    "onboardingDescription": "Relancez l'assistant de configuration pour ajouter de nouveaux types de contenu et composants. Les données existantes ne seront pas supprimées.",
+    "onboardingRelaunch": "Relancer l'assistant",
+    "onboardingReset": "Onboarding réinitialisé — redirection vers l'assistant"
   },
   "contentTypes": {
     "title": "Types de contenu",

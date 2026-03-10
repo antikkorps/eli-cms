@@ -78,6 +78,10 @@ export class SetupService {
     return { user, tokens };
   }
 
+  static async resetOnboarding(): Promise<void> {
+    await db.delete(settings).where(eq(settings.key, ONBOARDING_KEY));
+  }
+
   static async onboarding(input: OnboardingInput): Promise<{ contentTypesCreated: string[]; contentsCreated: number }> {
     const templates = this.getTemplates();
     const template = templates[input.template];

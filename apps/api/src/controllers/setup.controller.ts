@@ -33,4 +33,9 @@ export class SetupController {
     const data = await SetupService.onboarding(result.data);
     ctx.body = { success: true, data };
   }
+
+  static async resetOnboarding(ctx: Context) {
+    await SetupService.resetOnboarding();
+    ctx.body = { success: true };
+  }
 }

@@ -177,7 +177,11 @@
     "smtpTestRecipient": "Recipient email",
     "smtpTestSend": "Send test email",
     "smtpTestSuccess": "Test email sent successfully",
-    "smtpNotConfigured": "Configure SMTP settings first"
+    "smtpNotConfigured": "Configure SMTP settings first",
+    "onboardingTitle": "Onboarding",
+    "onboardingDescription": "Re-run the onboarding wizard to add new content types and components. Existing data won't be deleted.",
+    "onboardingRelaunch": "Relaunch onboarding wizard",
+    "onboardingReset": "Onboarding reset — redirecting to wizard"
   },
   "contentTypes": {
     "title": "Content Types",
