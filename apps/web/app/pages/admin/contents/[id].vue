@@ -188,6 +188,8 @@ async function handleTransition(newStatus: string) {
       body: { status: newStatus },
     });
     form.status = newStatus;
+    onSaveSuccess();
+    await acquireLock(route.params.id as string);
     toast.add({ title: t('common.updated'), color: 'success' });
   } catch {
     toast.add({ title: t('common.error'), color: 'error' });
@@ -204,6 +206,8 @@ async function handleSchedule(date: string) {
       body: { status: 'scheduled', publishedAt: date },
     });
     form.status = 'scheduled';
+    onSaveSuccess();
+    await acquireLock(route.params.id as string);
     toast.add({ title: t('common.updated'), color: 'success' });
   } catch {
     toast.add({ title: t('common.error'), color: 'error' });
