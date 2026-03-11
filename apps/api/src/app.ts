@@ -22,6 +22,7 @@ import { auditLogsRouter } from './routes/audit-logs.js';
 import { apiKeysRouter } from './routes/api-keys.js';
 import { mediaFoldersRouter } from './routes/media-folders.js';
 import { componentsRouter } from './routes/components.js';
+import { csrf } from './middleware/csrf.js';
 
 export function createApp() {
   const app = new Koa();
@@ -42,11 +43,12 @@ export function createApp() {
       },
       credentials: true,
       allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-      allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+      allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-CSRF-Token'],
       maxAge: 86400,
     }),
   );
   app.use(bodyParser({ jsonLimit: '1mb' }));
+  app.use(csrf);
 
   // Health check
   app.use(async (ctx, next) => {

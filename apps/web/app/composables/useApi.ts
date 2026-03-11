@@ -7,6 +7,12 @@ interface ApiFetchOptions {
   responseType?: string;
 }
 
+function getCsrfToken(): string | undefined {
+  if (import.meta.server) return undefined;
+  const match = document.cookie.match(/(?:^|;\s*)eli_csrf=([^;]+)/);
+  return match?.[1];
+}
+
 export function useApi() {
   const config = useRuntimeConfig();
   const baseURL = config.public.apiBase as string;
@@ -24,6 +30,11 @@ export function useApi() {
 
     if (tokenCookie.value) {
       headers['Authorization'] = `Bearer ${tokenCookie.value}`;
+    }
+
+    const csrf = getCsrfToken();
+    if (csrf && options.method && options.method !== 'GET') {
+      headers['X-CSRF-Token'] = csrf;
     }
 
     const fetchOptions = {
@@ -71,6 +82,10 @@ export function useApi() {
     const headers: Record<string, string> = {};
     if (tokenCookie.value) {
       headers['Authorization'] = `Bearer ${tokenCookie.value}`;
+    }
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      headers['X-CSRF-Token'] = csrfToken;
     }
 
     return await $fetch<T>(`${baseURL}${path}`, {

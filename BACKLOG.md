@@ -77,10 +77,11 @@
 
 - [ ] Frontend test suite — setup Vitest + Vue Test Utils, cover critical composables and components
 - [ ] Backend service unit tests — ContentService, UploadService, WebhookService (currently only controller-level tests)
-- [ ] CSRF protection — add CSRF token middleware for cookie-based auth
+- [x] CSRF protection — double-submit cookie pattern for cookie-based auth, `X-CSRF-Token` header
 - [x] Error boundary — `error.vue` with custom 404, catch-all admin route, dark mode + i18n support
-- [ ] `process.on('unhandledRejection')` handler in API entrypoint
-- [ ] Rate limit forgot-password endpoint (5 req/hour per email)
+- [x] `process.on('unhandledRejection')` + `uncaughtException` handlers in API entrypoint — graceful shutdown with pino fatal logging
+- [x] Rate limit forgot-password endpoint (5 req/hour per IP) — dedicated `forgotPasswordRateLimit`
+- [x] CORS default hardened — changed from `*` to `http://localhost:3000`
 - [ ] CI/CD pipeline — GitHub Actions for lint + test + build on PR
 - [ ] Deployment guide (`DEPLOYMENT.md` — Railway, Vercel, self-hosted examples)
 
