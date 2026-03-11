@@ -51,6 +51,21 @@ export const serveRateLimit = isTest
       throw: false,
     });
 
+const forgotPwDb = new Map();
+
+/** 5 requests per hour per IP — for forgot-password */
+export const forgotPasswordRateLimit = isTest
+  ? noop
+  : ratelimit({
+      driver: 'memory',
+      db: forgotPwDb,
+      duration: 60 * 60 * 1000,
+      max: 5,
+      id: (ctx) => ctx.ip,
+      errorMessage: 'Too many password reset requests, please try again later',
+      throw: false,
+    });
+
 /** 100 requests per minute per IP — for public API */
 export const publicRateLimit = isTest
   ? noop
