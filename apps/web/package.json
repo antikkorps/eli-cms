@@ -7,7 +7,9 @@
     "dev": "nuxt dev --port 3000",
     "build": "nuxt build",
     "generate": "nuxt generate",
-    "preview": "nuxt preview"
+    "preview": "nuxt preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@eli-cms/shared": "workspace:*",
@@ -22,6 +24,13 @@
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.94",
-    "typescript": "^5.7.0"
+    "@nuxt/test-utils": "^4.0.0",
+    "@pinia/testing": "^1.0.3",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "@vue/test-utils": "^2.4.6",
+    "happy-dom": "^20.8.3",
+    "typescript": "^5.7.0",
+    "vitest": "^4.0.18",
+    "vue": "^3.5.30"
   }
 }
