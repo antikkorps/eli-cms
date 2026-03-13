@@ -9,3 +9,5 @@ drizzle/meta/
 apps/api/uploads/*
 apps/api/uploads/.cache/
 !apps/api/uploads/.gitkeep
+.gotk.toml
+.mcp.json

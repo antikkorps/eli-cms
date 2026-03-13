@@ -85,6 +85,36 @@
 - [ ] CI/CD pipeline — GitHub Actions for lint + test + build on PR
 - [ ] Deployment guide (`DEPLOYMENT.md` — Railway, Vercel, self-hosted examples)
 
+## High Priority — Audit Fixes (March 2026)
+
+- [ ] Fix XSS in `VersionDiff.vue` — sanitize HTML with DOMPurify before `v-html` rendering (lines 64, 73, 82)
+- [ ] Batch media/author validation — replace N+1 `findById()` loops with `inArray()` batch query (`content.service.ts:268-275, 313-319`)
+- [ ] Fix `User` type — add `firstName`, `lastName` to shared `User` interface (`packages/shared/src/types/index.ts`)
+- [ ] Add missing permission constants — `SETTINGS_MANAGE`, `media-folders:*` operations (`packages/shared/src/constants/permissions.ts`)
+- [ ] Fix TOCTOU race condition — move `validateUniqueFields` inside transaction or add DB-level unique constraint (`content.service.ts:345-375`)
+- [ ] Dedicated API key salt — stop reusing `JWT_SECRET` as scrypt salt, add `API_KEY_SALT` env var (`api-key.service.ts:15`)
+
+## Medium Priority — Audit Fixes (March 2026)
+
+- [ ] Fix debounce memory leaks — add `onBeforeUnmount` cleanup in `AuthorPicker`, `ContentPicker`, `MediaPicker`, `EditorImageButton`
+- [ ] Invalidate setup middleware cache — call `invalidateSetupCheck()` after setup completion (`setup.global.ts:10-23`)
+- [ ] Replace `innerHTML` in `stripHtml()` with `DOMParser` (`contents/index.vue:139`)
+- [ ] Add composite DB index `(content_type_id, status, deleted_at)` on contents table
+- [ ] Escape LIKE wildcards in JSONB filter or document as intended (`content.service.ts:184`)
+- [ ] Increase `JWT_SECRET` min length from 10 to 32 (`environment.ts:6`)
+- [ ] Enforce `editedBy` NOT NULL on content creation (`schema/index.ts`)
+- [ ] Add vitest coverage reporting config (`vitest.config.ts` in api + web)
+- [ ] Document all env vars in `.env.example` (`FRONTEND_URL`, SMTP vars, `NODE_ENV`, `CORS_ORIGINS`)
+- [ ] Add ReDoS protection — limit regex pattern complexity in field validation schemas
+- [ ] Cache component definitions within request scope during content create/update
+
+## Medium Priority — DevOps Audit Fixes
+
+- [ ] Docker prod: add API healthcheck (`docker-compose.prod.yml`)
+- [ ] Docker prod: add web container for unified deployment (`docker-compose.prod.yml`)
+- [ ] Make `entrypoint.sh` resilient — exit on migration failure, don't seed if migrate fails
+- [ ] Remove unused `apps/web/package.json` copy from API Dockerfile
+
 ## Medium Priority — Features
 
 - [ ] Multilingual content (per-locale fields, locale switcher in content form, default locale config)
@@ -110,8 +140,8 @@
 - [ ] Custom dashboard widgets (configurable per user)
 - [ ] API playground (in-app sandbox to test API calls, beyond Scalar docs)
 - [ ] Batch import from other CMS (WordPress, Strapi JSON export)
-- [ ] Accessibility audit — add aria-label/aria-describedby to all custom form components
-- [ ] Database indexes — GIN index on `contents.data` JSONB, trigram index on `media.original_name`
+- [ ] Accessibility audit — add aria-label/aria-describedby to all custom form components, fix color contrast on search highlights, keyboard nav for modals/drag-drop
+- [ ] Database indexes — GIN index on `contents.data` JSONB, trigram index on `media.original_name`, composite index `(content_type_id, status, deleted_at)`
 
 ## Nice to Have
 
