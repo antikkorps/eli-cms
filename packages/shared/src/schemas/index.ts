@@ -486,9 +486,44 @@ const webhookEventEnum = z.enum([
   'media.deleted',
 ]);
 
+/** Block SSRF: reject private IPs, localhost, and cloud metadata endpoints. */
+function isSafeWebhookUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.toLowerCase();
+
+    // Block localhost variants
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]') return false;
+
+    // Block cloud metadata endpoints
+    if (hostname === '169.254.169.254' || hostname === 'metadata.google.internal') return false;
+
+    // Block private IP ranges (10.x, 172.16-31.x, 192.168.x)
+    const ipMatch = hostname.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+    if (ipMatch) {
+      const [, a, b] = ipMatch.map(Number);
+      if (a === 10) return false;
+      if (a === 172 && b >= 16 && b <= 31) return false;
+      if (a === 192 && b === 168) return false;
+      if (a === 0) return false;
+    }
+
+    // Block non-HTTP(S) schemes
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false;
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const safeWebhookUrl = z.string().url().max(2048).refine(isSafeWebhookUrl, {
+  message: 'Webhook URL must be a public HTTP(S) endpoint (no localhost, private IPs, or metadata services)',
+});
+
 export const createWebhookSchema = z.object({
   name: safeString(255).pipe(z.string().min(1)),
-  url: z.string().url().max(2048),
+  url: safeWebhookUrl,
   secret: z.string().min(16).max(255),
   events: z.array(webhookEventEnum).min(1),
   isActive: z.boolean().default(true),
@@ -496,7 +531,7 @@ export const createWebhookSchema = z.object({
 
 export const updateWebhookSchema = z.object({
   name: safeString(255).pipe(z.string().min(1)).optional(),
-  url: z.string().url().max(2048).optional(),
+  url: safeWebhookUrl.optional(),
   secret: z.string().min(16).max(255).optional(),
   events: z.array(webhookEventEnum).min(1).optional(),
   isActive: z.boolean().optional(),

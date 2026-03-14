@@ -16,8 +16,8 @@ function getCsrfToken(): string | undefined {
 export function useApi() {
   const config = useRuntimeConfig();
   const baseURL = config.public.apiBase as string;
-  const tokenCookie = useCookie('eli_token', { maxAge: 60 * 15 });
-  const refreshCookie = useCookie('eli_refresh_token', { maxAge: 60 * 60 * 24 * 7 });
+  const tokenCookie = useCookie('eli_access', { maxAge: 60 * 15 });
+  const refreshCookie = useCookie('eli_refresh', { maxAge: 60 * 60 * 24 * 7 });
 
   async function apiFetch<T = unknown>(
     path: string,

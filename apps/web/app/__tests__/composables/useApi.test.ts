@@ -26,7 +26,7 @@ describe('useApi', () => {
 
   it('apiFetch includes Authorization header when token is set', async () => {
     // Set the token cookie
-    const cookie = useCookie('eli_token');
+    const cookie = useCookie('eli_access');
     cookie.value = 'my-jwt-token';
 
     mockFetch.mockResolvedValueOnce({ success: true, data: {} });
@@ -74,8 +74,8 @@ describe('useApi', () => {
   });
 
   it('apiFetch retries with refresh token on 401', async () => {
-    const cookie = useCookie('eli_token');
-    const refreshCookie = useCookie('eli_refresh_token');
+    const cookie = useCookie('eli_access');
+    const refreshCookie = useCookie('eli_refresh');
     cookie.value = 'expired-token';
     refreshCookie.value = 'valid-refresh';
 
@@ -99,8 +99,8 @@ describe('useApi', () => {
   });
 
   it('apiFetch clears tokens and navigates to login when refresh fails', async () => {
-    const cookie = useCookie('eli_token');
-    const refreshCookie = useCookie('eli_refresh_token');
+    const cookie = useCookie('eli_access');
+    const refreshCookie = useCookie('eli_refresh');
     cookie.value = 'expired-token';
     refreshCookie.value = 'bad-refresh';
 

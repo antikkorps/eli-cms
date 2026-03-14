@@ -115,6 +115,12 @@
 - [x] Make `entrypoint.sh` resilient — exit on migration failure, don't seed if migrate fails
 - [x] Remove unused `apps/web/package.json` copy from API Dockerfile
 
+## High Priority — Developer Experience
+
+- [ ] SDK Client (`@eli-cms/client`) — typed JS/TS wrapper around the public API with caching, retry, pagination helpers. Package in `packages/client/`, works in Node + browser + any framework. Unlocks typed frontend integration.
+- [ ] TypeScript Codegen — CLI `eli codegen` reads content types via API (`GET /api/v1/public/schema`), generates TS interfaces per content type. Output: `eli-cms.d.ts`. Requires new schema export endpoint + CLI in `packages/cli/`.
+- [ ] Autosave drafts (periodic save while editing, every 30s if changes detected, visual indicator)
+
 ## Medium Priority — Features
 
 - [ ] Multilingual content (per-locale fields, locale switcher in content form, default locale config)
