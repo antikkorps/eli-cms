@@ -5,18 +5,7 @@
 import { ref, reactive, computed, toRef, readonly, watch, onMounted, onBeforeUnmount, unref, type Ref } from 'vue';
 
 // Re-export Vue reactivity primitives (Nuxt auto-imports these)
-export {
-  ref,
-  reactive,
-  computed,
-  toRef,
-  readonly,
-  watch,
-  onMounted,
-  onBeforeUnmount,
-  unref,
-  type Ref,
-};
+export { ref, reactive, computed, toRef, readonly, watch, onMounted, onBeforeUnmount, unref, type Ref };
 
 // --- Nuxt runtime stubs ---
 

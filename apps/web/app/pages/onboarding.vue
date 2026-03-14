@@ -14,7 +14,9 @@ onMounted(async () => {
   }
   // Check if onboarding already done
   try {
-    const res = await apiFetch<{ success: boolean; data: { needsSetup: boolean; onboardingCompleted: boolean } }>('/setup/status');
+    const res = await apiFetch<{ success: boolean; data: { needsSetup: boolean; onboardingCompleted: boolean } }>(
+      '/setup/status',
+    );
     if (res.data.onboardingCompleted) {
       navigateTo('/admin');
     }
@@ -34,7 +36,7 @@ const templates = [
   { id: 'ecommerce', icon: 'i-lucide-shopping-cart', color: 'text-orange-500' },
 ] as const;
 
-type TemplateId = typeof templates[number]['id'];
+type TemplateId = (typeof templates)[number]['id'];
 const selectedTemplate = ref<TemplateId>('blog');
 
 // Step 2 — Site info
@@ -170,9 +172,11 @@ async function skipOnboarding() {
             v-for="tpl in templates"
             :key="tpl.id"
             class="p-4 rounded-lg border-2 text-left transition-all hover:shadow-md"
-            :class="selectedTemplate === tpl.id
-              ? 'border-primary bg-primary/5 dark:bg-primary/10'
-              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+            :class="
+              selectedTemplate === tpl.id
+                ? 'border-primary bg-primary/5 dark:bg-primary/10'
+                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+            "
             @click="selectedTemplate = tpl.id"
           >
             <UIcon :name="tpl.icon" :class="['text-2xl mb-2', tpl.color]" />
@@ -192,7 +196,12 @@ async function skipOnboarding() {
         </UFormField>
 
         <UFormField :label="$t('onboarding.siteDescriptionLabel')">
-          <UTextarea v-model="siteDescription" :placeholder="$t('onboarding.siteDescriptionPlaceholder')" class="w-full" :rows="3" />
+          <UTextarea
+            v-model="siteDescription"
+            :placeholder="$t('onboarding.siteDescriptionPlaceholder')"
+            class="w-full"
+            :rows="3"
+          />
         </UFormField>
       </div>
 
@@ -202,7 +211,9 @@ async function skipOnboarding() {
         <p class="text-sm text-muted">{{ $t('onboarding.step3Subtitle') }}</p>
 
         <div class="space-y-3">
-          <label class="flex items-start gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <label
+            class="flex items-start gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
             <UCheckbox v-model="demoContent" class="mt-0.5" />
             <div>
               <p class="font-medium">{{ $t('onboarding.demoContentLabel') }}</p>
@@ -210,7 +221,9 @@ async function skipOnboarding() {
             </div>
           </label>
 
-          <label class="flex items-start gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <label
+            class="flex items-start gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
             <UCheckbox v-model="extraComponents" class="mt-0.5" />
             <div>
               <p class="font-medium">{{ $t('onboarding.extraComponentsLabel') }}</p>
@@ -227,7 +240,10 @@ async function skipOnboarding() {
 
         <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-3">
           <div class="flex items-center gap-2">
-            <UIcon :name="templates.find(t => t.id === selectedTemplate)?.icon || ''" :class="templates.find(t => t.id === selectedTemplate)?.color" />
+            <UIcon
+              :name="templates.find((t) => t.id === selectedTemplate)?.icon || ''"
+              :class="templates.find((t) => t.id === selectedTemplate)?.color"
+            />
             <span class="font-medium">{{ $t(`onboarding.template_${selectedTemplate}`) }}</span>
           </div>
 
@@ -238,12 +254,16 @@ async function skipOnboarding() {
 
           <div class="flex items-center gap-2">
             <UIcon name="i-lucide-file-text" class="text-muted" />
-            <span class="text-sm">{{ demoContent ? $t('onboarding.withDemoContent') : $t('onboarding.withoutDemoContent') }}</span>
+            <span class="text-sm">{{
+              demoContent ? $t('onboarding.withDemoContent') : $t('onboarding.withoutDemoContent')
+            }}</span>
           </div>
 
           <div class="flex items-center gap-2">
             <UIcon name="i-lucide-component" class="text-muted" />
-            <span class="text-sm">{{ extraComponents ? $t('onboarding.withExtraComponents') : $t('onboarding.withoutExtraComponents') }}</span>
+            <span class="text-sm">{{
+              extraComponents ? $t('onboarding.withExtraComponents') : $t('onboarding.withoutExtraComponents')
+            }}</span>
           </div>
         </div>
       </div>

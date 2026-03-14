@@ -16,10 +16,7 @@ export class ContentTypeService {
       ? or(ilike(contentTypes.name, `%${search}%`), ilike(contentTypes.slug, `%${search}%`))
       : undefined;
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(contentTypes)
-      .where(conditions);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(contentTypes).where(conditions);
 
     if (includeCounts) {
       const countSubquery = db
@@ -86,7 +83,9 @@ export class ContentTypeService {
     if (existing) throw new AppError(409, `Slug "${input.slug}" already exists`);
 
     const [ct] = await db.insert(contentTypes).values(input).returning();
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('content_type.created', { contentType: ct, ...actorData });
     return ct;
   }
@@ -113,7 +112,9 @@ export class ContentTypeService {
     }
 
     const [ct] = await db.update(contentTypes).set(input).where(eq(contentTypes.id, id)).returning();
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('content_type.updated', { contentType: ct, ...actorData });
     return ct;
   }
@@ -130,7 +131,9 @@ export class ContentTypeService {
     }
 
     await db.delete(contentTypes).where(eq(contentTypes.id, id));
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('content_type.deleted', { contentType: ct, ...actorData });
   }
 }

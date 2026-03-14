@@ -38,7 +38,7 @@ export function createApp() {
         if (env.CORS_ORIGINS === '*') {
           return origin || '*';
         }
-        const allowed = env.CORS_ORIGINS.split(',').map(s => s.trim());
+        const allowed = env.CORS_ORIGINS.split(',').map((s) => s.trim());
         return allowed.includes(origin) ? origin : '';
       },
       credentials: true,

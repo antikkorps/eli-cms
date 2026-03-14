@@ -1,6 +1,12 @@
 const TOP_LEVEL_WHITELIST = new Set([
-  'id', 'slug', 'status', 'contentTypeId', 'data',
-  'publishedAt', 'createdAt', 'updatedAt',
+  'id',
+  'slug',
+  'status',
+  'contentTypeId',
+  'data',
+  'publishedAt',
+  'createdAt',
+  'updatedAt',
 ]);
 
 /**
@@ -11,7 +17,10 @@ const TOP_LEVEL_WHITELIST = new Set([
  * @param fieldsParam - Comma-separated field list, e.g. "id,slug,data.title,createdAt"
  */
 export function selectFields<T extends Record<string, unknown>>(item: T, fieldsParam: string): Partial<T> {
-  const fields = fieldsParam.split(',').map(f => f.trim()).filter(Boolean);
+  const fields = fieldsParam
+    .split(',')
+    .map((f) => f.trim())
+    .filter(Boolean);
   if (fields.length === 0) return item;
 
   const topFields = new Set<string>(['id']); // id always included
@@ -51,5 +60,5 @@ export function selectFields<T extends Record<string, unknown>>(item: T, fieldsP
  * Apply field selection to an array of content items.
  */
 export function selectFieldsMany<T extends Record<string, unknown>>(items: T[], fieldsParam: string): Partial<T>[] {
-  return items.map(item => selectFields(item, fieldsParam));
+  return items.map((item) => selectFields(item, fieldsParam));
 }

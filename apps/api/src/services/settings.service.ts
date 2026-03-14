@@ -12,11 +12,7 @@ const DEFAULT_STORAGE_CONFIG: StorageConfig = { activeStorage: 'local' };
 
 export class SettingsService {
   static async getStorageConfig(): Promise<StorageConfig> {
-    const [row] = await db
-      .select()
-      .from(settings)
-      .where(eq(settings.key, STORAGE_KEY))
-      .limit(1);
+    const [row] = await db.select().from(settings).where(eq(settings.key, STORAGE_KEY)).limit(1);
 
     return row ? (row.value as StorageConfig) : DEFAULT_STORAGE_CONFIG;
   }
@@ -31,17 +27,15 @@ export class SettingsService {
       })
       .returning();
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('settings.updated', { key: STORAGE_KEY, ...actorData });
     return row.value as StorageConfig;
   }
 
   static async getSmtpConfig(): Promise<SmtpConfig | null> {
-    const [row] = await db
-      .select()
-      .from(settings)
-      .where(eq(settings.key, SMTP_KEY))
-      .limit(1);
+    const [row] = await db.select().from(settings).where(eq(settings.key, SMTP_KEY)).limit(1);
 
     return row ? (row.value as SmtpConfig) : null;
   }
@@ -56,7 +50,9 @@ export class SettingsService {
       })
       .returning();
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('settings.updated', { key: SMTP_KEY, ...actorData });
     return row.value as SmtpConfig;
   }

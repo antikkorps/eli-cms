@@ -42,17 +42,14 @@ export async function setup() {
 
   for (const file of sqlFiles) {
     const hash = file;
-    const exists = await testClient.query(
-      `SELECT 1 FROM "__drizzle_migrations" WHERE hash = $1`,
-      [hash],
-    );
+    const exists = await testClient.query(`SELECT 1 FROM "__drizzle_migrations" WHERE hash = $1`, [hash]);
     if (exists.rowCount === 0) {
       const sql = readFileSync(join(migrationsDir, file), 'utf-8');
       await testClient.query(sql);
-      await testClient.query(
-        `INSERT INTO "__drizzle_migrations" (hash, created_at) VALUES ($1, $2)`,
-        [hash, Date.now()],
-      );
+      await testClient.query(`INSERT INTO "__drizzle_migrations" (hash, created_at) VALUES ($1, $2)`, [
+        hash,
+        Date.now(),
+      ]);
       console.log(`Applied migration: ${file}`);
     }
   }

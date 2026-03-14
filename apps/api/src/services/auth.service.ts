@@ -7,7 +7,14 @@ import { users, refreshTokens, roles, passwordResetTokens } from '../db/schema/i
 import { env } from '../config/environment.js';
 import { parseDuration, parseDurationSec } from '../utils/parse-duration.js';
 import { AppError } from '../utils/app-error.js';
-import type { JwtPayload, TokenPair, RegisterInput, LoginInput, ChangePasswordInput, UpdateProfileInput } from '@eli-cms/shared';
+import type {
+  JwtPayload,
+  TokenPair,
+  RegisterInput,
+  LoginInput,
+  ChangePasswordInput,
+  UpdateProfileInput,
+} from '@eli-cms/shared';
 import { MAX_LOGIN_ATTEMPTS, LOCKOUT_DURATIONS_MIN, RESET_TOKEN_EXPIRY_MIN } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
 import type { Actor } from './content.service.js';
@@ -37,12 +44,18 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(input.password, 12);
-    const [user] = await db
-      .insert(users)
-      .values({ email: input.email, password: hashedPassword, roleId })
-      .returning({ id: users.id, email: users.email, firstName: users.firstName, lastName: users.lastName, roleId: users.roleId, createdAt: users.createdAt });
+    const [user] = await db.insert(users).values({ email: input.email, password: hashedPassword, roleId }).returning({
+      id: users.id,
+      email: users.email,
+      firstName: users.firstName,
+      lastName: users.lastName,
+      roleId: users.roleId,
+      createdAt: users.createdAt,
+    });
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : { actorId: user.id, actorType: 'user' as const };
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : { actorId: user.id, actorType: 'user' as const };
     eventBus.emit('auth.register', { userId: user.id, email: user.email, ...actorData });
 
     return user;
@@ -102,7 +115,9 @@ export class AuthService {
     };
 
     const tokens = await this.generateTokens(payload, randomUUID());
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : { actorId: row.id, actorType: 'user' as const };
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : { actorId: row.id, actorType: 'user' as const };
     eventBus.emit('auth.login', { userId: row.id, email: row.email, ...actorData });
 
     return tokens;
@@ -112,11 +127,7 @@ export class AuthService {
     const tokenHash = hashToken(rawRefreshToken);
 
     // Find the stored token
-    const [stored] = await db
-      .select()
-      .from(refreshTokens)
-      .where(eq(refreshTokens.tokenHash, tokenHash))
-      .limit(1);
+    const [stored] = await db.select().from(refreshTokens).where(eq(refreshTokens.tokenHash, tokenHash)).limit(1);
 
     if (!stored) {
       throw new AppError(401, 'Invalid refresh token');
@@ -154,10 +165,7 @@ export class AuthService {
     }
 
     // Revoke the current token (rotation)
-    await db
-      .update(refreshTokens)
-      .set({ revokedAt: new Date() })
-      .where(eq(refreshTokens.id, stored.id));
+    await db.update(refreshTokens).set({ revokedAt: new Date() }).where(eq(refreshTokens.id, stored.id));
 
     // Issue new pair in the same family
     const payload: JwtPayload = {
@@ -182,10 +190,7 @@ export class AuthService {
       return;
     }
 
-    await db
-      .update(refreshTokens)
-      .set({ revokedAt: new Date() })
-      .where(eq(refreshTokens.id, stored.id));
+    await db.update(refreshTokens).set({ revokedAt: new Date() }).where(eq(refreshTokens.id, stored.id));
   }
 
   static async logoutAll(userId: string): Promise<void> {
@@ -212,7 +217,9 @@ export class AuthService {
     // Revoke all refresh tokens
     await this.logoutAll(userId);
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : { actorId: userId, actorType: 'user' as const };
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : { actorId: userId, actorType: 'user' as const };
     eventBus.emit('auth.password_changed', { userId, ...actorData });
   }
 
@@ -242,11 +249,7 @@ export class AuthService {
     }
 
     if (Object.keys(updates).length > 0) {
-      const [updated] = await db
-        .update(users)
-        .set(updates)
-        .where(eq(users.id, userId))
-        .returning({ id: users.id });
+      const [updated] = await db.update(users).set(updates).where(eq(users.id, userId)).returning({ id: users.id });
 
       if (!updated) throw new AppError(404, 'User not found');
     }
@@ -391,7 +394,6 @@ export class AuthService {
 
   private static async generateTokens(payload: JwtPayload, family: string): Promise<TokenPair> {
     const accessExpiresIn = parseDurationSec(env.JWT_ACCESS_EXPIRY);
-    const refreshExpiresIn = parseDurationSec(env.JWT_REFRESH_EXPIRY);
 
     const accessToken = jwt.sign(payload, env.JWT_SECRET, { expiresIn: accessExpiresIn });
 

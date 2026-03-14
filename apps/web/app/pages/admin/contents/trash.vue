@@ -134,9 +134,7 @@ async function executeBulk() {
   }
 }
 
-const typeFilterItems = computed(() =>
-  contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })),
-);
+const typeFilterItems = computed(() => contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })));
 
 function getPreviewText(data: Record<string, unknown>): string {
   const first = Object.values(data).find((v) => typeof v === 'string' && v.length > 0);
@@ -175,7 +173,9 @@ const columns = computed(() => [
     accessorKey: 'contentType',
     header: t('contents.columnType'),
     cell: ({ row }: { row: { original: ContentItem } }) =>
-      h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', size: 'sm' }, () => getContentTypeName(row.original.contentTypeId)),
+      h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', size: 'sm' }, () =>
+        getContentTypeName(row.original.contentTypeId),
+      ),
   },
   {
     accessorKey: 'status',
@@ -189,7 +189,11 @@ const columns = computed(() => [
         published: { color: 'success', label: t('contents.published') },
       };
       const cfg = statusMap[row.original.status] ?? statusMap.draft!;
-      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: cfg!.color, size: 'sm' }, () => cfg!.label);
+      return h(
+        UBadge as ReturnType<typeof resolveComponent>,
+        { variant: 'subtle', color: cfg!.color, size: 'sm' },
+        () => cfg!.label,
+      );
     },
   },
   {
@@ -197,7 +201,9 @@ const columns = computed(() => [
     header: () =>
       h('button', { class: 'flex items-center gap-1 font-medium', onClick: () => toggleSort('deletedAt') }, [
         t('trash.columnDeletedAt'),
-        h('span', { class: `${sortBy.value === 'deletedAt' ? 'opacity-100' : 'opacity-40'} i-lucide-${sortBy.value === 'deletedAt' ? (sortOrder.value === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size-3.5` }),
+        h('span', {
+          class: `${sortBy.value === 'deletedAt' ? 'opacity-100' : 'opacity-40'} i-lucide-${sortBy.value === 'deletedAt' ? (sortOrder.value === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size-3.5`,
+        }),
       ]),
     cell: ({ row }: { row: { original: ContentItem } }) =>
       row.original.deletedAt ? new Date(row.original.deletedAt).toLocaleDateString(locale.value) : '—',
@@ -248,16 +254,17 @@ onMounted(() => {
       <p class="text-sm text-muted mt-1">{{ $t('trash.subtitle') }}</p>
     </div>
 
-    <UAlert
-      icon="i-lucide-info"
-      color="neutral"
-      variant="subtle"
-      :title="$t('trash.autoPurgeNotice')"
-    />
+    <UAlert icon="i-lucide-info" color="neutral" variant="subtle" :title="$t('trash.autoPurgeNotice')" />
 
     <div class="flex flex-wrap gap-3 items-center">
       <UInput v-model="search" :placeholder="$t('common.search')" icon="i-lucide-search" class="w-64" />
-      <USelect v-model="contentTypeFilter" nullable :items="typeFilterItems" :placeholder="$t('contents.allTypes')" class="w-48" />
+      <USelect
+        v-model="contentTypeFilter"
+        nullable
+        :items="typeFilterItems"
+        :placeholder="$t('contents.allTypes')"
+        class="w-48"
+      />
 
       <template v-if="selectedIds.size > 0">
         <span class="text-sm text-muted">{{ $t('contents.selected', { count: selectedIds.size }) }}</span>

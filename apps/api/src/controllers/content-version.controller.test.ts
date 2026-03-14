@@ -35,9 +35,7 @@ describe('Content Versions API', () => {
         .send({ data: buildBlogData({ title: 'Updated Title' }) });
 
       // List versions
-      const res = await agent()
-        .get(`/api/v1/contents/${contentId}/versions`)
-        .set('Authorization', `Bearer ${token}`);
+      const res = await agent().get(`/api/v1/contents/${contentId}/versions`).set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(1);
@@ -64,9 +62,7 @@ describe('Content Versions API', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({ data: buildBlogData({ title: 'V3' }) });
 
-      const res = await agent()
-        .get(`/api/v1/contents/${contentId}/versions`)
-        .set('Authorization', `Bearer ${token}`);
+      const res = await agent().get(`/api/v1/contents/${contentId}/versions`).set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(2);

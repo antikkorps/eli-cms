@@ -258,7 +258,11 @@ defineShortcuts({
   },
 });
 
-watch(() => form.data, () => clearErrors(), { deep: true });
+watch(
+  () => form.data,
+  () => clearErrors(),
+  { deep: true },
+);
 
 watch(activeTab, (tab) => {
   if (tab === 'versions' && !versions.value.length) fetchVersions();
@@ -358,7 +362,12 @@ onMounted(async () => {
                 </UButton>
               </div>
             </div>
-            <UBadge variant="subtle" :color="version.status === 'published' ? 'success' : 'warning'" size="sm" class="mt-2">
+            <UBadge
+              variant="subtle"
+              :color="version.status === 'published' ? 'success' : 'warning'"
+              size="sm"
+              class="mt-2"
+            >
               {{ version.status }}
             </UBadge>
           </div>
@@ -385,7 +394,9 @@ onMounted(async () => {
           <div class="flex items-center gap-2">
             <UBadge variant="subtle" size="sm">{{ rel.relationType }}</UBadge>
             <span class="text-sm">{{ getRelationPreview(rel) }}</span>
-            <span v-if="rel.target?.contentType?.name" class="text-xs text-muted">({{ rel.target.contentType.name }})</span>
+            <span v-if="rel.target?.contentType?.name" class="text-xs text-muted"
+              >({{ rel.target.contentType.name }})</span
+            >
           </div>
           <UButton icon="i-lucide-trash-2" variant="ghost" color="error" size="sm" @click="removeRelation(rel.id)" />
         </div>

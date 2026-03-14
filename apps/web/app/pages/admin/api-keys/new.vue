@@ -93,7 +93,9 @@ async function handleSubmit() {
 async function copyKey() {
   await navigator.clipboard.writeText(createdKey.value);
   copied.value = true;
-  setTimeout(() => { copied.value = false; }, 2000);
+  setTimeout(() => {
+    copied.value = false;
+  }, 2000);
 }
 </script>
 
@@ -143,12 +145,7 @@ async function copyKey() {
         <UCard>
           <div class="space-y-5">
             <UFormField :label="$t('apiKeysNew.nameLabel')" required>
-              <UInput
-                v-model="form.name"
-                :placeholder="$t('apiKeysNew.namePlaceholder')"
-                class="w-full"
-                autofocus
-              />
+              <UInput v-model="form.name" :placeholder="$t('apiKeysNew.namePlaceholder')" class="w-full" autofocus />
             </UFormField>
 
             <UFormField :label="$t('apiKeysNew.permissionsLabel')" required>
@@ -162,11 +159,7 @@ async function copyKey() {
             </UFormField>
 
             <UFormField :label="$t('apiKeysNew.expirationLabel')" :hint="$t('apiKeysNew.expirationHint')">
-              <UInput
-                v-model="form.expiresAt"
-                type="date"
-                class="w-full"
-              />
+              <UInput v-model="form.expiresAt" type="date" class="w-full" />
             </UFormField>
           </div>
         </UCard>

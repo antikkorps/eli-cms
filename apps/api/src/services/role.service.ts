@@ -13,22 +13,11 @@ export class RoleService {
     const { page, limit, search } = query;
     const offset = (page - 1) * limit;
 
-    const conditions = search
-      ? or(ilike(roles.name, `%${search}%`), ilike(roles.slug, `%${search}%`))
-      : undefined;
+    const conditions = search ? or(ilike(roles.name, `%${search}%`), ilike(roles.slug, `%${search}%`)) : undefined;
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(roles)
-      .where(conditions);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(roles).where(conditions);
 
-    const data = await db
-      .select()
-      .from(roles)
-      .where(conditions)
-      .orderBy(roles.createdAt)
-      .limit(limit)
-      .offset(offset);
+    const data = await db.select().from(roles).where(conditions).orderBy(roles.createdAt).limit(limit).offset(offset);
 
     return { data, meta: buildMeta(total, page, limit) };
   }
@@ -65,7 +54,9 @@ export class RoleService {
       })
       .returning();
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('role.created', { role, ...actorData });
     return role;
   }
@@ -100,7 +91,9 @@ export class RoleService {
     }
 
     const [role] = await db.update(roles).set(input).where(eq(roles.id, id)).returning();
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('role.updated', { role, ...actorData });
     return role;
   }
@@ -113,17 +106,16 @@ export class RoleService {
     }
 
     // Check no users use this role
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(users)
-      .where(eq(users.roleId, id));
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(users).where(eq(users.roleId, id));
 
     if (total > 0) {
       throw new AppError(409, `Cannot delete role — ${total} user(s) still assigned`);
     }
 
     await db.delete(roles).where(eq(roles.id, id));
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('role.deleted', { role: existing, ...actorData });
   }
 }

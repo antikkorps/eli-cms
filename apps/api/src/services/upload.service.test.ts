@@ -3,7 +3,9 @@ import { UploadService } from './upload.service.js';
 import { AppError } from '../utils/app-error.js';
 import { agent, getAdminToken } from '../__tests__/helpers/setup.js';
 
-function buildTestFile(overrides: Partial<{ buffer: Buffer; originalname: string; mimetype: string; size: number }> = {}) {
+function buildTestFile(
+  overrides: Partial<{ buffer: Buffer; originalname: string; mimetype: string; size: number }> = {},
+) {
   const buffer = Buffer.from('fake-file-content');
   return {
     buffer,
@@ -20,9 +22,7 @@ describe('UploadService', () => {
 
   beforeEach(async () => {
     token = await getAdminToken();
-    const me = await agent()
-      .get('/api/v1/auth/me')
-      .set('Authorization', `Bearer ${token}`);
+    const me = await agent().get('/api/v1/auth/me').set('Authorization', `Bearer ${token}`);
     userId = me.body.data.id;
   });
 
@@ -89,9 +89,7 @@ describe('UploadService', () => {
     });
 
     it('throws 404 for non-existent id', async () => {
-      await expect(
-        UploadService.findById('00000000-0000-0000-0000-000000000000'),
-      ).rejects.toThrow(AppError);
+      await expect(UploadService.findById('00000000-0000-0000-0000-000000000000')).rejects.toThrow(AppError);
     });
   });
 
@@ -154,15 +152,13 @@ describe('UploadService', () => {
     it('throws 400 for empty update', async () => {
       const created = await UploadService.upload(buildTestFile(), userId);
 
-      await expect(
-        UploadService.update(created.id, {}),
-      ).rejects.toThrow(/no fields to update/i);
+      await expect(UploadService.update(created.id, {})).rejects.toThrow(/no fields to update/i);
     });
 
     it('throws 404 for non-existent media', async () => {
-      await expect(
-        UploadService.update('00000000-0000-0000-0000-000000000000', { alt: 'test' }),
-      ).rejects.toThrow(AppError);
+      await expect(UploadService.update('00000000-0000-0000-0000-000000000000', { alt: 'test' })).rejects.toThrow(
+        AppError,
+      );
     });
   });
 
@@ -184,9 +180,7 @@ describe('UploadService', () => {
     });
 
     it('throws 404 for non-existent media', async () => {
-      await expect(
-        UploadService.delete('00000000-0000-0000-0000-000000000000'),
-      ).rejects.toThrow(AppError);
+      await expect(UploadService.delete('00000000-0000-0000-0000-000000000000')).rejects.toThrow(AppError);
     });
   });
 });

@@ -19,13 +19,7 @@ export const ALLOWED_MIME_TYPES = new Set([
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 ]);
 
-export const TRANSFORMABLE_MIME_TYPES = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/avif',
-  'image/tiff',
-]);
+export const TRANSFORMABLE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/tiff']);
 
 export function isAllowedMimeType(mimeType: string): boolean {
   return ALLOWED_MIME_TYPES.has(mimeType);

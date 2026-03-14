@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { resetSetupCheck } from '~/middleware/setup.global';
+
 const { apiFetch } = useApi();
 const { setTokens, fetchUser } = useAuth();
 const { t } = useI18n();
@@ -51,6 +53,7 @@ async function handleSubmit() {
 
     setTokens(res.data.tokens.accessToken, res.data.tokens.refreshToken);
     await fetchUser();
+    resetSetupCheck();
     navigateTo('/onboarding');
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : t('setup.errorGeneric');
@@ -77,22 +80,11 @@ async function handleSubmit() {
 
       <form class="space-y-4" @submit.prevent="handleSubmit">
         <UFormField :label="$t('setup.emailLabel')">
-          <UInput
-            v-model="form.email"
-            type="email"
-            :placeholder="$t('setup.emailPlaceholder')"
-            required
-            autofocus
-          />
+          <UInput v-model="form.email" type="email" :placeholder="$t('setup.emailPlaceholder')" required autofocus />
         </UFormField>
 
         <UFormField :label="$t('setup.passwordLabel')">
-          <UInput
-            v-model="form.password"
-            type="password"
-            :placeholder="$t('setup.passwordPlaceholder')"
-            required
-          />
+          <UInput v-model="form.password" type="password" :placeholder="$t('setup.passwordPlaceholder')" required />
         </UFormField>
 
         <UFormField :label="$t('setup.confirmPasswordLabel')">

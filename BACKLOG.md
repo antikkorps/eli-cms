@@ -75,15 +75,52 @@
 
 ## High Priority — Quality & Security
 
-- [ ] Frontend test suite — setup Vitest + Vue Test Utils, cover critical composables and components
-- [ ] Backend service unit tests — ContentService, UploadService, WebhookService (currently only controller-level tests)
+- [x] Frontend test suite — setup Vitest + Vue Test Utils, cover critical composables and components
+- [x] Backend service unit tests — ContentService, UploadService, WebhookService (currently only controller-level tests)
 - [x] CSRF protection — double-submit cookie pattern for cookie-based auth, `X-CSRF-Token` header
 - [x] Error boundary — `error.vue` with custom 404, catch-all admin route, dark mode + i18n support
 - [x] `process.on('unhandledRejection')` + `uncaughtException` handlers in API entrypoint — graceful shutdown with pino fatal logging
 - [x] Rate limit forgot-password endpoint (5 req/hour per IP) — dedicated `forgotPasswordRateLimit`
 - [x] CORS default hardened — changed from `*` to `http://localhost:3000`
-- [ ] CI/CD pipeline — GitHub Actions for lint + test + build on PR
+- [x] CI/CD pipeline — GitHub Actions for lint + test + build on PR
 - [ ] Deployment guide (`DEPLOYMENT.md` — Railway, Vercel, self-hosted examples)
+
+## High Priority — Audit Fixes (March 2026)
+
+- [x] Fix XSS in `VersionDiff.vue` — sanitize HTML with DOMPurify before `v-html` rendering (lines 64, 73, 82)
+- [x] Batch media/author validation — replace N+1 `findById()` loops with `inArray()` batch query (`content.service.ts:268-275, 313-319`)
+- [x] Fix `User` type — add `firstName`, `lastName` to shared `User` interface (`packages/shared/src/types/index.ts`)
+- [~] Add missing permission constants — already covered: settings uses `SETTINGS_READ`/`SETTINGS_UPDATE`, media-folders reuses `UPLOADS_*`
+- [x] Fix TOCTOU race condition — move `validateUniqueFields` inside transaction or add DB-level unique constraint (`content.service.ts:345-375`)
+- [x] Dedicated API key salt — stop reusing `JWT_SECRET` as scrypt salt, add `API_KEY_SALT` env var (`api-key.service.ts:15`)
+
+## Medium Priority — Audit Fixes (March 2026)
+
+- [x] Fix debounce memory leaks — add `onBeforeUnmount` cleanup in `AuthorPicker`, `ContentPicker`, `MediaPicker`, `EditorImageButton`
+- [x] Invalidate setup middleware cache — `resetSetupCheck()` called after setup completion
+- [x] Replace `innerHTML` in `stripHtml()` with `DOMParser` (`contents/index.vue:139`)
+- [x] Add composite DB index `(content_type_id, status, deleted_at)` on contents table
+- [x] Escape LIKE wildcards in JSONB filter (`content.service.ts:184`)
+- [x] Increase `JWT_SECRET` min length from 10 to 32 (`environment.ts:6`)
+- [x] Enforce `editedBy` on content creation — set from actor.id
+- [x] Add vitest coverage reporting config (`vitest.config.ts` in api + web)
+- [x] Document all env vars in `.env.example` (`FRONTEND_URL`, SMTP vars, `NODE_ENV`, `CORS_ORIGINS`)
+- [x] Add ReDoS protection — limit regex pattern complexity in field validation schemas
+- [x] Cache component definitions within request scope during content create/update
+
+## Medium Priority — DevOps Audit Fixes
+
+- [x] Docker prod: add API healthcheck (`docker-compose.prod.yml`)
+- [x] Docker prod: add web container for unified deployment (`docker-compose.prod.yml`)
+- [x] Make `entrypoint.sh` resilient — exit on migration failure, don't seed if migrate fails
+- [x] Remove unused `apps/web/package.json` copy from API Dockerfile
+
+## High Priority — Developer Experience
+
+- [ ] SDK Client (`@eli-cms/client`) — typed JS/TS wrapper around the public API with caching, retry, pagination helpers. Package in `packages/client/`, works in Node + browser + any framework. Unlocks typed frontend integration.
+- [ ] TypeScript Codegen — CLI `eli codegen` reads content types via API (`GET /api/v1/public/schema`), generates TS interfaces per content type. Output: `eli-cms.d.ts`. Requires new schema export endpoint + CLI in `packages/cli/`.
+- [ ] MCP Server (`packages/mcp/`) — Model Context Protocol server exposing Eli CMS as tools for LLMs (Claude, Cursor, Copilot). Tools: `list_content_types`, `get_content_type`, `create_content_type`, `list_contents`, `create_content`, `list_components`, `get_schema`. Enables AI-native CMS workflows: "ajoute un champ image au blog", "crée 10 articles de démo", scaffold frontend code from content models. First-of-its-kind for headless CMS.
+- [ ] Autosave drafts (periodic save while editing, every 30s if changes detected, visual indicator)
 
 ## Medium Priority — Features
 
@@ -110,8 +147,8 @@
 - [ ] Custom dashboard widgets (configurable per user)
 - [ ] API playground (in-app sandbox to test API calls, beyond Scalar docs)
 - [ ] Batch import from other CMS (WordPress, Strapi JSON export)
-- [ ] Accessibility audit — add aria-label/aria-describedby to all custom form components
-- [ ] Database indexes — GIN index on `contents.data` JSONB, trigram index on `media.original_name`
+- [ ] Accessibility audit — add aria-label/aria-describedby to all custom form components, fix color contrast on search highlights, keyboard nav for modals/drag-drop
+- [ ] Database indexes — GIN index on `contents.data` JSONB, trigram index on `media.original_name`, composite index `(content_type_id, status, deleted_at)`
 
 ## Nice to Have
 

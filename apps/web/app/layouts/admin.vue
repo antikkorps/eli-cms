@@ -14,10 +14,14 @@ const commandPaletteOpen = ref(false);
 
 defineShortcuts({
   meta_k: {
-    handler: () => { commandPaletteOpen.value = !commandPaletteOpen.value; },
+    handler: () => {
+      commandPaletteOpen.value = !commandPaletteOpen.value;
+    },
   },
   meta_n: {
-    handler: () => { router.push('/admin/contents/new'); },
+    handler: () => {
+      router.push('/admin/contents/new');
+    },
   },
 });
 
@@ -63,7 +67,7 @@ const navigation = computed(() => {
         label: ct.name,
         icon: ct.isSingleton ? 'i-lucide-file-cog' : undefined,
         to: `/admin/contents?type=${ct.slug}`,
-        badge: ct.isSingleton ? undefined : (ct.contentCount != null ? String(ct.contentCount) : undefined),
+        badge: ct.isSingleton ? undefined : ct.contentCount != null ? String(ct.contentCount) : undefined,
       });
     }
 
@@ -144,7 +148,12 @@ const navigation = computed(() => {
     });
   }
 
-  if (hasPermission('users:read') || hasPermission('users:create') || hasPermission('users:update') || hasPermission('users:delete')) {
+  if (
+    hasPermission('users:read') ||
+    hasPermission('users:create') ||
+    hasPermission('users:update') ||
+    hasPermission('users:delete')
+  ) {
     items.push({ label: t('nav.users'), icon: 'i-lucide-users', to: '/admin/users' });
   }
   if (hasPermission('roles:read')) {
@@ -169,9 +178,18 @@ const navigation = computed(() => {
 
 <template>
   <UDashboardGroup>
-    <UDashboardSidebar collapsible toggle-side="right" :default-size="20" :ui="{ root: 'transition-[width] duration-200 ease-in-out' }">
+    <UDashboardSidebar
+      collapsible
+      toggle-side="right"
+      :default-size="20"
+      :ui="{ root: 'transition-[width] duration-200 ease-in-out' }"
+    >
       <template #header="{ collapsed }">
-        <UButton to="/admin" variant="ghost" :class="collapsed ? 'w-full justify-center' : 'w-full justify-start gap-2.5'">
+        <UButton
+          to="/admin"
+          variant="ghost"
+          :class="collapsed ? 'w-full justify-center' : 'w-full justify-start gap-2.5'"
+        >
           <div
             class="flex size-8 items-center justify-center rounded-md bg-primary font-bold text-white text-sm shrink-0"
           >

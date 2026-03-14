@@ -70,7 +70,11 @@ function openPicker() {
 function insertImage(item: MediaItem) {
   if (!props.editor) return;
   const src = getServeUrl(item.id);
-  props.editor.chain().focus().setImage({ src, alt: item.alt || item.originalName }).run();
+  props.editor
+    .chain()
+    .focus()
+    .setImage({ src, alt: item.alt || item.originalName })
+    .run();
   open.value = false;
 }
 
@@ -98,90 +102,89 @@ function onSearchInput() {
   }, 300);
 }
 
+onBeforeUnmount(() => {
+  if (searchDebounce) clearTimeout(searchDebounce);
+});
 watch(page, fetchMedia);
 </script>
 
 <template>
   <div>
-    <UButton
-      variant="ghost"
-      size="xs"
-      icon="i-lucide-image"
-      :title="t('editor.insertImage')"
-      @click="openPicker"
-    />
+    <UButton variant="ghost" size="xs" icon="i-lucide-image" :title="t('editor.insertImage')" @click="openPicker" />
 
-  <UModal v-model:open="open" :title="t('editor.insertImage')" :description="t('editor.insertImageDescription')">
-    <template #content>
-      <div class="p-6 space-y-4">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold">{{ t('editor.insertImage') }}</h3>
-          <UButton variant="ghost" color="neutral" size="xs" icon="i-lucide-x" @click="open = false" />
-        </div>
+    <UModal v-model:open="open" :title="t('editor.insertImage')" :description="t('editor.insertImageDescription')">
+      <template #content>
+        <div class="p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold">{{ t('editor.insertImage') }}</h3>
+            <UButton variant="ghost" color="neutral" size="xs" icon="i-lucide-x" @click="open = false" />
+          </div>
 
-        <!-- Search + Upload -->
-        <div class="flex items-center gap-3">
-          <UInput
-            v-model="search"
-            icon="i-lucide-search"
-            :placeholder="t('mediaPicker.searchPlaceholder')"
-            size="sm"
-            class="flex-1"
-            @input="onSearchInput"
-          />
-          <span class="text-xs text-muted uppercase">{{ t('common.or') }}</span>
-          <label class="cursor-pointer shrink-0">
-            <UButton as="span" size="sm" icon="i-lucide-upload" :loading="uploading">
-              {{ t('uploads.upload') }}
-            </UButton>
-            <input type="file" class="hidden" accept="image/*" @change="handleUpload" />
-          </label>
-        </div>
-
-        <!-- Loading -->
-        <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <USkeleton v-for="i in 8" :key="i" class="aspect-square w-full rounded-lg" />
-        </div>
-
-        <!-- Empty -->
-        <div v-else-if="!items.length" class="flex flex-col items-center justify-center py-12">
-          <UIcon name="i-lucide-image" class="size-12 text-muted" />
-          <p class="mt-3 text-sm text-muted">{{ t('mediaPicker.noMedia') }}</p>
-        </div>
-
-        <!-- Grid -->
-        <div v-else class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <button
-            v-for="item in items"
-            :key="item.id"
-            class="group relative aspect-square overflow-hidden rounded-lg border transition-all hover:ring-2 hover:ring-primary focus:outline-none focus:ring-2 focus:ring-primary"
-            @click="insertImage(item)"
-          >
-            <img
-              :src="getThumbUrl(item.id, 200)"
-              :alt="item.originalName"
-              class="size-full object-cover"
-              loading="lazy"
+          <!-- Search + Upload -->
+          <div class="flex items-center gap-3">
+            <UInput
+              v-model="search"
+              icon="i-lucide-search"
+              :placeholder="t('mediaPicker.searchPlaceholder')"
+              size="sm"
+              class="flex-1"
+              @input="onSearchInput"
             />
-            <div class="absolute inset-x-0 bottom-0 bg-black/50 px-2 py-1 opacity-0 transition-opacity group-hover:opacity-100">
-              <p class="truncate text-xs text-white">{{ item.originalName }}</p>
-            </div>
-          </button>
-        </div>
+            <span class="text-xs text-muted uppercase">{{ t('common.or') }}</span>
+            <label class="cursor-pointer shrink-0">
+              <UButton as="span" size="sm" icon="i-lucide-upload" :loading="uploading">
+                {{ t('uploads.upload') }}
+              </UButton>
+              <input type="file" class="hidden" accept="image/*" @change="handleUpload" />
+            </label>
+          </div>
 
-        <!-- Pagination -->
-        <div v-if="totalPages > 1" class="flex justify-center">
-          <UPagination v-model="page" :total="totalPages * 12" :items-per-page="12" />
-        </div>
+          <!-- Loading -->
+          <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <USkeleton v-for="i in 8" :key="i" class="aspect-square w-full rounded-lg" />
+          </div>
 
-        <!-- Close -->
-        <div class="flex justify-end pt-2 border-t">
-          <UButton variant="ghost" color="neutral" @click="open = false">
-            {{ t('common.cancel') }}
-          </UButton>
+          <!-- Empty -->
+          <div v-else-if="!items.length" class="flex flex-col items-center justify-center py-12">
+            <UIcon name="i-lucide-image" class="size-12 text-muted" />
+            <p class="mt-3 text-sm text-muted">{{ t('mediaPicker.noMedia') }}</p>
+          </div>
+
+          <!-- Grid -->
+          <div v-else class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <button
+              v-for="item in items"
+              :key="item.id"
+              class="group relative aspect-square overflow-hidden rounded-lg border transition-all hover:ring-2 hover:ring-primary focus:outline-none focus:ring-2 focus:ring-primary"
+              @click="insertImage(item)"
+            >
+              <img
+                :src="getThumbUrl(item.id, 200)"
+                :alt="item.originalName"
+                class="size-full object-cover"
+                loading="lazy"
+              />
+              <div
+                class="absolute inset-x-0 bottom-0 bg-black/50 px-2 py-1 opacity-0 transition-opacity group-hover:opacity-100"
+              >
+                <p class="truncate text-xs text-white">{{ item.originalName }}</p>
+              </div>
+            </button>
+          </div>
+
+          <!-- Pagination -->
+          <div v-if="totalPages > 1" class="flex justify-center">
+            <UPagination v-model="page" :total="totalPages * 12" :items-per-page="12" />
+          </div>
+
+          <!-- Close -->
+          <div class="flex justify-end pt-2 border-t">
+            <UButton variant="ghost" color="neutral" @click="open = false">
+              {{ t('common.cancel') }}
+            </UButton>
+          </div>
         </div>
-      </div>
-    </template>
-  </UModal>
+      </template>
+    </UModal>
   </div>
 </template>

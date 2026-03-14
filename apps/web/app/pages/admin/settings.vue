@@ -16,7 +16,9 @@ const activeTab = ref('storage');
 const tabs = computed(() => [
   { label: t('settings.storageTitle'), value: 'storage', icon: 'i-lucide-hard-drive' },
   { label: t('settings.smtpTitle'), value: 'smtp', icon: 'i-lucide-mail' },
-  ...(hasPermission('settings:update') ? [{ label: t('settings.onboardingTitle'), value: 'onboarding', icon: 'i-lucide-wand-sparkles' }] : []),
+  ...(hasPermission('settings:update')
+    ? [{ label: t('settings.onboardingTitle'), value: 'onboarding', icon: 'i-lucide-wand-sparkles' }]
+    : []),
 ]);
 
 // ─── Storage ────────────────────────────────────────────
@@ -44,7 +46,10 @@ async function fetchSettings() {
   try {
     const res = await apiFetch<{
       success: boolean;
-      data: { activeStorage: 'local' | 's3'; s3?: { bucket: string; region: string; accessKeyId: string; secretAccessKey: string; endpoint?: string } };
+      data: {
+        activeStorage: 'local' | 's3';
+        s3?: { bucket: string; region: string; accessKeyId: string; secretAccessKey: string; endpoint?: string };
+      };
     }>('/settings/storage');
     form.activeStorage = res.data.activeStorage;
     if (res.data.s3) {
@@ -117,11 +122,17 @@ async function fetchSmtp() {
     const res = await apiFetch<{
       success: boolean;
       data: {
-        host: string; port: number; secure: boolean;
+        host: string;
+        port: number;
+        secure: boolean;
         authType?: 'password' | 'oauth2' | 'none';
-        user?: string; password?: string;
-        clientId?: string; clientSecret?: string; refreshToken?: string;
-        fromName: string; fromAddress: string;
+        user?: string;
+        password?: string;
+        clientId?: string;
+        clientSecret?: string;
+        refreshToken?: string;
+        fromName: string;
+        fromAddress: string;
       } | null;
     }>('/settings/smtp');
     if (res.data) {
@@ -332,7 +343,13 @@ onMounted(() => {
               </UFormField>
 
               <UFormField :label="$t('settings.smtpFromAddressLabel')">
-                <UInput v-model="smtp.fromAddress" type="email" placeholder="noreply@example.com" required class="w-full" />
+                <UInput
+                  v-model="smtp.fromAddress"
+                  type="email"
+                  placeholder="noreply@example.com"
+                  required
+                  class="w-full"
+                />
               </UFormField>
             </div>
           </div>

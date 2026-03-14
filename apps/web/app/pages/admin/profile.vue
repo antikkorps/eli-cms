@@ -35,9 +35,24 @@ const firstName = ref(user.value?.firstName ?? '');
 const lastName = ref(user.value?.lastName ?? '');
 const savingInfo = ref(false);
 
-watch(() => user.value?.email, (val) => { if (val) email.value = val; });
-watch(() => user.value?.firstName, (val) => { firstName.value = val ?? ''; });
-watch(() => user.value?.lastName, (val) => { lastName.value = val ?? ''; });
+watch(
+  () => user.value?.email,
+  (val) => {
+    if (val) email.value = val;
+  },
+);
+watch(
+  () => user.value?.firstName,
+  (val) => {
+    firstName.value = val ?? '';
+  },
+);
+watch(
+  () => user.value?.lastName,
+  (val) => {
+    lastName.value = val ?? '';
+  },
+);
 
 async function submitInfo() {
   savingInfo.value = true;
@@ -110,12 +125,7 @@ const memberSince = computed(() => {
     <UCard>
       <div class="flex items-center gap-5">
         <div class="relative group">
-          <img
-            v-if="user"
-            :src="userAvatarUrl(user, 128)"
-            alt=""
-            class="size-24 rounded-full ring-2 ring-default"
-          />
+          <img v-if="user" :src="userAvatarUrl(user, 128)" alt="" class="size-24 rounded-full ring-2 ring-default" />
           <button
             class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
             :disabled="savingAvatar"
@@ -125,8 +135,15 @@ const memberSince = computed(() => {
           </button>
         </div>
         <div class="min-w-0">
-          <p v-if="user?.firstName || user?.lastName" class="font-semibold text-lg truncate">{{ [user?.firstName, user?.lastName].filter(Boolean).join(' ') }}</p>
-          <p class="truncate" :class="user?.firstName || user?.lastName ? 'text-sm text-muted' : 'font-semibold text-lg'">{{ user?.email }}</p>
+          <p v-if="user?.firstName || user?.lastName" class="font-semibold text-lg truncate">
+            {{ [user?.firstName, user?.lastName].filter(Boolean).join(' ') }}
+          </p>
+          <p
+            class="truncate"
+            :class="user?.firstName || user?.lastName ? 'text-sm text-muted' : 'font-semibold text-lg'"
+          >
+            {{ user?.email }}
+          </p>
           <p class="text-sm text-muted">{{ user?.role?.name }}</p>
           <p class="text-xs text-muted mt-1">{{ $t('profile.memberSince') }} {{ memberSince }}</p>
         </div>
@@ -158,7 +175,13 @@ const memberSince = computed(() => {
         <UFormField :label="$t('profile.emailLabel')">
           <UInput v-model="email" type="email" required class="w-full max-w-sm" />
         </UFormField>
-        <UButton type="submit" :loading="savingInfo" :disabled="email === user?.email && firstName === (user?.firstName ?? '') && lastName === (user?.lastName ?? '')">
+        <UButton
+          type="submit"
+          :loading="savingInfo"
+          :disabled="
+            email === user?.email && firstName === (user?.firstName ?? '') && lastName === (user?.lastName ?? '')
+          "
+        >
           {{ $t('common.save') }}
         </UButton>
       </form>
@@ -174,27 +197,69 @@ const memberSince = computed(() => {
       </template>
       <form class="space-y-4" @submit.prevent="submitPassword">
         <UFormField :label="$t('profile.currentPassword')">
-          <UInput v-model="passwordForm.currentPassword" :type="showCurrentPassword ? 'text' : 'password'" required class="w-full max-w-sm">
+          <UInput
+            v-model="passwordForm.currentPassword"
+            :type="showCurrentPassword ? 'text' : 'password'"
+            required
+            class="w-full max-w-sm"
+          >
             <template #trailing>
-              <UButton :icon="showCurrentPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'" variant="link" color="neutral" size="xs" :padded="false" @click="showCurrentPassword = !showCurrentPassword" />
+              <UButton
+                :icon="showCurrentPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+                variant="link"
+                color="neutral"
+                size="xs"
+                :padded="false"
+                @click="showCurrentPassword = !showCurrentPassword"
+              />
             </template>
           </UInput>
         </UFormField>
         <UFormField :label="$t('profile.newPassword')">
-          <UInput v-model="passwordForm.newPassword" :type="showNewPassword ? 'text' : 'password'" required minlength="6" class="w-full max-w-sm">
+          <UInput
+            v-model="passwordForm.newPassword"
+            :type="showNewPassword ? 'text' : 'password'"
+            required
+            minlength="6"
+            class="w-full max-w-sm"
+          >
             <template #trailing>
-              <UButton :icon="showNewPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'" variant="link" color="neutral" size="xs" :padded="false" @click="showNewPassword = !showNewPassword" />
+              <UButton
+                :icon="showNewPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+                variant="link"
+                color="neutral"
+                size="xs"
+                :padded="false"
+                @click="showNewPassword = !showNewPassword"
+              />
             </template>
           </UInput>
         </UFormField>
         <UFormField :label="$t('profile.confirmPassword')">
-          <UInput v-model="passwordForm.confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" required minlength="6" class="w-full max-w-sm">
+          <UInput
+            v-model="passwordForm.confirmPassword"
+            :type="showConfirmPassword ? 'text' : 'password'"
+            required
+            minlength="6"
+            class="w-full max-w-sm"
+          >
             <template #trailing>
-              <UButton :icon="showConfirmPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'" variant="link" color="neutral" size="xs" :padded="false" @click="showConfirmPassword = !showConfirmPassword" />
+              <UButton
+                :icon="showConfirmPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+                variant="link"
+                color="neutral"
+                size="xs"
+                :padded="false"
+                @click="showConfirmPassword = !showConfirmPassword"
+              />
             </template>
           </UInput>
         </UFormField>
-        <UButton type="submit" :loading="savingPassword" :disabled="!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword">
+        <UButton
+          type="submit"
+          :loading="savingPassword"
+          :disabled="!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword"
+        >
           {{ $t('profile.changePassword') }}
         </UButton>
       </form>

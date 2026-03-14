@@ -7,7 +7,9 @@ const router = useRouter();
 const { items: contentTypeItems } = useContentTypes();
 
 const mounted = ref(false);
-onMounted(() => { mounted.value = true; });
+onMounted(() => {
+  mounted.value = true;
+});
 
 const groups = computed(() => {
   if (!mounted.value) return [];
@@ -17,7 +19,12 @@ const groups = computed(() => {
   ];
 
   if (hasPermission('content-types:read') || hasPermission('content-types:create')) {
-    navItems.push({ id: 'content-types', label: t('nav.contentTypes'), icon: 'i-lucide-blocks', to: '/admin/content-types' });
+    navItems.push({
+      id: 'content-types',
+      label: t('nav.contentTypes'),
+      icon: 'i-lucide-blocks',
+      to: '/admin/content-types',
+    });
   }
   if (hasPermission('content:read')) {
     navItems.push({ id: 'contents', label: t('nav.contents'), icon: 'i-lucide-file-text', to: '/admin/contents' });
@@ -41,20 +48,32 @@ const groups = computed(() => {
     navItems.push({ id: 'settings', label: t('nav.settings'), icon: 'i-lucide-settings', to: '/admin/settings' });
   }
   if (hasPermission('components:read') || hasPermission('components:create')) {
-    navItems.push({ id: 'components', label: t('nav.components'), icon: 'i-lucide-component', to: '/admin/components' });
+    navItems.push({
+      id: 'components',
+      label: t('nav.components'),
+      icon: 'i-lucide-component',
+      to: '/admin/components',
+    });
   }
   if (hasPermission('audit-logs:read')) {
-    navItems.push({ id: 'audit-logs', label: t('nav.auditLogs'), icon: 'i-lucide-scroll-text', to: '/admin/audit-logs' });
+    navItems.push({
+      id: 'audit-logs',
+      label: t('nav.auditLogs'),
+      icon: 'i-lucide-scroll-text',
+      to: '/admin/audit-logs',
+    });
   }
   if (hasPermission('api-keys:read') || hasPermission('api-keys:create')) {
     navItems.push({ id: 'api-keys', label: t('nav.apiKeys'), icon: 'i-lucide-key', to: '/admin/api-keys' });
   }
 
-  const groups = [{
-    id: 'navigation',
-    label: t('commandPalette.navigation'),
-    items: navItems,
-  }];
+  const groups = [
+    {
+      id: 'navigation',
+      label: t('commandPalette.navigation'),
+      items: navItems,
+    },
+  ];
 
   if (hasPermission('content:read') && contentTypeItems.value.length > 0) {
     groups.push({

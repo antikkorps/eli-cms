@@ -48,7 +48,6 @@ COPY --from=builder /app/apps/api/node_modules apps/api/node_modules
 COPY --from=builder /app/packages/shared/package.json packages/shared/
 COPY --from=builder /app/packages/shared/dist packages/shared/dist
 COPY --from=builder /app/packages/shared/node_modules packages/shared/node_modules
-COPY --from=builder /app/apps/web/package.json apps/web/
 
 # Copy entrypoint
 COPY docker/api/entrypoint.sh /entrypoint.sh

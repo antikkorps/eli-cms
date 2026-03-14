@@ -1,5 +1,6 @@
 import { eq, and, count as drizzleCount, desc, max } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type * as schema from '../db/schema/index.js';
 import { db } from '../db/index.js';
 import { contents, contentVersions } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
@@ -10,7 +11,7 @@ const MAX_VERSIONS = 20;
 
 export class ContentVersionService {
   /** Snapshots the current state of a content before an update. */
-  static async snapshot(contentId: string, editedBy: string, tx?: NodePgDatabase<any>) {
+  static async snapshot(contentId: string, editedBy: string, tx?: NodePgDatabase<typeof schema>) {
     const runner = tx ?? db;
 
     const [content] = await runner.select().from(contents).where(eq(contents.id, contentId)).limit(1);
@@ -57,10 +58,7 @@ export class ContentVersionService {
 
     const where = eq(contentVersions.contentId, contentId);
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(contentVersions)
-      .where(where);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(contentVersions).where(where);
 
     const data = await db
       .select()

@@ -1,9 +1,5 @@
 import type { Context } from 'koa';
-import {
-  contentTypeListQuerySchema,
-  publicContentListQuerySchema,
-  CONTENT_PREVIEW,
-} from '@eli-cms/shared';
+import { contentTypeListQuerySchema, publicContentListQuerySchema, CONTENT_PREVIEW } from '@eli-cms/shared';
 import type { JwtPayload } from '@eli-cms/shared';
 import { ContentTypeService } from '../services/content-type.service.js';
 import { ContentService } from '../services/content.service.js';
@@ -21,7 +17,7 @@ export class PublicController {
   static async listContentTypes(ctx: Context) {
     const result = contentTypeListQuerySchema.safeParse(ctx.query);
     if (!result.success) {
-      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
     const { data, meta } = await ContentTypeService.findAll(result.data);
     ctx.body = { success: true, data, meta };
@@ -36,7 +32,7 @@ export class PublicController {
     const parsed = parsePublicQuery(ctx.query as Record<string, unknown>);
     const result = publicContentListQuerySchema.safeParse(parsed);
     if (!result.success) {
-      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
 
     const isPreview = result.data.preview === true && isPreviewAllowed(ctx);
@@ -47,11 +43,11 @@ export class PublicController {
 
     // Populate relations
     if (result.data.populate === 'relations' && items.length > 0) {
-      const ids = items.map(c => c.id as string);
+      const ids = items.map((c) => c.id as string);
       const relationsMap = await ContentRelationService.populateRelations(ids, {
         onlyPublished: !isPreview,
       });
-      items = items.map(c => ({
+      items = items.map((c) => ({
         ...c,
         _relations: relationsMap.get(c.id as string) ?? [],
       }));
@@ -81,10 +77,9 @@ export class PublicController {
 
     // Populate relations
     if (populate === 'relations') {
-      const relationsMap = await ContentRelationService.populateRelations(
-        [item.id as string],
-        { onlyPublished: !preview },
-      );
+      const relationsMap = await ContentRelationService.populateRelations([item.id as string], {
+        onlyPublished: !preview,
+      });
       item = { ...item, _relations: relationsMap.get(item.id as string) ?? [] };
     }
 
@@ -102,7 +97,7 @@ export class PublicController {
     const parsed = parsePublicQuery(ctx.query as Record<string, unknown>);
     const result = publicContentListQuerySchema.safeParse(parsed);
     if (!result.success) {
-      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
 
     const isPreview = result.data.preview === true && isPreviewAllowed(ctx);
@@ -116,11 +111,11 @@ export class PublicController {
 
     // Populate relations
     if (result.data.populate === 'relations' && items.length > 0) {
-      const ids = items.map(c => c.id as string);
+      const ids = items.map((c) => c.id as string);
       const relationsMap = await ContentRelationService.populateRelations(ids, {
         onlyPublished: !isPreview,
       });
-      items = items.map(c => ({
+      items = items.map((c) => ({
         ...c,
         _relations: relationsMap.get(c.id as string) ?? [],
       }));
@@ -152,10 +147,9 @@ export class PublicController {
 
     // Populate relations
     if (populate === 'relations') {
-      const relationsMap = await ContentRelationService.populateRelations(
-        [item.id as string],
-        { onlyPublished: !preview },
-      );
+      const relationsMap = await ContentRelationService.populateRelations([item.id as string], {
+        onlyPublished: !preview,
+      });
       item = { ...item, _relations: relationsMap.get(item.id as string) ?? [] };
     }
 

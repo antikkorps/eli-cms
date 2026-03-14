@@ -40,10 +40,7 @@ describe('GET /api/contents', () => {
         .send({ contentTypeId: ctId, data: buildBlogData({ title: `Post ${i}` }) });
     }
 
-    const res = await api
-      .get('/api/v1/contents')
-      .query({ page: 1, limit: 2 })
-      .set('Authorization', `Bearer ${token}`);
+    const res = await api.get('/api/v1/contents').query({ page: 1, limit: 2 }).set('Authorization', `Bearer ${token}`);
 
     expect(res.body.data).toHaveLength(2);
     expect(res.body.meta).toMatchObject({ page: 1, limit: 2, total: 3, totalPages: 2 });
@@ -67,10 +64,7 @@ describe('GET /api/contents', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({ contentTypeId: ctId, status: 'published', data: buildBlogData({ title: 'Published' }) });
 
-    const res = await api
-      .get('/api/v1/contents')
-      .query({ status: 'draft' })
-      .set('Authorization', `Bearer ${token}`);
+    const res = await api.get('/api/v1/contents').query({ status: 'draft' }).set('Authorization', `Bearer ${token}`);
 
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].status).toBe('draft');
@@ -174,7 +168,7 @@ describe('GET /api/contents', () => {
 
     expect(res.body.data).toHaveLength(2);
     expect(res.body.meta).toMatchObject({ total: 3, totalPages: 2, page: 1, limit: 2 });
-    expect(res.body.data.every((c: any) => c.status === 'draft')).toBe(true);
+    expect(res.body.data.every((c: Record<string, unknown>) => c.status === 'draft')).toBe(true);
   });
 
   // ─── Sorting ──────────────────────────────────────────
@@ -230,18 +224,12 @@ describe('GET /api/contents', () => {
 
   // ─── Validation ───────────────────────────────────────
   it('returns 400 for page=0', async () => {
-    const res = await agent()
-      .get('/api/v1/contents')
-      .query({ page: 0 })
-      .set('Authorization', `Bearer ${token}`);
+    const res = await agent().get('/api/v1/contents').query({ page: 0 }).set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(400);
   });
 
   it('returns 400 for limit=101', async () => {
-    const res = await agent()
-      .get('/api/v1/contents')
-      .query({ limit: 101 })
-      .set('Authorization', `Bearer ${token}`);
+    const res = await agent().get('/api/v1/contents').query({ limit: 101 }).set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(400);
   });
 
@@ -365,7 +353,10 @@ describe('GET /api/contents', () => {
     await api
       .post('/api/v1/contents')
       .set('Authorization', `Bearer ${token}`)
-      .send({ contentTypeId: ctId, data: buildBlogData({ title: 'golang tutorial', body: 'Learn golang step by step' }) });
+      .send({
+        contentTypeId: ctId,
+        data: buildBlogData({ title: 'golang tutorial', body: 'Learn golang step by step' }),
+      });
 
     const res = await api
       .get('/api/v1/contents')
@@ -416,10 +407,7 @@ describe('GET /api/contents', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({ contentTypeId: ctId, data: buildBlogData({ title: 'Post B' }) });
 
-    const res = await api
-      .get('/api/v1/contents')
-      .query({ search: '' })
-      .set('Authorization', `Bearer ${token}`);
+    const res = await api.get('/api/v1/contents').query({ search: '' }).set('Authorization', `Bearer ${token}`);
 
     expect(res.body.data).toHaveLength(2);
   });

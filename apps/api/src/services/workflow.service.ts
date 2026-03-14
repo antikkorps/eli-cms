@@ -12,9 +12,7 @@ interface Transition {
  * Each key is the current status; value is an array of valid transitions.
  */
 const TRANSITION_MAP: Record<string, Transition[]> = {
-  draft: [
-    { to: 'in-review', permission: CONTENT_UPDATE },
-  ],
+  draft: [{ to: 'in-review', permission: CONTENT_UPDATE }],
   'in-review': [
     { to: 'approved', permission: CONTENT_REVIEW },
     { to: 'draft', permission: CONTENT_REVIEW },
@@ -28,9 +26,7 @@ const TRANSITION_MAP: Record<string, Transition[]> = {
     { to: 'published', permission: CONTENT_PUBLISH },
     { to: 'draft', permission: CONTENT_PUBLISH },
   ],
-  published: [
-    { to: 'draft', permission: CONTENT_PUBLISH },
-  ],
+  published: [{ to: 'draft', permission: CONTENT_PUBLISH }],
 };
 
 export class WorkflowService {
@@ -61,8 +57,6 @@ export class WorkflowService {
    */
   static getAvailableTransitions(from: string, userPermissions: string[]): ContentStatus[] {
     const allowed = TRANSITION_MAP[from] ?? [];
-    return allowed
-      .filter((t) => userPermissions.includes(t.permission))
-      .map((t) => t.to);
+    return allowed.filter((t) => userPermissions.includes(t.permission)).map((t) => t.to);
   }
 }

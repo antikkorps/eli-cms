@@ -9,7 +9,12 @@ const { t } = useI18n();
 const toast = useToast();
 const router = useRouter();
 const route = useRoute();
-const { items: contentTypeItems, fetch: fetchContentTypes, loading: loadingTypes, invalidate: invalidateContentTypes } = useContentTypes();
+const {
+  items: contentTypeItems,
+  fetch: fetchContentTypes,
+  loading: loadingTypes,
+  invalidate: invalidateContentTypes,
+} = useContentTypes();
 const { errors: validationErrors, validate, clearErrors } = useContentValidation();
 
 const selectedTypeId = ref('');
@@ -18,13 +23,9 @@ const status = ref<'draft' | 'published'>('draft');
 const data = ref<Record<string, unknown>>({});
 const saving = ref(false);
 
-const selectedType = computed(() =>
-  contentTypeItems.value.find((ct) => ct.id === selectedTypeId.value),
-);
+const selectedType = computed(() => contentTypeItems.value.find((ct) => ct.id === selectedTypeId.value));
 
-const typeItems = computed(() =>
-  contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })),
-);
+const typeItems = computed(() => contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })));
 
 const statusItems = [
   { label: t('contents.draft'), value: 'draft' },

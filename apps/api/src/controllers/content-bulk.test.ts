@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { agent, getAdminToken, getEditorToken } from '../__tests__/helpers/setup.js';
+import { agent, getAdminToken } from '../__tests__/helpers/setup.js';
 import { buildBlogContentType, buildBlogData } from '../__tests__/helpers/fixtures.js';
 
 describe('Content Bulk Actions', () => {
@@ -37,15 +37,11 @@ describe('Content Bulk Actions', () => {
     expect(res.body.data.affected).toBe(2);
 
     // c3 should still exist
-    const get = await agent()
-      .get(`/api/v1/contents/${c3.id}`)
-      .set('Authorization', `Bearer ${token}`);
+    const get = await agent().get(`/api/v1/contents/${c3.id}`).set('Authorization', `Bearer ${token}`);
     expect(get.status).toBe(200);
 
     // c1 should be gone
-    const gone = await agent()
-      .get(`/api/v1/contents/${c1.id}`)
-      .set('Authorization', `Bearer ${token}`);
+    const gone = await agent().get(`/api/v1/contents/${c1.id}`).set('Authorization', `Bearer ${token}`);
     expect(gone.status).toBe(404);
   });
 
@@ -61,9 +57,7 @@ describe('Content Bulk Actions', () => {
     expect(res.status).toBe(200);
     expect(res.body.data.affected).toBe(2);
 
-    const get = await agent()
-      .get(`/api/v1/contents/${c1.id}`)
-      .set('Authorization', `Bearer ${token}`);
+    const get = await agent().get(`/api/v1/contents/${c1.id}`).set('Authorization', `Bearer ${token}`);
     expect(get.body.data.status).toBe('published');
   });
 
@@ -78,9 +72,7 @@ describe('Content Bulk Actions', () => {
 
     expect(res.status).toBe(200);
 
-    const get = await agent()
-      .get(`/api/v1/contents/${c1.id}`)
-      .set('Authorization', `Bearer ${token}`);
+    const get = await agent().get(`/api/v1/contents/${c1.id}`).set('Authorization', `Bearer ${token}`);
     expect(get.body.data.status).toBe('draft');
   });
 

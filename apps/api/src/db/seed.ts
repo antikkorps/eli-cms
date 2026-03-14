@@ -32,7 +32,10 @@ async function seed() {
       console.log(`Role created: ${name}`);
     } else {
       // Update permissions of existing system roles to stay in sync
-      await db.update(roles).set({ permissions: [...permissions] }).where(eq(roles.slug, slug));
+      await db
+        .update(roles)
+        .set({ permissions: [...permissions] })
+        .where(eq(roles.slug, slug));
       console.log(`Role "${slug}" already exists, permissions updated.`);
     }
   }
@@ -113,7 +116,13 @@ async function seed() {
           required: false,
           label: 'Social Links',
           subFields: [
-            { name: 'platform', type: 'select', required: true, label: 'Platform', options: ['Facebook', 'Twitter / X', 'Instagram', 'LinkedIn', 'YouTube', 'TikTok', 'GitHub', 'Other'] },
+            {
+              name: 'platform',
+              type: 'select',
+              required: true,
+              label: 'Platform',
+              options: ['Facebook', 'Twitter / X', 'Instagram', 'LinkedIn', 'YouTube', 'TikTok', 'GitHub', 'Other'],
+            },
             { name: 'url', type: 'url', required: true, label: 'URL' },
           ],
         },
@@ -141,7 +150,13 @@ async function seed() {
         { name: 'site_name', type: 'text', required: true, label: 'Site Name', defaultValue: 'My Website' },
         { name: 'site_description', type: 'textarea', required: false, label: 'Site Description' },
         { name: 'favicon', type: 'media', required: false, label: 'Favicon', accept: ['image'] },
-        { name: 'company', type: 'component', required: false, label: 'Company Identity', componentSlugs: ['company-identity'] },
+        {
+          name: 'company',
+          type: 'component',
+          required: false,
+          label: 'Company Identity',
+          componentSlugs: ['company-identity'],
+        },
         { name: 'seo', type: 'component', required: false, label: 'Default SEO', componentSlugs: ['seo'] },
       ],
     },

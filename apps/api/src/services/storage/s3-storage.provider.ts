@@ -1,9 +1,4 @@
-import {
-  S3Client,
-  PutObjectCommand,
-  DeleteObjectCommand,
-  GetObjectCommand,
-} from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import type { Readable } from 'node:stream';
 import type { StorageProvider } from './storage.interface.js';
 import type { S3Config } from '@eli-cms/shared';
@@ -37,16 +32,12 @@ export class S3StorageProvider implements StorageProvider {
   }
 
   async delete(key: string): Promise<void> {
-    await this.client.send(
-      new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
-    );
+    await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
   }
 
   async getStream(key: string): Promise<Readable> {
     try {
-      const response = await this.client.send(
-        new GetObjectCommand({ Bucket: this.bucket, Key: key }),
-      );
+      const response = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }));
       return response.Body as Readable;
     } catch {
       throw new AppError(404, 'File not found in S3');

@@ -50,20 +50,12 @@ export class ContentRelationService {
 
     const where = and(...filters);
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(contentRelations)
-      .where(where);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(contentRelations).where(where);
 
-    const rows = await db
-      .select()
-      .from(contentRelations)
-      .where(where)
-      .limit(limit)
-      .offset(offset);
+    const rows = await db.select().from(contentRelations).where(where).limit(limit).offset(offset);
 
     // Populate target contents with their content type
-    const targetIds = [...new Set(rows.map(r => r.targetId))];
+    const targetIds = [...new Set(rows.map((r) => r.targetId))];
     let targets: { content: typeof contents.$inferSelect; contentTypeName: string | null }[] = [];
     if (targetIds.length > 0) {
       targets = await db
@@ -75,17 +67,19 @@ export class ContentRelationService {
         .leftJoin(contentTypes, eq(contents.contentTypeId, contentTypes.id))
         .where(inArray(contents.id, targetIds));
     }
-    const targetMap = new Map(targets.map(t => [t.content.id, t]));
+    const targetMap = new Map(targets.map((t) => [t.content.id, t]));
 
-    const data = rows.map(rel => {
+    const data = rows.map((rel) => {
       const t = targetMap.get(rel.targetId);
       return {
         ...rel,
-        target: t ? {
-          id: t.content.id,
-          data: t.content.data,
-          contentType: t.contentTypeName ? { name: t.contentTypeName } : undefined,
-        } : undefined,
+        target: t
+          ? {
+              id: t.content.id,
+              data: t.content.data,
+              contentType: t.contentTypeName ? { name: t.contentTypeName } : undefined,
+            }
+          : undefined,
       };
     });
 
@@ -104,23 +98,21 @@ export class ContentRelationService {
     if (contentIds.length === 0) return result;
 
     // Query 1: fetch all relations for given source IDs
-    const relations = await db
-      .select()
-      .from(contentRelations)
-      .where(inArray(contentRelations.sourceId, contentIds));
+    const relations = await db.select().from(contentRelations).where(inArray(contentRelations.sourceId, contentIds));
 
     if (relations.length === 0) return result;
 
     // Query 2: fetch all target contents
-    const targetIds = [...new Set(relations.map(r => r.targetId))];
+    const targetIds = [...new Set(relations.map((r) => r.targetId))];
     let targetQuery = db.select().from(contents).where(inArray(contents.id, targetIds));
     if (options?.onlyPublished) {
-      targetQuery = db.select().from(contents).where(
-        and(inArray(contents.id, targetIds), eq(contents.status, 'published')),
-      );
+      targetQuery = db
+        .select()
+        .from(contents)
+        .where(and(inArray(contents.id, targetIds), eq(contents.status, 'published')));
     }
     const targets = await targetQuery;
-    const targetMap = new Map(targets.map(t => [t.id, t]));
+    const targetMap = new Map(targets.map((t) => [t.id, t]));
 
     // Build the result map
     for (const rel of relations) {

@@ -34,8 +34,8 @@ function getCsrfToken(): string | undefined {
 }
 
 export function useAuth() {
-  const tokenCookie = useCookie('eli_token', { maxAge: 60 * 15 });
-  const refreshCookie = useCookie('eli_refresh_token', { maxAge: 60 * 60 * 24 * 7 });
+  const tokenCookie = useCookie('eli_access', { maxAge: 60 * 15 });
+  const refreshCookie = useCookie('eli_refresh', { maxAge: 60 * 60 * 24 * 7 });
   const config = useRuntimeConfig();
   const baseURL = config.public.apiBase as string;
 
@@ -99,7 +99,13 @@ export function useAuth() {
     }
   }
 
-  async function updateProfile(input: { email?: string; firstName?: string | null; lastName?: string | null; avatarStyle?: string | null; avatarSeed?: string | null }) {
+  async function updateProfile(input: {
+    email?: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    avatarStyle?: string | null;
+    avatarSeed?: string | null;
+  }) {
     const csrf = getCsrfToken();
     const res = await $fetch<{ success: boolean; data: AuthUser }>(`${baseURL}/auth/profile`, {
       method: 'PUT',

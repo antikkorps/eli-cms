@@ -17,13 +17,16 @@ interface MediaItem {
   folderId: string | null;
 }
 
-const props = withDefaults(defineProps<{
-  multiple?: boolean;
-  accept?: string[];
-}>(), {
-  multiple: false,
-  accept: undefined,
-});
+const props = withDefaults(
+  defineProps<{
+    multiple?: boolean;
+    accept?: string[];
+  }>(),
+  {
+    multiple: false,
+    accept: undefined,
+  },
+);
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | null | string[]];
@@ -284,6 +287,10 @@ onMounted(() => {
     fetchSelectedMedia();
   }
 });
+
+onBeforeUnmount(() => {
+  if (searchDebounce) clearTimeout(searchDebounce);
+});
 </script>
 
 <template>
@@ -335,7 +342,11 @@ onMounted(() => {
     <!-- MULTIPLE MODE: Selected media list -->
     <template v-else>
       <div v-if="selectedMediaList.length > 0" class="space-y-2">
-        <div v-for="item in selectedMediaList" :key="item.id" class="flex items-center gap-3 rounded-lg border border-accented p-2">
+        <div
+          v-for="item in selectedMediaList"
+          :key="item.id"
+          class="flex items-center gap-3 rounded-lg border border-accented p-2"
+        >
           <img
             v-if="isImage(item.mimeType)"
             :src="getThumbUrl(item.id, 40)"
@@ -403,12 +414,17 @@ onMounted(() => {
               v-model="pickerFolderId"
               :items="[
                 { label: $t('mediaFolders.allFiles'), value: null },
-                ...flatPickerFolders.map(f => ({ label: '\u00A0\u00A0'.repeat(f.depth) + f.name, value: f.id })),
+                ...flatPickerFolders.map((f) => ({ label: '\u00A0\u00A0'.repeat(f.depth) + f.name, value: f.id })),
               ]"
               value-key="value"
               size="sm"
               class="w-48"
-              @update:model-value="() => { page = 1; fetchMedia(); }"
+              @update:model-value="
+                () => {
+                  page = 1;
+                  fetchMedia();
+                }
+              "
             />
           </div>
 
@@ -461,10 +477,15 @@ onMounted(() => {
                 <span class="px-2 text-xs text-muted truncate max-w-full">{{ item.originalName }}</span>
               </div>
               <!-- Selected checkmark for multi-select -->
-              <div v-if="props.multiple && isSelected(item.id)" class="absolute top-1 right-1 rounded-full bg-primary p-0.5">
+              <div
+                v-if="props.multiple && isSelected(item.id)"
+                class="absolute top-1 right-1 rounded-full bg-primary p-0.5"
+              >
                 <UIcon name="i-lucide-check" class="size-3 text-white" />
               </div>
-              <div class="absolute inset-x-0 bottom-0 bg-black/50 px-2 py-1 opacity-0 transition-opacity group-hover:opacity-100">
+              <div
+                class="absolute inset-x-0 bottom-0 bg-black/50 px-2 py-1 opacity-0 transition-opacity group-hover:opacity-100"
+              >
                 <p class="truncate text-xs text-white">{{ item.originalName }}</p>
               </div>
             </button>
@@ -489,11 +510,6 @@ onMounted(() => {
     </UModal>
 
     <!-- Image crop modal -->
-    <ImageCropModal
-      :file="cropFile"
-      @confirm="onCropConfirm"
-      @skip="onCropSkip"
-      @cancel="onCropCancel"
-    />
+    <ImageCropModal :file="cropFile" @confirm="onCropConfirm" @skip="onCropSkip" @cancel="onCropCancel" />
   </div>
 </template>

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { extname } from 'node:path';
-import { eq, and, ilike, count as drizzleCount } from 'drizzle-orm';
+import { eq, and, ilike, inArray, count as drizzleCount } from 'drizzle-orm';
 import type { Readable } from 'node:stream';
 import sharp from 'sharp';
 import { db } from '../db/index.js';
@@ -15,7 +15,12 @@ import { eventBus } from './event-bus.js';
 import type { Actor } from './content.service.js';
 
 export class UploadService {
-  static async upload(file: { buffer: Buffer; originalname: string; mimetype: string; size: number }, userId: string, actor?: Actor, folderId?: string) {
+  static async upload(
+    file: { buffer: Buffer; originalname: string; mimetype: string; size: number },
+    userId: string,
+    actor?: Actor,
+    folderId?: string,
+  ) {
     const safeName = sanitizeFilename(file.originalname);
     const ext = extname(safeName);
     const filename = `${randomUUID()}${ext}`;
@@ -41,7 +46,11 @@ export class UploadService {
 
     // Validate folderId if provided
     if (folderId) {
-      const [folder] = await db.select({ id: mediaFolders.id }).from(mediaFolders).where(eq(mediaFolders.id, folderId)).limit(1);
+      const [folder] = await db
+        .select({ id: mediaFolders.id })
+        .from(mediaFolders)
+        .where(eq(mediaFolders.id, folderId))
+        .limit(1);
       if (!folder) throw new AppError(400, 'Folder not found');
     }
 
@@ -61,7 +70,9 @@ export class UploadService {
       })
       .returning();
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('media.uploaded', { media: record, ...actorData });
     return record;
   }
@@ -78,18 +89,9 @@ export class UploadService {
 
     const where = filters.length > 0 ? and(...filters) : undefined;
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(media)
-      .where(where);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(media).where(where);
 
-    const data = await db
-      .select()
-      .from(media)
-      .where(where)
-      .orderBy(media.createdAt)
-      .limit(limit)
-      .offset(offset);
+    const data = await db.select().from(media).where(where).orderBy(media.createdAt).limit(limit).offset(offset);
 
     return { data, meta: buildMeta(total, page, limit) };
   }
@@ -98,6 +100,11 @@ export class UploadService {
     const [record] = await db.select().from(media).where(eq(media.id, id)).limit(1);
     if (!record) throw new AppError(404, 'Media not found');
     return record;
+  }
+
+  static async findByIds(ids: string[]) {
+    if (ids.length === 0) return [];
+    return db.select({ id: media.id }).from(media).where(inArray(media.id, ids));
   }
 
   static async update(id: string, input: UpdateMediaInput) {
@@ -109,7 +116,11 @@ export class UploadService {
     if (input.caption !== undefined) setData.caption = input.caption;
     if (input.folderId !== undefined) {
       if (input.folderId !== null) {
-        const [folder] = await db.select({ id: mediaFolders.id }).from(mediaFolders).where(eq(mediaFolders.id, input.folderId)).limit(1);
+        const [folder] = await db
+          .select({ id: mediaFolders.id })
+          .from(mediaFolders)
+          .where(eq(mediaFolders.id, input.folderId))
+          .limit(1);
         if (!folder) throw new AppError(400, 'Folder not found');
       }
       setData.folderId = input.folderId;
@@ -119,11 +130,7 @@ export class UploadService {
       throw new AppError(400, 'No fields to update');
     }
 
-    const [updated] = await db
-      .update(media)
-      .set(setData)
-      .where(eq(media.id, id))
-      .returning();
+    const [updated] = await db.update(media).set(setData).where(eq(media.id, id)).returning();
     return updated;
   }
 
@@ -150,7 +157,9 @@ export class UploadService {
     const { ImageTransformService } = await import('./image-transform.service.js');
     await ImageTransformService.clearCache(id);
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('media.deleted', { media: record, ...actorData });
   }
 

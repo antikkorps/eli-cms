@@ -18,7 +18,7 @@ function getCookieHeader(res: { headers: Record<string, string | string[]> }): s
   const raw = res.headers['set-cookie'];
   if (!raw) return '';
   const arr = Array.isArray(raw) ? raw : [raw];
-  return arr.map(c => c.split(';')[0]).join('; ');
+  return arr.map((c) => c.split(';')[0]).join('; ');
 }
 
 describe('Auth endpoints', () => {
@@ -129,8 +129,8 @@ describe('Auth endpoints', () => {
       expect(cookies['eli_refresh']).toBeDefined();
 
       const raw = res.headers['set-cookie'] as unknown as string[];
-      const accessCookie = raw.find(c => c.startsWith('eli_access='))!;
-      const refreshCookie = raw.find(c => c.startsWith('eli_refresh='))!;
+      const accessCookie = raw.find((c) => c.startsWith('eli_access='))!;
+      const refreshCookie = raw.find((c) => c.startsWith('eli_refresh='))!;
       expect(accessCookie).toContain('httponly');
       expect(refreshCookie).toContain('httponly');
       expect(refreshCookie).toContain('path=/api/auth');
@@ -206,10 +206,7 @@ describe('Auth endpoints', () => {
 
       const cookieHeader = getCookieHeader(loginRes);
 
-      const res = await api
-        .post('/api/v1/auth/refresh')
-        .set('Cookie', cookieHeader)
-        .send({});
+      const res = await api.post('/api/v1/auth/refresh').set('Cookie', cookieHeader).send({});
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -552,9 +549,7 @@ describe('Auth endpoints', () => {
 
       const cookieHeader = getCookieHeader(loginRes);
 
-      const res = await api
-        .get('/api/v1/auth/me')
-        .set('Cookie', cookieHeader);
+      const res = await api.get('/api/v1/auth/me').set('Cookie', cookieHeader);
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);

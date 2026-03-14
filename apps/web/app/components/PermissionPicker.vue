@@ -6,14 +6,14 @@ const model = defineModel<string[]>({ required: true });
 
 // Icon map — only cosmetic config, everything else is derived from ALL_PERMISSIONS
 const GROUP_ICONS: Record<string, string> = {
-  'content': 'i-lucide-file-text',
+  content: 'i-lucide-file-text',
   'content-types': 'i-lucide-blocks',
-  'users': 'i-lucide-users',
-  'uploads': 'i-lucide-upload',
-  'roles': 'i-lucide-shield',
-  'components': 'i-lucide-component',
-  'webhooks': 'i-lucide-webhook',
-  'settings': 'i-lucide-settings',
+  users: 'i-lucide-users',
+  uploads: 'i-lucide-upload',
+  roles: 'i-lucide-shield',
+  components: 'i-lucide-component',
+  webhooks: 'i-lucide-webhook',
+  settings: 'i-lucide-settings',
   'audit-logs': 'i-lucide-scroll-text',
   'api-keys': 'i-lucide-key',
 };
@@ -142,7 +142,10 @@ const totalCount = PERMISSION_GROUPS.reduce((sum, g) => sum + g.actions.length, 
               {{ $t('permissions.groups.resource') }}
             </th>
             <th v-for="action in ALL_ACTIONS" :key="action" class="px-2 py-2.5 border-b border-default min-w-17">
-              <label class="flex flex-col items-center gap-1 select-none" :class="props.disabled ? 'cursor-default' : 'cursor-pointer'">
+              <label
+                class="flex flex-col items-center gap-1 select-none"
+                :class="props.disabled ? 'cursor-default' : 'cursor-pointer'"
+              >
                 <span class="text-xs font-medium text-muted">{{ $t(`permissions.actions.${action}`) }}</span>
                 <UCheckbox
                   :model-value="isColumnAllChecked(action)"
@@ -162,7 +165,10 @@ const totalCount = PERMISSION_GROUPS.reduce((sum, g) => sum + g.actions.length, 
             :class="{ 'border-b border-default': rowIdx < PERMISSION_GROUPS.length - 1 }"
           >
             <td class="sticky left-0 z-5 bg-inherit pl-3 pr-2 py-2">
-              <label class="flex items-center gap-2 select-none" :class="props.disabled ? 'cursor-default' : 'cursor-pointer'">
+              <label
+                class="flex items-center gap-2 select-none"
+                :class="props.disabled ? 'cursor-default' : 'cursor-pointer'"
+              >
                 <UCheckbox
                   :model-value="isGroupAllChecked(group)"
                   :indeterminate="isGroupPartial(group)"
@@ -191,7 +197,10 @@ const totalCount = PERMISSION_GROUPS.reduce((sum, g) => sum + g.actions.length, 
     <!-- Mobile: stacked cards -->
     <div class="sm:hidden max-h-100 overflow-y-auto space-y-2">
       <div v-for="group in PERMISSION_GROUPS" :key="group.key" class="rounded-lg border border-default p-3 space-y-2">
-        <label class="flex items-center gap-2 select-none" :class="props.disabled ? 'cursor-default' : 'cursor-pointer'">
+        <label
+          class="flex items-center gap-2 select-none"
+          :class="props.disabled ? 'cursor-default' : 'cursor-pointer'"
+        >
           <UCheckbox
             :model-value="isGroupAllChecked(group)"
             :indeterminate="isGroupPartial(group)"

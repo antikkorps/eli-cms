@@ -39,9 +39,7 @@ async function fetchRoles() {
   }
 }
 
-const roleItems = computed(() =>
-  roleOptions.value.map((r) => ({ label: r.name, value: r.id })),
-);
+const roleItems = computed(() => roleOptions.value.map((r) => ({ label: r.name, value: r.id })));
 
 async function submit() {
   saving.value = true;
@@ -94,11 +92,23 @@ onMounted(fetchRoles);
       </UFormField>
 
       <UFormField :label="$t('users.passwordLabel')">
-        <UInput v-model="form.password" type="password" :placeholder="$t('users.passwordPlaceholder')" required class="w-full" />
+        <UInput
+          v-model="form.password"
+          type="password"
+          :placeholder="$t('users.passwordPlaceholder')"
+          required
+          class="w-full"
+        />
       </UFormField>
 
       <UFormField :label="$t('users.roleLabel')">
-        <USelect v-model="form.roleId" :items="roleItems" :placeholder="$t('users.rolePlaceholder')" required class="w-full" />
+        <USelect
+          v-model="form.roleId"
+          :items="roleItems"
+          :placeholder="$t('users.rolePlaceholder')"
+          required
+          class="w-full"
+        />
       </UFormField>
 
       <div class="flex justify-end gap-2">

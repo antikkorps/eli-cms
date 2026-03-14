@@ -62,10 +62,7 @@ describe('Content Types CRUD', () => {
 
     it('409 rejects duplicate slug', async () => {
       const api = agent();
-      await api
-        .post('/api/v1/content-types')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send(buildBlogContentType());
+      await api.post('/api/v1/content-types').set('Authorization', `Bearer ${adminToken}`).send(buildBlogContentType());
 
       const res = await api
         .post('/api/v1/content-types')
@@ -193,10 +190,7 @@ describe('Content Types CRUD', () => {
 
     it('409 rejects slug taken by another content type', async () => {
       const api = agent();
-      await api
-        .post('/api/v1/content-types')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send(buildBlogContentType());
+      await api.post('/api/v1/content-types').set('Authorization', `Bearer ${adminToken}`).send(buildBlogContentType());
 
       const other = await api
         .post('/api/v1/content-types')

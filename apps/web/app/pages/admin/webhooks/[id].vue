@@ -129,7 +129,11 @@ const deliveryColumns = computed(() => [
     accessorKey: 'event',
     header: t('webhooks.deliveryEvent'),
     cell: ({ row }: { row: { original: WebhookDelivery } }) => {
-      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', size: 'sm' }, () => row.original.event);
+      return h(
+        UBadge as ReturnType<typeof resolveComponent>,
+        { variant: 'subtle', size: 'sm' },
+        () => row.original.event,
+      );
     },
   },
   {
@@ -137,12 +141,20 @@ const deliveryColumns = computed(() => [
     header: t('webhooks.deliveryStatus'),
     cell: ({ row }: { row: { original: WebhookDelivery } }) => {
       const colors: Record<string, string> = { success: 'success', failed: 'error', pending: 'warning' };
-      const labels: Record<string, string> = { success: t('webhooks.success'), failed: t('webhooks.failed'), pending: t('webhooks.pending') };
-      return h(UBadge as ReturnType<typeof resolveComponent>, {
-        variant: 'subtle',
-        color: (colors[row.original.status] || 'neutral') as 'success' | 'error' | 'warning' | 'neutral',
-        size: 'sm',
-      }, () => labels[row.original.status] || row.original.status);
+      const labels: Record<string, string> = {
+        success: t('webhooks.success'),
+        failed: t('webhooks.failed'),
+        pending: t('webhooks.pending'),
+      };
+      return h(
+        UBadge as ReturnType<typeof resolveComponent>,
+        {
+          variant: 'subtle',
+          color: (colors[row.original.status] || 'neutral') as 'success' | 'error' | 'warning' | 'neutral',
+          size: 'sm',
+        },
+        () => labels[row.original.status] || row.original.status,
+      );
     },
   },
   {
@@ -152,7 +164,8 @@ const deliveryColumns = computed(() => [
   {
     accessorKey: 'createdAt',
     header: t('webhooks.deliveryDate'),
-    cell: ({ row }: { row: { original: WebhookDelivery } }) => new Date(row.original.createdAt).toLocaleString(locale.value),
+    cell: ({ row }: { row: { original: WebhookDelivery } }) =>
+      new Date(row.original.createdAt).toLocaleString(locale.value),
   },
 ]);
 

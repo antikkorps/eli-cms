@@ -59,7 +59,22 @@ export const openApiSpec = {
         type: 'object' as const,
         properties: {
           name: { type: 'string' as const },
-          type: { type: 'string' as const, enum: ['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media', 'richtext', 'author'] },
+          type: {
+            type: 'string' as const,
+            enum: [
+              'text',
+              'textarea',
+              'number',
+              'boolean',
+              'date',
+              'email',
+              'url',
+              'select',
+              'media',
+              'richtext',
+              'author',
+            ],
+          },
           required: { type: 'boolean' as const },
           label: { type: 'string' as const },
           options: { type: 'array' as const, items: { type: 'string' as const } },
@@ -226,9 +241,25 @@ export const openApiSpec = {
         summary: 'Register a new user',
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object' as const, required: ['email', 'password'], properties: { email: { type: 'string' as const, format: 'email' }, password: { type: 'string' as const, minLength: 6 }, role: { type: 'string' as const, enum: ['admin', 'editor'], default: 'editor' } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                required: ['email', 'password'],
+                properties: {
+                  email: { type: 'string' as const, format: 'email' },
+                  password: { type: 'string' as const, minLength: 6 },
+                  role: { type: 'string' as const, enum: ['admin', 'editor'], default: 'editor' },
+                },
+              },
+            },
+          },
         },
-        responses: { '201': { description: 'User registered' }, '400': { description: 'Validation error' }, '409': { description: 'Email already exists' } },
+        responses: {
+          '201': { description: 'User registered' },
+          '400': { description: 'Validation error' },
+          '409': { description: 'Email already exists' },
+        },
       },
     },
     '/api/v1/auth/login': {
@@ -237,7 +268,15 @@ export const openApiSpec = {
         summary: 'Login and receive tokens',
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object' as const, required: ['email', 'password'], properties: { email: { type: 'string' as const }, password: { type: 'string' as const } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                required: ['email', 'password'],
+                properties: { email: { type: 'string' as const }, password: { type: 'string' as const } },
+              },
+            },
+          },
         },
         responses: { '200': { description: 'Token pair returned' }, '401': { description: 'Invalid credentials' } },
       },
@@ -247,7 +286,11 @@ export const openApiSpec = {
         tags: ['Auth'],
         summary: 'Refresh access token',
         requestBody: {
-          content: { 'application/json': { schema: { type: 'object' as const, properties: { refreshToken: { type: 'string' as const } } } } },
+          content: {
+            'application/json': {
+              schema: { type: 'object' as const, properties: { refreshToken: { type: 'string' as const } } },
+            },
+          },
         },
         responses: { '200': { description: 'New token pair' }, '401': { description: 'Invalid refresh token' } },
       },
@@ -275,7 +318,15 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object' as const, required: ['currentPassword', 'newPassword'], properties: { currentPassword: { type: 'string' as const }, newPassword: { type: 'string' as const } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                required: ['currentPassword', 'newPassword'],
+                properties: { currentPassword: { type: 'string' as const }, newPassword: { type: 'string' as const } },
+              },
+            },
+          },
         },
         responses: { '200': { description: 'Password changed' }, '401': { description: 'Current password wrong' } },
       },
@@ -309,14 +360,18 @@ export const openApiSpec = {
         tags: ['Users'],
         summary: 'Get user by ID (admin)',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '200': { description: 'User details' }, '404': { description: 'Not found' } },
       },
       delete: {
         tags: ['Users'],
         summary: 'Delete user (admin)',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '204': { description: 'Deleted' }, '404': { description: 'Not found' } },
       },
     },
@@ -340,7 +395,19 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object' as const, required: ['slug', 'name', 'fields'], properties: { slug: { type: 'string' as const }, name: { type: 'string' as const }, fields: { type: 'array' as const, items: { $ref: '#/components/schemas/FieldDefinition' } } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                required: ['slug', 'name', 'fields'],
+                properties: {
+                  slug: { type: 'string' as const },
+                  name: { type: 'string' as const },
+                  fields: { type: 'array' as const, items: { $ref: '#/components/schemas/FieldDefinition' } },
+                },
+              },
+            },
+          },
         },
         responses: { '201': { description: 'Created' }, '409': { description: 'Slug already exists' } },
       },
@@ -350,16 +417,31 @@ export const openApiSpec = {
         tags: ['Content Types'],
         summary: 'Get content type by ID',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '200': { description: 'Content type details' }, '404': { description: 'Not found' } },
       },
       put: {
         tags: ['Content Types'],
         summary: 'Update content type (admin)',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         requestBody: {
-          content: { 'application/json': { schema: { type: 'object' as const, properties: { slug: { type: 'string' as const }, name: { type: 'string' as const }, fields: { type: 'array' as const, items: { $ref: '#/components/schemas/FieldDefinition' } } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                properties: {
+                  slug: { type: 'string' as const },
+                  name: { type: 'string' as const },
+                  fields: { type: 'array' as const, items: { $ref: '#/components/schemas/FieldDefinition' } },
+                },
+              },
+            },
+          },
         },
         responses: { '200': { description: 'Updated' }, '404': { description: 'Not found' } },
       },
@@ -367,7 +449,9 @@ export const openApiSpec = {
         tags: ['Content Types'],
         summary: 'Delete content type (admin)',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '204': { description: 'Deleted' }, '404': { description: 'Not found' } },
       },
     },
@@ -382,10 +466,26 @@ export const openApiSpec = {
           { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
           { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
           { name: 'contentTypeId', in: 'query' as const, schema: { type: 'string' as const, format: 'uuid' } },
-          { name: 'status', in: 'query' as const, schema: { type: 'string' as const, enum: ['draft', 'in-review', 'approved', 'scheduled', 'published'] } },
+          {
+            name: 'status',
+            in: 'query' as const,
+            schema: { type: 'string' as const, enum: ['draft', 'in-review', 'approved', 'scheduled', 'published'] },
+          },
           { name: 'search', in: 'query' as const, schema: { type: 'string' as const } },
-          { name: 'sortBy', in: 'query' as const, schema: { type: 'string' as const, enum: ['createdAt', 'updatedAt', 'status', 'slug', 'relevance'], default: 'createdAt' } },
-          { name: 'sortOrder', in: 'query' as const, schema: { type: 'string' as const, enum: ['asc', 'desc'], default: 'desc' } },
+          {
+            name: 'sortBy',
+            in: 'query' as const,
+            schema: {
+              type: 'string' as const,
+              enum: ['createdAt', 'updatedAt', 'status', 'slug', 'relevance'],
+              default: 'createdAt',
+            },
+          },
+          {
+            name: 'sortOrder',
+            in: 'query' as const,
+            schema: { type: 'string' as const, enum: ['asc', 'desc'], default: 'desc' },
+          },
         ],
         responses: { '200': { description: 'Paginated content list' } },
       },
@@ -395,7 +495,25 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object' as const, required: ['contentTypeId', 'data'], properties: { contentTypeId: { type: 'string' as const, format: 'uuid' }, slug: { type: 'string' as const }, status: { type: 'string' as const, enum: ['draft', 'in-review', 'approved', 'scheduled', 'published'], default: 'draft' }, data: { type: 'object' as const }, publishedAt: { type: 'string' as const, format: 'date-time' } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                required: ['contentTypeId', 'data'],
+                properties: {
+                  contentTypeId: { type: 'string' as const, format: 'uuid' },
+                  slug: { type: 'string' as const },
+                  status: {
+                    type: 'string' as const,
+                    enum: ['draft', 'in-review', 'approved', 'scheduled', 'published'],
+                    default: 'draft',
+                  },
+                  data: { type: 'object' as const },
+                  publishedAt: { type: 'string' as const, format: 'date-time' },
+                },
+              },
+            },
+          },
         },
         responses: { '201': { description: 'Created' }, '400': { description: 'Validation error' } },
       },
@@ -405,16 +523,35 @@ export const openApiSpec = {
         tags: ['Contents'],
         summary: 'Get content by ID',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '200': { description: 'Content details' }, '404': { description: 'Not found' } },
       },
       put: {
         tags: ['Contents'],
         summary: 'Update content (auto-versions)',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         requestBody: {
-          content: { 'application/json': { schema: { type: 'object' as const, properties: { slug: { type: 'string' as const, nullable: true }, status: { type: 'string' as const, enum: ['draft', 'in-review', 'approved', 'scheduled', 'published'] }, data: { type: 'object' as const }, publishedAt: { type: 'string' as const, format: 'date-time', nullable: true } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                properties: {
+                  slug: { type: 'string' as const, nullable: true },
+                  status: {
+                    type: 'string' as const,
+                    enum: ['draft', 'in-review', 'approved', 'scheduled', 'published'],
+                  },
+                  data: { type: 'object' as const },
+                  publishedAt: { type: 'string' as const, format: 'date-time', nullable: true },
+                },
+              },
+            },
+          },
         },
         responses: { '200': { description: 'Updated' }, '404': { description: 'Not found' } },
       },
@@ -422,7 +559,9 @@ export const openApiSpec = {
         tags: ['Contents'],
         summary: 'Delete content',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '204': { description: 'Deleted' }, '404': { description: 'Not found' } },
       },
     },
@@ -433,12 +572,30 @@ export const openApiSpec = {
         tags: ['Relations'],
         summary: 'Create a relation from this content',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object' as const, required: ['targetId', 'relationType'], properties: { targetId: { type: 'string' as const, format: 'uuid' }, relationType: { type: 'string' as const, enum: ['reference', 'parent', 'related'] } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                required: ['targetId', 'relationType'],
+                properties: {
+                  targetId: { type: 'string' as const, format: 'uuid' },
+                  relationType: { type: 'string' as const, enum: ['reference', 'parent', 'related'] },
+                },
+              },
+            },
+          },
         },
-        responses: { '201': { description: 'Relation created' }, '400': { description: 'Self-relation' }, '404': { description: 'Source or target not found' }, '409': { description: 'Duplicate' } },
+        responses: {
+          '201': { description: 'Relation created' },
+          '400': { description: 'Self-relation' },
+          '404': { description: 'Source or target not found' },
+          '409': { description: 'Duplicate' },
+        },
       },
       get: {
         tags: ['Relations'],
@@ -448,7 +605,11 @@ export const openApiSpec = {
           { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
           { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
           { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
-          { name: 'relationType', in: 'query' as const, schema: { type: 'string' as const, enum: ['reference', 'parent', 'related'] } },
+          {
+            name: 'relationType',
+            in: 'query' as const,
+            schema: { type: 'string' as const, enum: ['reference', 'parent', 'related'] },
+          },
         ],
         responses: { '200': { description: 'Paginated relations' } },
       },
@@ -460,7 +621,12 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         parameters: [
           { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
-          { name: 'relationId', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+          {
+            name: 'relationId',
+            in: 'path' as const,
+            required: true,
+            schema: { type: 'string' as const, format: 'uuid' },
+          },
         ],
         responses: { '204': { description: 'Deleted' }, '404': { description: 'Not found' } },
       },
@@ -487,7 +653,12 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         parameters: [
           { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
-          { name: 'versionId', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+          {
+            name: 'versionId',
+            in: 'path' as const,
+            required: true,
+            schema: { type: 'string' as const, format: 'uuid' },
+          },
         ],
         responses: { '200': { description: 'Version details' }, '404': { description: 'Not found' } },
       },
@@ -499,7 +670,12 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         parameters: [
           { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
-          { name: 'versionId', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+          {
+            name: 'versionId',
+            in: 'path' as const,
+            required: true,
+            schema: { type: 'string' as const, format: 'uuid' },
+          },
         ],
         responses: { '200': { description: 'Content restored' }, '404': { description: 'Version not found' } },
       },
@@ -525,7 +701,11 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'multipart/form-data': { schema: { type: 'object' as const, properties: { file: { type: 'string' as const, format: 'binary' } } } } },
+          content: {
+            'multipart/form-data': {
+              schema: { type: 'object' as const, properties: { file: { type: 'string' as const, format: 'binary' } } },
+            },
+          },
         },
         responses: { '201': { description: 'File uploaded' }, '400': { description: 'No file or invalid type' } },
       },
@@ -535,14 +715,18 @@ export const openApiSpec = {
         tags: ['Uploads'],
         summary: 'Get file metadata',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '200': { description: 'Media metadata' }, '404': { description: 'Not found' } },
       },
       delete: {
         tags: ['Uploads'],
         summary: 'Delete file (admin)',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '204': { description: 'Deleted' }, '404': { description: 'Not found' } },
       },
     },
@@ -550,7 +734,9 @@ export const openApiSpec = {
       get: {
         tags: ['Uploads'],
         summary: 'Serve file content (public)',
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '200': { description: 'File stream' }, '404': { description: 'Not found' } },
       },
     },
@@ -589,9 +775,24 @@ export const openApiSpec = {
         summary: 'Initialize CMS with first admin account',
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object' as const, required: ['email', 'password', 'confirmPassword'], properties: { email: { type: 'string' as const, format: 'email' }, password: { type: 'string' as const, minLength: 6 }, confirmPassword: { type: 'string' as const } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                required: ['email', 'password', 'confirmPassword'],
+                properties: {
+                  email: { type: 'string' as const, format: 'email' },
+                  password: { type: 'string' as const, minLength: 6 },
+                  confirmPassword: { type: 'string' as const },
+                },
+              },
+            },
+          },
         },
-        responses: { '201': { description: 'Admin account created, tokens returned' }, '400': { description: 'Validation error or setup already completed' } },
+        responses: {
+          '201': { description: 'Admin account created, tokens returned' },
+          '400': { description: 'Validation error or setup already completed' },
+        },
       },
     },
 
@@ -614,7 +815,20 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object' as const, required: ['name', 'slug', 'permissions'], properties: { name: { type: 'string' as const }, slug: { type: 'string' as const }, description: { type: 'string' as const, nullable: true }, permissions: { type: 'array' as const, items: { type: 'string' as const } } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                required: ['name', 'slug', 'permissions'],
+                properties: {
+                  name: { type: 'string' as const },
+                  slug: { type: 'string' as const },
+                  description: { type: 'string' as const, nullable: true },
+                  permissions: { type: 'array' as const, items: { type: 'string' as const } },
+                },
+              },
+            },
+          },
         },
         responses: { '201': { description: 'Created' }, '409': { description: 'Slug exists' } },
       },
@@ -624,16 +838,32 @@ export const openApiSpec = {
         tags: ['Roles'],
         summary: 'Get role by ID',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '200': { description: 'Role details' }, '404': { description: 'Not found' } },
       },
       put: {
         tags: ['Roles'],
         summary: 'Update role',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         requestBody: {
-          content: { 'application/json': { schema: { type: 'object' as const, properties: { name: { type: 'string' as const }, slug: { type: 'string' as const }, description: { type: 'string' as const, nullable: true }, permissions: { type: 'array' as const, items: { type: 'string' as const } } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                properties: {
+                  name: { type: 'string' as const },
+                  slug: { type: 'string' as const },
+                  description: { type: 'string' as const, nullable: true },
+                  permissions: { type: 'array' as const, items: { type: 'string' as const } },
+                },
+              },
+            },
+          },
         },
         responses: { '200': { description: 'Updated' }, '404': { description: 'Not found' } },
       },
@@ -641,7 +871,9 @@ export const openApiSpec = {
         tags: ['Roles'],
         summary: 'Delete role',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '204': { description: 'Deleted' }, '404': { description: 'Not found' } },
       },
     },
@@ -665,7 +897,21 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object' as const, required: ['name', 'url', 'secret', 'events'], properties: { name: { type: 'string' as const }, url: { type: 'string' as const, format: 'uri' }, secret: { type: 'string' as const, minLength: 16 }, events: { type: 'array' as const, items: { type: 'string' as const } }, isActive: { type: 'boolean' as const, default: true } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                required: ['name', 'url', 'secret', 'events'],
+                properties: {
+                  name: { type: 'string' as const },
+                  url: { type: 'string' as const, format: 'uri' },
+                  secret: { type: 'string' as const, minLength: 16 },
+                  events: { type: 'array' as const, items: { type: 'string' as const } },
+                  isActive: { type: 'boolean' as const, default: true },
+                },
+              },
+            },
+          },
         },
         responses: { '201': { description: 'Created' } },
       },
@@ -675,16 +921,33 @@ export const openApiSpec = {
         tags: ['Webhooks'],
         summary: 'Get webhook by ID',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '200': { description: 'Webhook details' }, '404': { description: 'Not found' } },
       },
       put: {
         tags: ['Webhooks'],
         summary: 'Update webhook',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         requestBody: {
-          content: { 'application/json': { schema: { type: 'object' as const, properties: { name: { type: 'string' as const }, url: { type: 'string' as const, format: 'uri' }, secret: { type: 'string' as const, minLength: 16 }, events: { type: 'array' as const, items: { type: 'string' as const } }, isActive: { type: 'boolean' as const } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                properties: {
+                  name: { type: 'string' as const },
+                  url: { type: 'string' as const, format: 'uri' },
+                  secret: { type: 'string' as const, minLength: 16 },
+                  events: { type: 'array' as const, items: { type: 'string' as const } },
+                  isActive: { type: 'boolean' as const },
+                },
+              },
+            },
+          },
         },
         responses: { '200': { description: 'Updated' }, '404': { description: 'Not found' } },
       },
@@ -692,7 +955,9 @@ export const openApiSpec = {
         tags: ['Webhooks'],
         summary: 'Delete webhook',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '204': { description: 'Deleted' }, '404': { description: 'Not found' } },
       },
     },
@@ -705,7 +970,11 @@ export const openApiSpec = {
           { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
           { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
           { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
-          { name: 'status', in: 'query' as const, schema: { type: 'string' as const, enum: ['pending', 'success', 'failed'] } },
+          {
+            name: 'status',
+            in: 'query' as const,
+            schema: { type: 'string' as const, enum: ['pending', 'success', 'failed'] },
+          },
         ],
         responses: { '200': { description: 'Paginated delivery list' } },
       },
@@ -749,7 +1018,19 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object' as const, required: ['name', 'permissions'], properties: { name: { type: 'string' as const }, permissions: { type: 'array' as const, items: { type: 'string' as const } }, expiresAt: { type: 'string' as const, format: 'date-time' } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                required: ['name', 'permissions'],
+                properties: {
+                  name: { type: 'string' as const },
+                  permissions: { type: 'array' as const, items: { type: 'string' as const } },
+                  expiresAt: { type: 'string' as const, format: 'date-time' },
+                },
+              },
+            },
+          },
         },
         responses: { '201': { description: 'API key created, raw key returned' } },
       },
@@ -759,16 +1040,32 @@ export const openApiSpec = {
         tags: ['API Keys'],
         summary: 'Get API key by ID',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '200': { description: 'API key details' }, '404': { description: 'Not found' } },
       },
       put: {
         tags: ['API Keys'],
         summary: 'Update API key',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         requestBody: {
-          content: { 'application/json': { schema: { type: 'object' as const, properties: { name: { type: 'string' as const }, permissions: { type: 'array' as const, items: { type: 'string' as const } }, isActive: { type: 'boolean' as const }, expiresAt: { type: 'string' as const, format: 'date-time', nullable: true } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                properties: {
+                  name: { type: 'string' as const },
+                  permissions: { type: 'array' as const, items: { type: 'string' as const } },
+                  isActive: { type: 'boolean' as const },
+                  expiresAt: { type: 'string' as const, format: 'date-time', nullable: true },
+                },
+              },
+            },
+          },
         },
         responses: { '200': { description: 'Updated' }, '404': { description: 'Not found' } },
       },
@@ -776,7 +1073,9 @@ export const openApiSpec = {
         tags: ['API Keys'],
         summary: 'Delete API key',
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } }],
+        parameters: [
+          { name: 'id', in: 'path' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
+        ],
         responses: { '204': { description: 'Deleted' }, '404': { description: 'Not found' } },
       },
     },
@@ -789,7 +1088,23 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object' as const, required: ['ids', 'action'], properties: { ids: { type: 'array' as const, items: { type: 'string' as const, format: 'uuid' }, minItems: 1, maxItems: 100 }, action: { type: 'string' as const, enum: ['delete', 'publish', 'unpublish'] } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object' as const,
+                required: ['ids', 'action'],
+                properties: {
+                  ids: {
+                    type: 'array' as const,
+                    items: { type: 'string' as const, format: 'uuid' },
+                    minItems: 1,
+                    maxItems: 100,
+                  },
+                  action: { type: 'string' as const, enum: ['delete', 'publish', 'unpublish'] },
+                },
+              },
+            },
+          },
         },
         responses: { '200': { description: 'Bulk action result' } },
       },
@@ -802,9 +1117,22 @@ export const openApiSpec = {
         summary: 'Export contents for a content type',
         security: [{ bearerAuth: [] }],
         parameters: [
-          { name: 'contentTypeId', in: 'query' as const, required: true, schema: { type: 'string' as const, format: 'uuid' } },
-          { name: 'format', in: 'query' as const, schema: { type: 'string' as const, enum: ['json', 'csv', 'xml'], default: 'json' } },
-          { name: 'status', in: 'query' as const, schema: { type: 'string' as const, enum: ['draft', 'in-review', 'approved', 'scheduled', 'published'] } },
+          {
+            name: 'contentTypeId',
+            in: 'query' as const,
+            required: true,
+            schema: { type: 'string' as const, format: 'uuid' },
+          },
+          {
+            name: 'format',
+            in: 'query' as const,
+            schema: { type: 'string' as const, enum: ['json', 'csv', 'xml'], default: 'json' },
+          },
+          {
+            name: 'status',
+            in: 'query' as const,
+            schema: { type: 'string' as const, enum: ['draft', 'in-review', 'approved', 'scheduled', 'published'] },
+          },
         ],
         responses: { '200': { description: 'File download' } },
       },
@@ -816,9 +1144,23 @@ export const openApiSpec = {
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'multipart/form-data': { schema: { type: 'object' as const, required: ['file', 'contentTypeId'], properties: { file: { type: 'string' as const, format: 'binary' }, contentTypeId: { type: 'string' as const, format: 'uuid' } } } } },
+          content: {
+            'multipart/form-data': {
+              schema: {
+                type: 'object' as const,
+                required: ['file', 'contentTypeId'],
+                properties: {
+                  file: { type: 'string' as const, format: 'binary' },
+                  contentTypeId: { type: 'string' as const, format: 'uuid' },
+                },
+              },
+            },
+          },
         },
-        responses: { '200': { description: 'Import result with imported/failed counts' }, '400': { description: 'Invalid file or missing content type' } },
+        responses: {
+          '200': { description: 'Import result with imported/failed counts' },
+          '400': { description: 'Invalid file or missing content type' },
+        },
       },
     },
 
@@ -850,12 +1192,31 @@ export const openApiSpec = {
           { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
           { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
           { name: 'search', in: 'query' as const, schema: { type: 'string' as const } },
-          { name: 'sortBy', in: 'query' as const, schema: { type: 'string' as const, enum: ['createdAt', 'updatedAt', 'publishedAt', 'relevance'] } },
+          {
+            name: 'sortBy',
+            in: 'query' as const,
+            schema: { type: 'string' as const, enum: ['createdAt', 'updatedAt', 'publishedAt', 'relevance'] },
+          },
           { name: 'sortOrder', in: 'query' as const, schema: { type: 'string' as const, enum: ['asc', 'desc'] } },
-          { name: 'filter', in: 'query' as const, description: 'JSON-encoded filter object', schema: { type: 'string' as const } },
-          { name: 'fields', in: 'query' as const, description: 'Comma-separated field names to include', schema: { type: 'string' as const } },
+          {
+            name: 'filter',
+            in: 'query' as const,
+            description: 'JSON-encoded filter object',
+            schema: { type: 'string' as const },
+          },
+          {
+            name: 'fields',
+            in: 'query' as const,
+            description: 'Comma-separated field names to include',
+            schema: { type: 'string' as const },
+          },
           { name: 'populate', in: 'query' as const, schema: { type: 'string' as const, enum: ['relations'] } },
-          { name: 'preview', in: 'query' as const, description: 'Include non-published content (requires API key)', schema: { type: 'string' as const, enum: ['true', 'false'] } },
+          {
+            name: 'preview',
+            in: 'query' as const,
+            description: 'Include non-published content (requires API key)',
+            schema: { type: 'string' as const, enum: ['true', 'false'] },
+          },
         ],
         responses: { '200': { description: 'Published contents' } },
       },
@@ -869,10 +1230,24 @@ export const openApiSpec = {
           { name: 'page', in: 'query' as const, schema: { type: 'integer' as const, default: 1 } },
           { name: 'limit', in: 'query' as const, schema: { type: 'integer' as const, default: 20 } },
           { name: 'search', in: 'query' as const, schema: { type: 'string' as const } },
-          { name: 'sortBy', in: 'query' as const, schema: { type: 'string' as const, enum: ['createdAt', 'updatedAt', 'publishedAt', 'relevance'] } },
+          {
+            name: 'sortBy',
+            in: 'query' as const,
+            schema: { type: 'string' as const, enum: ['createdAt', 'updatedAt', 'publishedAt', 'relevance'] },
+          },
           { name: 'sortOrder', in: 'query' as const, schema: { type: 'string' as const, enum: ['asc', 'desc'] } },
-          { name: 'filter', in: 'query' as const, description: 'JSON-encoded filter object', schema: { type: 'string' as const } },
-          { name: 'fields', in: 'query' as const, description: 'Comma-separated field names to include', schema: { type: 'string' as const } },
+          {
+            name: 'filter',
+            in: 'query' as const,
+            description: 'JSON-encoded filter object',
+            schema: { type: 'string' as const },
+          },
+          {
+            name: 'fields',
+            in: 'query' as const,
+            description: 'Comma-separated field names to include',
+            schema: { type: 'string' as const },
+          },
           { name: 'populate', in: 'query' as const, schema: { type: 'string' as const, enum: ['relations'] } },
           { name: 'preview', in: 'query' as const, schema: { type: 'string' as const, enum: ['true', 'false'] } },
         ],

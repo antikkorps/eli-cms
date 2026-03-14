@@ -35,7 +35,14 @@ async function fetchContentType() {
   try {
     const res = await apiFetch<{
       success: boolean;
-      data: { id: string; name: string; slug: string; isSingleton?: boolean; slugPattern?: string | null; fields: FieldDefinition[] };
+      data: {
+        id: string;
+        name: string;
+        slug: string;
+        isSingleton?: boolean;
+        slugPattern?: string | null;
+        fields: FieldDefinition[];
+      };
     }>(`/content-types/${route.params.id}`);
     form.name = res.data.name;
     form.slug = res.data.slug;
@@ -121,7 +128,16 @@ onMounted(fetchContentType);
         <UButton to="/admin/content-types" variant="ghost" color="neutral">
           {{ $t('common.cancel') }}
         </UButton>
-        <UButton type="submit" :loading="saving" :disabled="!form.name || !form.slug || !form.fields.length || form.fields.some(f => !f.name || !f.label || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(f.name))">
+        <UButton
+          type="submit"
+          :loading="saving"
+          :disabled="
+            !form.name ||
+            !form.slug ||
+            !form.fields.length ||
+            form.fields.some((f) => !f.name || !f.label || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(f.name))
+          "
+        >
           {{ $t('common.save') }}
         </UButton>
       </div>

@@ -84,9 +84,7 @@ describe('Contents CRUD', () => {
     });
 
     it('401 rejects without token', async () => {
-      const res = await agent()
-        .post('/api/v1/contents')
-        .send({ contentTypeId, data: buildBlogData() });
+      const res = await agent().post('/api/v1/contents').send({ contentTypeId, data: buildBlogData() });
 
       expect(res.status).toBe(401);
       expect(res.body.success).toBe(false);
@@ -102,9 +100,7 @@ describe('Contents CRUD', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({ contentTypeId, data: buildBlogData() });
 
-      const res = await api
-        .get(`/api/v1/contents/${created.body.data.id}`)
-        .set('Authorization', `Bearer ${token}`);
+      const res = await api.get(`/api/v1/contents/${created.body.data.id}`).set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -247,16 +243,12 @@ describe('Contents CRUD', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({ contentTypeId, data: buildBlogData() });
 
-      const res = await api
-        .delete(`/api/v1/contents/${created.body.data.id}`)
-        .set('Authorization', `Bearer ${token}`);
+      const res = await api.delete(`/api/v1/contents/${created.body.data.id}`).set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(204);
 
       // Verify it's gone
-      const getRes = await api
-        .get(`/api/v1/contents/${created.body.data.id}`)
-        .set('Authorization', `Bearer ${token}`);
+      const getRes = await api.get(`/api/v1/contents/${created.body.data.id}`).set('Authorization', `Bearer ${token}`);
       expect(getRes.status).toBe(404);
     });
 

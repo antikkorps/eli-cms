@@ -70,9 +70,7 @@ async function fetchRoles() {
   }
 }
 
-const roleItems = computed(() =>
-  roleOptions.value.map((r) => ({ label: r.name, value: r.id })),
-);
+const roleItems = computed(() => roleOptions.value.map((r) => ({ label: r.name, value: r.id })));
 
 async function submit() {
   saving.value = true;
@@ -149,7 +147,12 @@ onMounted(() => {
       </UFormField>
 
       <UFormField :label="$t('users.newPasswordLabel')">
-        <UInput v-model="form.password" type="password" :placeholder="$t('users.newPasswordPlaceholder')" class="w-full" />
+        <UInput
+          v-model="form.password"
+          type="password"
+          :placeholder="$t('users.newPasswordPlaceholder')"
+          class="w-full"
+        />
         <p class="text-xs text-muted mt-1">{{ $t('users.newPasswordHint') }}</p>
       </UFormField>
 

@@ -9,41 +9,61 @@ import type { AuditLogListQuery, ActorType } from '@eli-cms/shared';
 
 const KNOWN_EVENTS = [
   // Content
-  'content.created', 'content.updated', 'content.deleted', 'content.published',
-  'content.trashed', 'content.restored', 'content.purged',
+  'content.created',
+  'content.updated',
+  'content.deleted',
+  'content.published',
+  'content.trashed',
+  'content.restored',
+  'content.purged',
   // Content types
-  'content_type.created', 'content_type.updated', 'content_type.deleted',
+  'content_type.created',
+  'content_type.updated',
+  'content_type.deleted',
   // Media
-  'media.uploaded', 'media.deleted',
+  'media.uploaded',
+  'media.deleted',
   // Auth
-  'auth.login', 'auth.register', 'auth.password_changed',
+  'auth.login',
+  'auth.register',
+  'auth.password_changed',
   // Users
   'user.deleted',
   // Roles
-  'role.created', 'role.updated', 'role.deleted',
+  'role.created',
+  'role.updated',
+  'role.deleted',
   // Webhooks
-  'webhook.created', 'webhook.updated', 'webhook.deleted',
+  'webhook.created',
+  'webhook.updated',
+  'webhook.deleted',
   // Settings
   'settings.updated',
 ];
 
-function extractResource(event: string, data: Record<string, unknown>): { resourceType: string; resourceId: string | null } {
+function extractResource(
+  event: string,
+  data: Record<string, unknown>,
+): { resourceType: string; resourceId: string | null } {
   const [resourceType] = event.split('.');
 
   if (data.content && typeof data.content === 'object') {
-    return { resourceType: 'content', resourceId: (data.content as Record<string, unknown>).id as string ?? null };
+    return { resourceType: 'content', resourceId: ((data.content as Record<string, unknown>).id as string) ?? null };
   }
   if (data.contentType && typeof data.contentType === 'object') {
-    return { resourceType: 'content_type', resourceId: (data.contentType as Record<string, unknown>).id as string ?? null };
+    return {
+      resourceType: 'content_type',
+      resourceId: ((data.contentType as Record<string, unknown>).id as string) ?? null,
+    };
   }
   if (data.media && typeof data.media === 'object') {
-    return { resourceType: 'media', resourceId: (data.media as Record<string, unknown>).id as string ?? null };
+    return { resourceType: 'media', resourceId: ((data.media as Record<string, unknown>).id as string) ?? null };
   }
   if (data.role && typeof data.role === 'object') {
-    return { resourceType: 'role', resourceId: (data.role as Record<string, unknown>).id as string ?? null };
+    return { resourceType: 'role', resourceId: ((data.role as Record<string, unknown>).id as string) ?? null };
   }
   if (data.webhook && typeof data.webhook === 'object') {
-    return { resourceType: 'webhook', resourceId: (data.webhook as Record<string, unknown>).id as string ?? null };
+    return { resourceType: 'webhook', resourceId: ((data.webhook as Record<string, unknown>).id as string) ?? null };
   }
   if (data.userId && typeof data.userId === 'string') {
     return { resourceType: 'user', resourceId: data.userId };
@@ -75,7 +95,7 @@ export class AuditService {
     const { resourceType, resourceId } = extractResource(cmsEvent.event, data);
 
     // Build metadata: everything except actor/resource fields
-    const { actorId: _a, actorType: _b, ipAddress: _c, userAgent: _d, ...metadata } = data;
+    const { actorId: _actorId, actorType: _actorType, ipAddress: _ip, userAgent: _ua, ...metadata } = data;
 
     await db.insert(auditLogs).values({
       actorId,
@@ -102,10 +122,7 @@ export class AuditService {
 
     const where = filters.length > 0 ? and(...filters) : undefined;
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(auditLogs)
-      .where(where);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(auditLogs).where(where);
 
     const data = await db
       .select()

@@ -91,7 +91,11 @@ export class SetupService {
     let contentsCreated = 0;
 
     // 1. Seed the Site Settings singleton if it doesn't exist
-    const [existingSettings] = await db.select().from(contentTypes).where(eq(contentTypes.slug, 'site-settings')).limit(1);
+    const [existingSettings] = await db
+      .select()
+      .from(contentTypes)
+      .where(eq(contentTypes.slug, 'site-settings'))
+      .limit(1);
     if (!existingSettings) {
       await db.insert(contentTypes).values({
         slug: 'site-settings',
@@ -101,7 +105,13 @@ export class SetupService {
           { name: 'site_name', type: 'text', required: true, label: 'Site Name', defaultValue: 'My Website' },
           { name: 'site_description', type: 'textarea', required: false, label: 'Site Description' },
           { name: 'favicon', type: 'media', required: false, label: 'Favicon', accept: ['image'] },
-          { name: 'company', type: 'component', required: false, label: 'Company Identity', componentSlugs: ['company-identity'] },
+          {
+            name: 'company',
+            type: 'component',
+            required: false,
+            label: 'Company Identity',
+            componentSlugs: ['company-identity'],
+          },
           { name: 'seo', type: 'component', required: false, label: 'Default SEO', componentSlugs: ['seo'] },
         ] as FieldDefinition[],
       });
@@ -110,7 +120,11 @@ export class SetupService {
     // 2. Create Site Settings content entry with user info
     const [settingsCt] = await db.select().from(contentTypes).where(eq(contentTypes.slug, 'site-settings')).limit(1);
     if (settingsCt) {
-      const [existingContent] = await db.select({ id: contents.id }).from(contents).where(eq(contents.contentTypeId, settingsCt.id)).limit(1);
+      const [existingContent] = await db
+        .select({ id: contents.id })
+        .from(contents)
+        .where(eq(contents.contentTypeId, settingsCt.id))
+        .limit(1);
       if (!existingContent) {
         await db.insert(contents).values({
           contentTypeId: settingsCt.id,
@@ -169,10 +183,16 @@ export class SetupService {
           name: 'FAQ',
           icon: 'i-lucide-help-circle',
           fields: [
-            { name: 'items', type: 'repeatable', required: false, label: 'Questions', subFields: [
-              { name: 'question', type: 'text', required: true, label: 'Question' },
-              { name: 'answer', type: 'textarea', required: true, label: 'Answer' },
-            ] },
+            {
+              name: 'items',
+              type: 'repeatable',
+              required: false,
+              label: 'Questions',
+              subFields: [
+                { name: 'question', type: 'text', required: true, label: 'Question' },
+                { name: 'answer', type: 'textarea', required: true, label: 'Answer' },
+              ],
+            },
           ],
         },
         {
@@ -181,11 +201,17 @@ export class SetupService {
           icon: 'i-lucide-grid-3x3',
           fields: [
             { name: 'title', type: 'text', required: false, label: 'Section Title' },
-            { name: 'features', type: 'repeatable', required: false, label: 'Features', subFields: [
-              { name: 'icon', type: 'text', required: false, label: 'Icon name' },
-              { name: 'title', type: 'text', required: true, label: 'Title' },
-              { name: 'description', type: 'textarea', required: false, label: 'Description' },
-            ] },
+            {
+              name: 'features',
+              type: 'repeatable',
+              required: false,
+              label: 'Features',
+              subFields: [
+                { name: 'icon', type: 'text', required: false, label: 'Icon name' },
+                { name: 'title', type: 'text', required: true, label: 'Title' },
+                { name: 'description', type: 'textarea', required: false, label: 'Description' },
+              ],
+            },
           ],
         },
         {
@@ -216,10 +242,13 @@ export class SetupService {
     return { contentTypesCreated: created, contentsCreated };
   }
 
-  private static getTemplates(): Record<string, {
-    contentTypes: Array<{ slug: string; name: string; isSingleton?: boolean; fields: FieldDefinition[] }>;
-    demoContent?: Array<{ contentTypeSlug: string; entries: Array<{ slug: string; data: Record<string, unknown> }> }>;
-  }> {
+  private static getTemplates(): Record<
+    string,
+    {
+      contentTypes: Array<{ slug: string; name: string; isSingleton?: boolean; fields: FieldDefinition[] }>;
+      demoContent?: Array<{ contentTypeSlug: string; entries: Array<{ slug: string; data: Record<string, unknown> }> }>;
+    }
+  > {
     return {
       blog: {
         contentTypes: [
@@ -231,7 +260,13 @@ export class SetupService {
               { name: 'excerpt', type: 'textarea', required: false, label: 'Excerpt' },
               { name: 'body', type: 'richtext', required: true, label: 'Body' },
               { name: 'cover', type: 'media', required: false, label: 'Cover Image', accept: ['image'] },
-              { name: 'category', type: 'select', required: false, label: 'Category', options: ['News', 'Tutorial', 'Opinion', 'Review'] },
+              {
+                name: 'category',
+                type: 'select',
+                required: false,
+                label: 'Category',
+                options: ['News', 'Tutorial', 'Opinion', 'Review'],
+              },
               { name: 'author', type: 'author', required: false, label: 'Author' },
               { name: 'seo', type: 'component', required: false, label: 'SEO', componentSlugs: ['seo'] },
             ],
@@ -241,8 +276,24 @@ export class SetupService {
           {
             contentTypeSlug: 'article',
             entries: [
-              { slug: 'welcome-to-our-blog', data: { title: 'Welcome to Our Blog', excerpt: 'This is your first article. Edit or delete it to get started.', body: '<h2>Getting Started</h2><p>Welcome to your new blog! This is a demo article created during onboarding. Feel free to edit it or create new articles.</p><p>You can use the <strong>rich text editor</strong> to format your content, add images, and more.</p>', category: 'News' } },
-              { slug: 'how-to-use-the-cms', data: { title: 'How to Use the CMS', excerpt: 'A quick guide to managing your content with Eli CMS.', body: '<h2>Managing Content</h2><p>Eli CMS makes it easy to manage your content. Here are the basics:</p><ul><li><strong>Content Types</strong> define the structure of your content</li><li><strong>Contents</strong> are the actual entries you create</li><li><strong>Media</strong> lets you upload and manage files</li></ul><p>Explore the sidebar to discover all features!</p>', category: 'Tutorial' } },
+              {
+                slug: 'welcome-to-our-blog',
+                data: {
+                  title: 'Welcome to Our Blog',
+                  excerpt: 'This is your first article. Edit or delete it to get started.',
+                  body: '<h2>Getting Started</h2><p>Welcome to your new blog! This is a demo article created during onboarding. Feel free to edit it or create new articles.</p><p>You can use the <strong>rich text editor</strong> to format your content, add images, and more.</p>',
+                  category: 'News',
+                },
+              },
+              {
+                slug: 'how-to-use-the-cms',
+                data: {
+                  title: 'How to Use the CMS',
+                  excerpt: 'A quick guide to managing your content with Eli CMS.',
+                  body: '<h2>Managing Content</h2><p>Eli CMS makes it easy to manage your content. Here are the basics:</p><ul><li><strong>Content Types</strong> define the structure of your content</li><li><strong>Contents</strong> are the actual entries you create</li><li><strong>Media</strong> lets you upload and manage files</li></ul><p>Explore the sidebar to discover all features!</p>',
+                  category: 'Tutorial',
+                },
+              },
             ],
           },
         ],
@@ -286,15 +337,37 @@ export class SetupService {
           {
             contentTypeSlug: 'page',
             entries: [
-              { slug: 'about', data: { title: 'About Us', body: '<h2>Our Story</h2><p>We are a passionate team dedicated to delivering excellence. Edit this page to tell your story.</p>' } },
-              { slug: 'contact', data: { title: 'Contact', body: '<h2>Get in Touch</h2><p>We\'d love to hear from you. Reach out to us using the information below.</p>' } },
+              {
+                slug: 'about',
+                data: {
+                  title: 'About Us',
+                  body: '<h2>Our Story</h2><p>We are a passionate team dedicated to delivering excellence. Edit this page to tell your story.</p>',
+                },
+              },
+              {
+                slug: 'contact',
+                data: {
+                  title: 'Contact',
+                  body: "<h2>Get in Touch</h2><p>We'd love to hear from you. Reach out to us using the information below.</p>",
+                },
+              },
             ],
           },
           {
             contentTypeSlug: 'team-member',
             entries: [
-              { slug: 'jane-doe', data: { name: 'Jane Doe', role: 'CEO & Founder', bio: 'Visionary leader with 15 years of experience.' } },
-              { slug: 'john-smith', data: { name: 'John Smith', role: 'CTO', bio: 'Tech enthusiast building the future, one line of code at a time.' } },
+              {
+                slug: 'jane-doe',
+                data: { name: 'Jane Doe', role: 'CEO & Founder', bio: 'Visionary leader with 15 years of experience.' },
+              },
+              {
+                slug: 'john-smith',
+                data: {
+                  name: 'John Smith',
+                  role: 'CTO',
+                  bio: 'Tech enthusiast building the future, one line of code at a time.',
+                },
+              },
             ],
           },
         ],
@@ -312,7 +385,13 @@ export class SetupService {
               { name: 'client', type: 'text', required: false, label: 'Client' },
               { name: 'year', type: 'number', required: false, label: 'Year' },
               { name: 'url', type: 'url', required: false, label: 'Project URL' },
-              { name: 'category', type: 'select', required: false, label: 'Category', options: ['Web Design', 'Branding', 'Mobile App', 'Illustration', 'Photography'] },
+              {
+                name: 'category',
+                type: 'select',
+                required: false,
+                label: 'Category',
+                options: ['Web Design', 'Branding', 'Mobile App', 'Illustration', 'Photography'],
+              },
             ],
           },
         ],
@@ -320,8 +399,27 @@ export class SetupService {
           {
             contentTypeSlug: 'project',
             entries: [
-              { slug: 'brand-redesign', data: { title: 'Brand Redesign', description: '<p>A complete brand overhaul for a tech startup. New logo, color palette, and brand guidelines.</p>', client: 'TechCorp', year: 2025, category: 'Branding' } },
-              { slug: 'e-commerce-platform', data: { title: 'E-commerce Platform', description: '<p>Modern e-commerce experience built with performance and accessibility in mind.</p>', client: 'ShopWave', year: 2025, category: 'Web Design' } },
+              {
+                slug: 'brand-redesign',
+                data: {
+                  title: 'Brand Redesign',
+                  description:
+                    '<p>A complete brand overhaul for a tech startup. New logo, color palette, and brand guidelines.</p>',
+                  client: 'TechCorp',
+                  year: 2025,
+                  category: 'Branding',
+                },
+              },
+              {
+                slug: 'e-commerce-platform',
+                data: {
+                  title: 'E-commerce Platform',
+                  description: '<p>Modern e-commerce experience built with performance and accessibility in mind.</p>',
+                  client: 'ShopWave',
+                  year: 2025,
+                  category: 'Web Design',
+                },
+              },
             ],
           },
         ],
@@ -338,7 +436,13 @@ export class SetupService {
               { name: 'sku', type: 'text', required: false, label: 'SKU' },
               { name: 'in_stock', type: 'boolean', required: false, label: 'In Stock', defaultValue: true },
               { name: 'images', type: 'media', required: false, label: 'Images', accept: ['image'], multiple: true },
-              { name: 'category', type: 'select', required: false, label: 'Category', options: ['Electronics', 'Clothing', 'Books', 'Home', 'Sports'] },
+              {
+                name: 'category',
+                type: 'select',
+                required: false,
+                label: 'Category',
+                options: ['Electronics', 'Clothing', 'Books', 'Home', 'Sports'],
+              },
               { name: 'seo', type: 'component', required: false, label: 'SEO', componentSlugs: ['seo'] },
             ],
           },
@@ -356,8 +460,28 @@ export class SetupService {
           {
             contentTypeSlug: 'product',
             entries: [
-              { slug: 'wireless-headphones', data: { name: 'Wireless Headphones', description: '<p>Premium wireless headphones with noise cancellation and 30-hour battery life.</p>', price: 149.99, sku: 'WH-001', in_stock: true, category: 'Electronics' } },
-              { slug: 'organic-cotton-tshirt', data: { name: 'Organic Cotton T-Shirt', description: '<p>Comfortable and sustainable. Made from 100% organic cotton.</p>', price: 29.99, sku: 'CT-001', in_stock: true, category: 'Clothing' } },
+              {
+                slug: 'wireless-headphones',
+                data: {
+                  name: 'Wireless Headphones',
+                  description: '<p>Premium wireless headphones with noise cancellation and 30-hour battery life.</p>',
+                  price: 149.99,
+                  sku: 'WH-001',
+                  in_stock: true,
+                  category: 'Electronics',
+                },
+              },
+              {
+                slug: 'organic-cotton-tshirt',
+                data: {
+                  name: 'Organic Cotton T-Shirt',
+                  description: '<p>Comfortable and sustainable. Made from 100% organic cotton.</p>',
+                  price: 29.99,
+                  sku: 'CT-001',
+                  in_stock: true,
+                  category: 'Clothing',
+                },
+              },
             ],
           },
         ],

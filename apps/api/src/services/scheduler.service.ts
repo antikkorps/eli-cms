@@ -38,13 +38,7 @@ export class SchedulerService {
     const scheduled = await db
       .select()
       .from(contents)
-      .where(
-        and(
-          eq(contents.status, 'scheduled'),
-          lte(contents.publishedAt, now),
-          isNull(contents.deletedAt),
-        ),
-      );
+      .where(and(eq(contents.status, 'scheduled'), lte(contents.publishedAt, now), isNull(contents.deletedAt)));
 
     if (scheduled.length === 0) return;
 
@@ -69,12 +63,7 @@ export class SchedulerService {
     const expired = await db
       .select()
       .from(contents)
-      .where(
-        and(
-          isNotNull(contents.deletedAt),
-          lte(contents.deletedAt, cutoff),
-        ),
-      );
+      .where(and(isNotNull(contents.deletedAt), lte(contents.deletedAt, cutoff)));
 
     if (expired.length === 0) return;
 

@@ -28,7 +28,7 @@ export function useContentValidation() {
   }
 
   function clearError(key: string) {
-    const { [key]: _, ...rest } = errors.value;
+    const { [key]: _removed, ...rest } = errors.value;
     errors.value = rest;
   }
 

@@ -66,11 +66,15 @@ const columns = computed(() => [
     accessorKey: 'actorType',
     header: t('auditLogs.columnActor'),
     cell: ({ row }: { row: { original: AuditLog } }) => {
-      return h(UBadge as ReturnType<typeof resolveComponent>, {
-        variant: 'subtle',
-        color: row.original.actorType === 'system' ? 'neutral' : 'primary',
-        size: 'sm',
-      }, () => row.original.actorType);
+      return h(
+        UBadge as ReturnType<typeof resolveComponent>,
+        {
+          variant: 'subtle',
+          color: row.original.actorType === 'system' ? 'neutral' : 'primary',
+          size: 'sm',
+        },
+        () => row.original.actorType,
+      );
     },
   },
   {
@@ -84,11 +88,15 @@ const columns = computed(() => [
         login: 'primary',
         logout: 'neutral',
       };
-      return h(UBadge as ReturnType<typeof resolveComponent>, {
-        variant: 'subtle',
-        color: (colors[row.original.action] || 'neutral') as 'success' | 'info' | 'error' | 'primary' | 'neutral',
-        size: 'sm',
-      }, () => row.original.action);
+      return h(
+        UBadge as ReturnType<typeof resolveComponent>,
+        {
+          variant: 'subtle',
+          color: (colors[row.original.action] || 'neutral') as 'success' | 'info' | 'error' | 'primary' | 'neutral',
+          size: 'sm',
+        },
+        () => row.original.action,
+      );
     },
   },
   {
@@ -99,9 +107,7 @@ const columns = computed(() => [
     accessorKey: 'resourceId',
     header: t('auditLogs.columnResourceId'),
     cell: ({ row }: { row: { original: AuditLog } }) => {
-      return row.original.resourceId
-        ? row.original.resourceId.substring(0, 8) + '...'
-        : '—';
+      return row.original.resourceId ? row.original.resourceId.substring(0, 8) + '...' : '—';
     },
   },
   {
@@ -182,12 +188,7 @@ const totalPages = computed(() => Math.ceil(total.value / limit));
       <UIcon name="i-lucide-scroll-text" class="size-12 text-muted" />
       <p class="mt-3 text-sm text-muted">{{ $t('common.noResults') }}</p>
     </div>
-    <UTable
-      v-else
-      :data="logs"
-      :columns="columns"
-      :loading="loading"
-    />
+    <UTable v-else :data="logs" :columns="columns" :loading="loading" />
 
     <div v-if="totalPages > 1" class="flex items-center justify-between">
       <p class="text-sm text-muted">

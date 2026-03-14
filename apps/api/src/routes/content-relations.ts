@@ -6,6 +6,21 @@ import { CONTENT_READ, CONTENT_UPDATE } from '@eli-cms/shared';
 
 export const contentRelationsRouter = new Router({ prefix: '/api/v1/contents' });
 
-contentRelationsRouter.post('/:id/relations', authenticate, requirePermission(CONTENT_UPDATE), ContentRelationController.create);
-contentRelationsRouter.get('/:id/relations', authenticate, requirePermission(CONTENT_READ), ContentRelationController.listBySource);
-contentRelationsRouter.delete('/:id/relations/:relationId', authenticate, requirePermission(CONTENT_UPDATE), ContentRelationController.delete);
+contentRelationsRouter.post(
+  '/:id/relations',
+  authenticate,
+  requirePermission(CONTENT_UPDATE),
+  ContentRelationController.create,
+);
+contentRelationsRouter.get(
+  '/:id/relations',
+  authenticate,
+  requirePermission(CONTENT_READ),
+  ContentRelationController.listBySource,
+);
+contentRelationsRouter.delete(
+  '/:id/relations/:relationId',
+  authenticate,
+  requirePermission(CONTENT_UPDATE),
+  ContentRelationController.delete,
+);

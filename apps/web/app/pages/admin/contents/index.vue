@@ -72,7 +72,9 @@ const canUpdate = computed(() => hasPermission('content:update'));
 const toast = useToast();
 async function duplicateContent(id: string) {
   try {
-    const res = await apiFetch<{ success: boolean; data: { id: string } }>(`/contents/${id}/duplicate`, { method: 'POST' });
+    const res = await apiFetch<{ success: boolean; data: { id: string } }>(`/contents/${id}/duplicate`, {
+      method: 'POST',
+    });
     toast.add({ title: t('contents.duplicated'), color: 'success' });
     router.push(`/admin/contents/${res.data.id}`);
   } catch {
@@ -84,7 +86,9 @@ async function duplicateContent(id: string) {
 const previewMediaId = ref<string | null>(null);
 const previewOpen = computed({
   get: () => previewMediaId.value !== null,
-  set: (v) => { if (!v) previewMediaId.value = null; },
+  set: (v) => {
+    if (!v) previewMediaId.value = null;
+  },
 });
 
 // Export/Import
@@ -121,9 +125,7 @@ async function handleExport() {
   }
 }
 
-const typeFilterItems = computed(() =>
-  contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })),
-);
+const typeFilterItems = computed(() => contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })));
 
 const statusFilterItems = [
   { label: t('contents.draft'), value: 'draft' },
@@ -134,9 +136,8 @@ const statusFilterItems = [
 ];
 
 function stripHtml(html: string): string {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return (div.textContent || div.innerText || '').trim();
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return (doc.body.textContent || '').trim();
 }
 
 function getPreviewText(data: Record<string, unknown>): string {
@@ -217,9 +218,13 @@ const columns = computed(() => [
         return h('div', { class: 'flex items-center gap-2' }, [
           h('img', {
             src: `${baseURL}/uploads/${mediaId}/serve?w=64&format=webp`,
-            class: 'size-8 rounded object-cover shrink-0 cursor-pointer hover:ring-2 hover:ring-primary transition-shadow',
+            class:
+              'size-8 rounded object-cover shrink-0 cursor-pointer hover:ring-2 hover:ring-primary transition-shadow',
             alt: '',
-            onClick: (e: Event) => { e.stopPropagation(); previewMediaId.value = mediaId; },
+            onClick: (e: Event) => {
+              e.stopPropagation();
+              previewMediaId.value = mediaId;
+            },
           }),
           h('span', highlighted),
         ]);
@@ -232,11 +237,17 @@ const columns = computed(() => [
     header: () =>
       h('button', { class: 'flex items-center gap-1 font-medium', onClick: () => toggleSort('slug') }, [
         t('contents.columnSlug'),
-        h('span', { class: `${sortBy.value === 'slug' ? 'opacity-100' : 'opacity-40'} i-lucide-${sortBy.value === 'slug' ? (sortOrder.value === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size-3.5` }),
+        h('span', {
+          class: `${sortBy.value === 'slug' ? 'opacity-100' : 'opacity-40'} i-lucide-${sortBy.value === 'slug' ? (sortOrder.value === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size-3.5`,
+        }),
       ]),
     cell: ({ row }: { row: { original: ContentItem } }) =>
       row.original.slug
-        ? h('code', { class: 'text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded' }, highlightVNodes(row.original.slug))
+        ? h(
+            'code',
+            { class: 'text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded' },
+            highlightVNodes(row.original.slug),
+          )
         : h('span', { class: 'text-muted text-xs' }, '—'),
   },
   {
@@ -252,7 +263,9 @@ const columns = computed(() => [
     header: () =>
       h('button', { class: 'flex items-center gap-1 font-medium', onClick: () => toggleSort('status') }, [
         t('contents.columnStatus'),
-        h('span', { class: `${sortBy.value === 'status' ? 'opacity-100' : 'opacity-40'} i-lucide-${sortBy.value === 'status' ? (sortOrder.value === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size-3.5` }),
+        h('span', {
+          class: `${sortBy.value === 'status' ? 'opacity-100' : 'opacity-40'} i-lucide-${sortBy.value === 'status' ? (sortOrder.value === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size-3.5`,
+        }),
       ]),
     cell: ({ row }: { row: { original: ContentItem } }) => {
       const statusMap: Record<string, { color: string; label: string }> = {
@@ -263,7 +276,11 @@ const columns = computed(() => [
         published: { color: 'success', label: t('contents.published') },
       };
       const cfg = statusMap[row.original.status] ?? statusMap.draft!;
-      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: cfg!.color, size: 'sm' }, () => cfg!.label);
+      return h(
+        UBadge as ReturnType<typeof resolveComponent>,
+        { variant: 'subtle', color: cfg!.color, size: 'sm' },
+        () => cfg!.label,
+      );
     },
   },
   {
@@ -271,16 +288,19 @@ const columns = computed(() => [
     header: () =>
       h('button', { class: 'flex items-center gap-1 font-medium', onClick: () => toggleSort('updatedAt') }, [
         t('contents.columnUpdated'),
-        h('span', { class: `${sortBy.value === 'updatedAt' ? 'opacity-100' : 'opacity-40'} i-lucide-${sortBy.value === 'updatedAt' ? (sortOrder.value === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size-3.5` }),
+        h('span', {
+          class: `${sortBy.value === 'updatedAt' ? 'opacity-100' : 'opacity-40'} i-lucide-${sortBy.value === 'updatedAt' ? (sortOrder.value === 'asc' ? 'arrow-up' : 'arrow-down') : 'arrow-up-down'} size-3.5`,
+        }),
       ]),
-    cell: ({ row }: { row: { original: ContentItem } }) => new Date(row.original.updatedAt).toLocaleDateString(locale.value),
+    cell: ({ row }: { row: { original: ContentItem } }) =>
+      new Date(row.original.updatedAt).toLocaleDateString(locale.value),
   },
   {
     accessorKey: 'actions',
     header: '',
     cell: ({ row }: { row: { original: ContentItem } }) => {
       const buttons = [];
-      const isSingleton = contentTypeItems.value.find(c => c.id === row.original.contentTypeId)?.isSingleton;
+      const isSingleton = contentTypeItems.value.find((c) => c.id === row.original.contentTypeId)?.isSingleton;
       if (canCreate.value && !isSingleton) {
         buttons.push(
           h(UButton as ReturnType<typeof resolveComponent>, {
@@ -341,7 +361,9 @@ watch(
     } else {
       contentTypeFilter.value = undefined;
     }
-    nextTick(() => { syncingFromUrl = false; });
+    nextTick(() => {
+      syncingFromUrl = false;
+    });
   },
 );
 
@@ -391,7 +413,11 @@ onMounted(async () => {
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-bold">
-          {{ contentTypeFilter ? contentTypeItems.find(c => c.id === contentTypeFilter)?.name ?? $t('contents.title') : $t('contents.title') }}
+          {{
+            contentTypeFilter
+              ? (contentTypeItems.find((c) => c.id === contentTypeFilter)?.name ?? $t('contents.title'))
+              : $t('contents.title')
+          }}
         </h1>
         <p class="text-sm text-muted mt-1">{{ $t('contents.subtitle') }}</p>
       </div>
@@ -407,8 +433,20 @@ onMounted(async () => {
 
     <div class="flex flex-wrap gap-3 items-center">
       <UInput v-model="search" :placeholder="$t('common.search')" icon="i-lucide-search" class="w-64" />
-      <USelect v-model="contentTypeFilter" nullable :items="typeFilterItems" :placeholder="$t('contents.allTypes')" class="w-48" />
-      <USelect v-model="statusFilter" nullable :items="statusFilterItems" :placeholder="$t('contents.allStatuses')" class="w-48" />
+      <USelect
+        v-model="contentTypeFilter"
+        nullable
+        :items="typeFilterItems"
+        :placeholder="$t('contents.allTypes')"
+        class="w-48"
+      />
+      <USelect
+        v-model="statusFilter"
+        nullable
+        :items="statusFilterItems"
+        :placeholder="$t('contents.allStatuses')"
+        class="w-48"
+      />
 
       <template v-if="contentTypeFilter">
         <USelect v-model="exportFormat" :items="exportFormatItems" class="w-24" />

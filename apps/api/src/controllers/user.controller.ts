@@ -8,7 +8,7 @@ export class UserController {
   static async list(ctx: Context) {
     const result = userListQuerySchema.safeParse(ctx.query);
     if (!result.success) {
-      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
     const { data, meta } = await UserService.findAll(result.data);
     ctx.body = { success: true, data, meta };
@@ -22,7 +22,7 @@ export class UserController {
   static async create(ctx: Context) {
     const result = createUserSchema.safeParse(ctx.request.body);
     if (!result.success) {
-      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
     const data = await UserService.create(result.data, extractActor(ctx));
     ctx.status = 201;
@@ -32,7 +32,7 @@ export class UserController {
   static async update(ctx: Context) {
     const result = updateUserSchema.safeParse(ctx.request.body);
     if (!result.success) {
-      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
     const currentUserId = ctx.state.user.userId;
     const data = await UserService.update(ctx.params.id, result.data, currentUserId, extractActor(ctx));

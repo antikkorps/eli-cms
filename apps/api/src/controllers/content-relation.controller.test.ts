@@ -106,9 +106,7 @@ describe('Content Relations API', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({ targetId, relationType: 'reference' });
 
-      const res = await agent()
-        .get(`/api/v1/contents/${sourceId}/relations`)
-        .set('Authorization', `Bearer ${token}`);
+      const res = await agent().get(`/api/v1/contents/${sourceId}/relations`).set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);

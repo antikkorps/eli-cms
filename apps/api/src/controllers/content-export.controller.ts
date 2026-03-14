@@ -8,7 +8,7 @@ export class ContentExportController {
   static async exportContents(ctx: Context) {
     const result = exportContentQuerySchema.safeParse(ctx.query);
     if (!result.success) {
-      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
 
     const { data, mimeType, extension } = await ContentExportService.exportContents(result.data);
@@ -35,12 +35,7 @@ export class ContentExportController {
     if (originalName.endsWith('.csv')) format = 'csv';
     else if (originalName.endsWith('.xml')) format = 'xml';
 
-    const result = await ContentExportService.importContents(
-      contentTypeId,
-      file.buffer,
-      format,
-      extractActor(ctx),
-    );
+    const result = await ContentExportService.importContents(contentTypeId, file.buffer, format, extractActor(ctx));
 
     ctx.body = { success: true, data: result };
   }

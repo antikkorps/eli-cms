@@ -60,7 +60,12 @@ onMounted(async () => {
 
 const statCards = computed(() => [
   { label: t('dashboard.contents'), value: stats.contentCount, icon: 'i-lucide-file-text', color: 'primary' as const },
-  { label: t('dashboard.contentTypes'), value: stats.contentTypeCount, icon: 'i-lucide-blocks', color: 'info' as const },
+  {
+    label: t('dashboard.contentTypes'),
+    value: stats.contentTypeCount,
+    icon: 'i-lucide-blocks',
+    color: 'info' as const,
+  },
   { label: t('dashboard.users'), value: stats.userCount, icon: 'i-lucide-users', color: 'success' as const },
 ]);
 
