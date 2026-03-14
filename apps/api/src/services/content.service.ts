@@ -180,8 +180,9 @@ export class ContentService {
           // Exact match via containment operator
           filters.push(sql`${contents.data} @> ${JSON.stringify({ [fieldName]: value })}::jsonb`);
         } else if (typeof value === 'object' && value !== null && 'like' in value) {
-          // ILIKE on extracted text value
-          filters.push(sql`${contents.data} ->> ${fieldName} ILIKE ${'%' + value.like + '%'}`);
+          // ILIKE on extracted text value — escape LIKE wildcards in user input
+          const escaped = String(value.like).replace(/[%_\\]/g, '\\$&');
+          filters.push(sql`${contents.data} ->> ${fieldName} ILIKE ${'%' + escaped + '%'}`);
         }
       }
     }

@@ -16,5 +16,10 @@ export default defineConfig({
     exclude: ['dist/**', 'node_modules/**'],
     fileParallelism: false,
     testTimeout: 15_000,
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.test.ts', 'src/__tests__/**'],
+    },
   },
 });

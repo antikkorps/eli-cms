@@ -66,9 +66,12 @@ const fieldValidationSchema = z.object({
 ).refine(
   (v) => {
     if (!v.pattern) return true;
+    if (v.pattern.length > 200) return false;
+    // Reject patterns with common ReDoS constructs: nested quantifiers
+    if (/(\+|\*|\{)\s*(\+|\*|\{)/.test(v.pattern)) return false;
     try { new RegExp(v.pattern); return true; } catch { return false; }
   },
-  { message: 'Invalid regex pattern', path: ['pattern'] },
+  { message: 'Invalid or unsafe regex pattern (max 200 chars, no nested quantifiers)', path: ['pattern'] },
 ).optional();
 
 const baseFieldDefinitionSchema = z.object({
@@ -603,7 +606,7 @@ export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type CreateContentTypeInput = z.infer<typeof createContentTypeSchema>;
 export type UpdateContentTypeInput = z.infer<typeof updateContentTypeSchema>;
-export type CreateContentInput = z.infer<typeof createContentSchema>;
+export type CreateContentInput = z.input<typeof createContentSchema>;
 export type UpdateContentInput = z.infer<typeof updateContentSchema>;
 export type ContentTypeListQuery = z.infer<typeof contentTypeListQuerySchema>;
 export type ContentListQuery = z.infer<typeof contentListQuerySchema>;

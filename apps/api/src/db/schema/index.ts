@@ -99,6 +99,7 @@ export const contents = pgTable('contents', {
   index('idx_contents_status').on(table.status),
   index('idx_contents_published_at').on(table.publishedAt),
   index('idx_contents_deleted_at').on(table.deletedAt),
+  index('idx_contents_type_status_deleted').on(table.contentTypeId, table.status, table.deletedAt),
 ]);
 
 // ─── Content Relations ──────────────────────────────────

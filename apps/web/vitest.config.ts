@@ -9,6 +9,11 @@ export default defineConfig({
     environment: 'happy-dom',
     include: ['app/**/*.{test,spec}.ts'],
     setupFiles: ['./app/__tests__/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      include: ['app/**/*.{ts,vue}'],
+      exclude: ['app/__tests__/**'],
+    },
   },
   resolve: {
     alias: {

@@ -75,8 +75,8 @@
 
 ## High Priority — Quality & Security
 
-- [ ] Frontend test suite — setup Vitest + Vue Test Utils, cover critical composables and components
-- [ ] Backend service unit tests — ContentService, UploadService, WebhookService (currently only controller-level tests)
+- [x] Frontend test suite — setup Vitest + Vue Test Utils, cover critical composables and components
+- [x] Backend service unit tests — ContentService, UploadService, WebhookService (currently only controller-level tests)
 - [x] CSRF protection — double-submit cookie pattern for cookie-based auth, `X-CSRF-Token` header
 - [x] Error boundary — `error.vue` with custom 404, catch-all admin route, dark mode + i18n support
 - [x] `process.on('unhandledRejection')` + `uncaughtException` handlers in API entrypoint — graceful shutdown with pino fatal logging
@@ -99,21 +99,21 @@
 - [x] Fix debounce memory leaks — add `onBeforeUnmount` cleanup in `AuthorPicker`, `ContentPicker`, `MediaPicker`, `EditorImageButton`
 - [x] Invalidate setup middleware cache — `resetSetupCheck()` called after setup completion
 - [x] Replace `innerHTML` in `stripHtml()` with `DOMParser` (`contents/index.vue:139`)
-- [ ] Add composite DB index `(content_type_id, status, deleted_at)` on contents table
-- [ ] Escape LIKE wildcards in JSONB filter or document as intended (`content.service.ts:184`)
+- [x] Add composite DB index `(content_type_id, status, deleted_at)` on contents table
+- [x] Escape LIKE wildcards in JSONB filter (`content.service.ts:184`)
 - [x] Increase `JWT_SECRET` min length from 10 to 32 (`environment.ts:6`)
 - [ ] Enforce `editedBy` NOT NULL on content creation (`schema/index.ts`)
-- [ ] Add vitest coverage reporting config (`vitest.config.ts` in api + web)
-- [ ] Document all env vars in `.env.example` (`FRONTEND_URL`, SMTP vars, `NODE_ENV`, `CORS_ORIGINS`)
-- [ ] Add ReDoS protection — limit regex pattern complexity in field validation schemas
+- [x] Add vitest coverage reporting config (`vitest.config.ts` in api + web)
+- [x] Document all env vars in `.env.example` (`FRONTEND_URL`, SMTP vars, `NODE_ENV`, `CORS_ORIGINS`)
+- [x] Add ReDoS protection — limit regex pattern complexity in field validation schemas
 - [ ] Cache component definitions within request scope during content create/update
 
 ## Medium Priority — DevOps Audit Fixes
 
-- [ ] Docker prod: add API healthcheck (`docker-compose.prod.yml`)
+- [x] Docker prod: add API healthcheck (`docker-compose.prod.yml`)
 - [ ] Docker prod: add web container for unified deployment (`docker-compose.prod.yml`)
-- [ ] Make `entrypoint.sh` resilient — exit on migration failure, don't seed if migrate fails
-- [ ] Remove unused `apps/web/package.json` copy from API Dockerfile
+- [x] Make `entrypoint.sh` resilient — exit on migration failure, don't seed if migrate fails
+- [x] Remove unused `apps/web/package.json` copy from API Dockerfile
 
 ## Medium Priority — Features
 

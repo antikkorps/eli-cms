@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ContentService } from './content.service.js';
-import { ContentTypeService } from './content-type.service.js';
 import { AppError } from '../utils/app-error.js';
 import { agent, getAdminToken } from '../__tests__/helpers/setup.js';
 import { buildBlogContentType, buildBlogData, buildPageContentType, buildPageData } from '../__tests__/helpers/fixtures.js';
