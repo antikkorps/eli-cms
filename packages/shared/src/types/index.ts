@@ -13,6 +13,8 @@ export interface Role {
 export interface User {
   id: string;
   email: string;
+  firstName: string | null;
+  lastName: string | null;
   roleId: string;
   avatarStyle: string | null;
   avatarSeed: string | null;

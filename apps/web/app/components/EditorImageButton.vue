@@ -98,6 +98,7 @@ function onSearchInput() {
   }, 300);
 }
 
+onBeforeUnmount(() => { if (searchDebounce) clearTimeout(searchDebounce); });
 watch(page, fetchMedia);
 </script>
 

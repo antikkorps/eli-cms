@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { resetSetupCheck } from '~/middleware/setup.global';
+
 const { apiFetch } = useApi();
 const { setTokens, fetchUser } = useAuth();
 const { t } = useI18n();
@@ -51,6 +53,7 @@ async function handleSubmit() {
 
     setTokens(res.data.tokens.accessToken, res.data.tokens.refreshToken);
     await fetchUser();
+    resetSetupCheck();
     navigateTo('/onboarding');
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : t('setup.errorGeneric');

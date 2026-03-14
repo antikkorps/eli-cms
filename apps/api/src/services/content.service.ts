@@ -237,13 +237,14 @@ export class ContentService {
     return content;
   }
 
-  private static async validateMediaFields(fields: FieldDefinition[], data: Record<string, unknown>, componentMap?: ComponentFieldsMap) {
+  private static collectMediaIds(fields: FieldDefinition[], data: Record<string, unknown>, componentMap?: ComponentFieldsMap): Set<string> {
+    const ids = new Set<string>();
     for (const field of fields) {
       if (field.type === 'repeatable' && field.subFields) {
         const items = data[field.name];
         if (Array.isArray(items)) {
           for (const item of items) {
-            await this.validateMediaFields(field.subFields, item as Record<string, unknown>, componentMap);
+            for (const id of this.collectMediaIds(field.subFields, item as Record<string, unknown>, componentMap)) ids.add(id);
           }
         }
         continue;
@@ -255,7 +256,7 @@ export class ContentService {
             const b = block as Record<string, unknown>;
             const compFields = componentMap.get(b._component as string);
             if (compFields) {
-              await this.validateMediaFields(compFields, b, componentMap);
+              for (const id of this.collectMediaIds(compFields, b, componentMap)) ids.add(id);
             }
           }
         }
@@ -264,32 +265,23 @@ export class ContentService {
       if (field.type !== 'media') continue;
       const value = data[field.name];
       if (value === undefined || value === null) continue;
-
       if (field.multiple && Array.isArray(value)) {
-        for (const uuid of value) {
-          try {
-            await UploadService.findById(uuid as string);
-          } catch {
-            throw new AppError(400, `Media not found for field "${field.name}"`);
-          }
-        }
+        for (const uuid of value) if (typeof uuid === 'string') ids.add(uuid);
       } else if (typeof value === 'string') {
-        try {
-          await UploadService.findById(value);
-        } catch {
-          throw new AppError(400, `Media not found for field "${field.name}"`);
-        }
+        ids.add(value);
       }
     }
+    return ids;
   }
 
-  private static async validateAuthorFields(fields: FieldDefinition[], data: Record<string, unknown>, componentMap?: ComponentFieldsMap) {
+  private static collectAuthorIds(fields: FieldDefinition[], data: Record<string, unknown>, componentMap?: ComponentFieldsMap): Set<string> {
+    const ids = new Set<string>();
     for (const field of fields) {
       if (field.type === 'repeatable' && field.subFields) {
         const items = data[field.name];
         if (Array.isArray(items)) {
           for (const item of items) {
-            await this.validateAuthorFields(field.subFields, item as Record<string, unknown>, componentMap);
+            for (const id of this.collectAuthorIds(field.subFields, item as Record<string, unknown>, componentMap)) ids.add(id);
           }
         }
         continue;
@@ -301,7 +293,7 @@ export class ContentService {
             const b = block as Record<string, unknown>;
             const compFields = componentMap.get(b._component as string);
             if (compFields) {
-              await this.validateAuthorFields(compFields, b, componentMap);
+              for (const id of this.collectAuthorIds(compFields, b, componentMap)) ids.add(id);
             }
           }
         }
@@ -309,14 +301,28 @@ export class ContentService {
       }
       if (field.type !== 'author') continue;
       const value = data[field.name];
-      if (value === undefined || value === null) continue;
-      if (typeof value === 'string') {
-        try {
-          await UserService.findById(value);
-        } catch {
-          throw new AppError(400, `User not found for field "${field.name}"`);
-        }
-      }
+      if (typeof value === 'string') ids.add(value);
+    }
+    return ids;
+  }
+
+  private static async validateMediaFields(fields: FieldDefinition[], data: Record<string, unknown>, componentMap?: ComponentFieldsMap) {
+    const ids = [...this.collectMediaIds(fields, data, componentMap)];
+    if (ids.length === 0) return;
+    const found = await UploadService.findByIds(ids);
+    const foundIds = new Set(found.map(m => m.id));
+    for (const id of ids) {
+      if (!foundIds.has(id)) throw new AppError(400, `Media not found: ${id}`);
+    }
+  }
+
+  private static async validateAuthorFields(fields: FieldDefinition[], data: Record<string, unknown>, componentMap?: ComponentFieldsMap) {
+    const ids = [...this.collectAuthorIds(fields, data, componentMap)];
+    if (ids.length === 0) return;
+    const found = await UserService.findByIds(ids);
+    const foundIds = new Set(found.map(u => u.id));
+    for (const id of ids) {
+      if (!foundIds.has(id)) throw new AppError(400, `User not found: ${id}`);
     }
   }
 
@@ -492,6 +498,7 @@ export class ContentService {
       WorkflowService.validateTransition(existing.status, input.status, userPermissions);
     }
 
+    let validatedData: Record<string, unknown> | undefined;
     if (input.data) {
       const contentType = await ContentTypeService.findById(existing.contentTypeId);
       const componentMap = await this.buildComponentMap(contentType.fields);
@@ -502,12 +509,12 @@ export class ContentService {
       }
       await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
       await this.validateAuthorFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
-      await this.validateUniqueFields(contentType.fields, dataResult.data as Record<string, unknown>, existing.contentTypeId, id);
-      input.data = dataResult.data as Record<string, unknown>;
+      validatedData = dataResult.data as Record<string, unknown>;
     }
 
     // Handle slug update
     const updateData: Record<string, unknown> = { ...input };
+    if (validatedData) updateData.data = validatedData;
     const slugInput = (input as Record<string, unknown>).slug;
     if (typeof slugInput === 'string') {
       updateData.slug = await this.ensureUniqueSlug(slugInput, existing.contentTypeId, id);
@@ -529,8 +536,14 @@ export class ContentService {
       updateData.publishedAt = new Date(publishedAtInput);
     }
 
-    // Atomic transaction: snapshot + update + release lock
+    // Atomic transaction: unique check + snapshot + update + release lock
     const content = await db.transaction(async (tx) => {
+      // Validate unique fields inside transaction to prevent TOCTOU
+      if (validatedData) {
+        const contentType = await ContentTypeService.findById(existing.contentTypeId);
+        await this.validateUniqueFields(contentType.fields, validatedData, existing.contentTypeId, id);
+      }
+
       // Snapshot current state before updating (if userId provided)
       if (userId) {
         await ContentVersionService.snapshot(id, userId, tx);

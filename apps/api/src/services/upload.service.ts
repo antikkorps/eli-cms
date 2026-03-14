@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { extname } from 'node:path';
-import { eq, and, ilike, count as drizzleCount } from 'drizzle-orm';
+import { eq, and, ilike, inArray, count as drizzleCount } from 'drizzle-orm';
 import type { Readable } from 'node:stream';
 import sharp from 'sharp';
 import { db } from '../db/index.js';
@@ -98,6 +98,11 @@ export class UploadService {
     const [record] = await db.select().from(media).where(eq(media.id, id)).limit(1);
     if (!record) throw new AppError(404, 'Media not found');
     return record;
+  }
+
+  static async findByIds(ids: string[]) {
+    if (ids.length === 0) return [];
+    return db.select({ id: media.id }).from(media).where(inArray(media.id, ids));
   }
 
   static async update(id: string, input: UpdateMediaInput) {

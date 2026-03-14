@@ -284,6 +284,8 @@ onMounted(() => {
     fetchSelectedMedia();
   }
 });
+
+onBeforeUnmount(() => { if (searchDebounce) clearTimeout(searchDebounce); });
 </script>
 
 <template>

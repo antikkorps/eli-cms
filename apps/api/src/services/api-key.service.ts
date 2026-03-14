@@ -10,9 +10,9 @@ import type { CreateApiKeyInput, UpdateApiKeyInput, ApiKeyListQuery } from '@eli
 const PREFIX = 'eli_';
 const DEBOUNCE_MS = 5 * 60 * 1000; // 5 min
 
-/** scrypt KDF — server-side secret as salt, satisfies CodeQL password-hash rules. */
+/** scrypt KDF — dedicated salt, decoupled from JWT signing key. */
 function hashKey(raw: string): string {
-  return scryptSync(raw, env.JWT_SECRET, 32, { N: 2048, r: 8, p: 1 }).toString('hex');
+  return scryptSync(raw, env.API_KEY_SALT, 32, { N: 2048, r: 8, p: 1 }).toString('hex');
 }
 
 export class ApiKeyService {

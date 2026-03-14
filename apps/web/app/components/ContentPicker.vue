@@ -62,6 +62,7 @@ function onUpdate(val: string) {
 }
 
 onMounted(() => fetchOptions());
+onBeforeUnmount(() => clearTimeout(debounceTimer));
 </script>
 
 <template>

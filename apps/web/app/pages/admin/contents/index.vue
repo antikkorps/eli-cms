@@ -134,9 +134,8 @@ const statusFilterItems = [
 ];
 
 function stripHtml(html: string): string {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return (div.textContent || div.innerText || '').trim();
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return (doc.body.textContent || '').trim();
 }
 
 function getPreviewText(data: Record<string, unknown>): string {

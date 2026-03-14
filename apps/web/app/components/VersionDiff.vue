@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import DOMPurify from 'dompurify';
+
 const props = defineProps<{
   current: Record<string, unknown>;
   version: Record<string, unknown>;
@@ -39,6 +41,10 @@ function formatValue(val: unknown): string {
   if (typeof val === 'object') return JSON.stringify(val, null, 2);
   return String(val);
 }
+
+function sanitize(html: string): string {
+  return DOMPurify.sanitize(html);
+}
 </script>
 
 <template>
@@ -61,7 +67,7 @@ function formatValue(val: unknown): string {
           <div
             v-if="diff.type === 'richtext' && diff.versionValue"
             class="diff-richtext text-sm bg-red-50 dark:bg-red-950/30 p-2 rounded overflow-hidden break-words"
-            v-html="diff.versionValue"
+            v-html="sanitize(diff.versionValue)"
           />
           <pre v-else class="text-sm whitespace-pre-wrap break-words bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 p-2 rounded">{{ diff.versionValue || '(empty)' }}</pre>
         </div>
@@ -70,7 +76,7 @@ function formatValue(val: unknown): string {
           <div
             v-if="diff.type === 'richtext' && diff.currentValue"
             class="diff-richtext text-sm bg-green-50 dark:bg-green-950/30 p-2 rounded overflow-hidden break-words"
-            v-html="diff.currentValue"
+            v-html="sanitize(diff.currentValue)"
           />
           <pre v-else class="text-sm whitespace-pre-wrap break-words bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 p-2 rounded">{{ diff.currentValue || '(empty)' }}</pre>
         </div>
@@ -79,7 +85,7 @@ function formatValue(val: unknown): string {
         <div
           v-if="diff.type === 'richtext' && diff.currentValue"
           class="diff-richtext"
-          v-html="diff.currentValue"
+          v-html="sanitize(diff.currentValue)"
         />
         <template v-else>{{ diff.currentValue || '(empty)' }}</template>
       </div>

@@ -1,4 +1,4 @@
-import { eq, ilike, and, count as drizzleCount } from 'drizzle-orm';
+import { eq, ilike, and, inArray, count as drizzleCount } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { db } from '../db/index.js';
 import { users, roles } from '../db/schema/index.js';
@@ -65,6 +65,11 @@ export class UserService {
       .limit(1);
     if (!user) throw new AppError(404, 'User not found');
     return user;
+  }
+
+  static async findByIds(ids: string[]) {
+    if (ids.length === 0) return [];
+    return db.select({ id: users.id }).from(users).where(inArray(users.id, ids));
   }
 
   static async create(input: CreateUserInput, actor?: Actor) {

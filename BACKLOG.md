@@ -82,26 +82,26 @@
 - [x] `process.on('unhandledRejection')` + `uncaughtException` handlers in API entrypoint — graceful shutdown with pino fatal logging
 - [x] Rate limit forgot-password endpoint (5 req/hour per IP) — dedicated `forgotPasswordRateLimit`
 - [x] CORS default hardened — changed from `*` to `http://localhost:3000`
-- [ ] CI/CD pipeline — GitHub Actions for lint + test + build on PR
+- [x] CI/CD pipeline — GitHub Actions for lint + test + build on PR
 - [ ] Deployment guide (`DEPLOYMENT.md` — Railway, Vercel, self-hosted examples)
 
 ## High Priority — Audit Fixes (March 2026)
 
-- [ ] Fix XSS in `VersionDiff.vue` — sanitize HTML with DOMPurify before `v-html` rendering (lines 64, 73, 82)
-- [ ] Batch media/author validation — replace N+1 `findById()` loops with `inArray()` batch query (`content.service.ts:268-275, 313-319`)
-- [ ] Fix `User` type — add `firstName`, `lastName` to shared `User` interface (`packages/shared/src/types/index.ts`)
-- [ ] Add missing permission constants — `SETTINGS_MANAGE`, `media-folders:*` operations (`packages/shared/src/constants/permissions.ts`)
-- [ ] Fix TOCTOU race condition — move `validateUniqueFields` inside transaction or add DB-level unique constraint (`content.service.ts:345-375`)
-- [ ] Dedicated API key salt — stop reusing `JWT_SECRET` as scrypt salt, add `API_KEY_SALT` env var (`api-key.service.ts:15`)
+- [x] Fix XSS in `VersionDiff.vue` — sanitize HTML with DOMPurify before `v-html` rendering (lines 64, 73, 82)
+- [x] Batch media/author validation — replace N+1 `findById()` loops with `inArray()` batch query (`content.service.ts:268-275, 313-319`)
+- [x] Fix `User` type — add `firstName`, `lastName` to shared `User` interface (`packages/shared/src/types/index.ts`)
+- [~] Add missing permission constants — already covered: settings uses `SETTINGS_READ`/`SETTINGS_UPDATE`, media-folders reuses `UPLOADS_*`
+- [x] Fix TOCTOU race condition — move `validateUniqueFields` inside transaction or add DB-level unique constraint (`content.service.ts:345-375`)
+- [x] Dedicated API key salt — stop reusing `JWT_SECRET` as scrypt salt, add `API_KEY_SALT` env var (`api-key.service.ts:15`)
 
 ## Medium Priority — Audit Fixes (March 2026)
 
-- [ ] Fix debounce memory leaks — add `onBeforeUnmount` cleanup in `AuthorPicker`, `ContentPicker`, `MediaPicker`, `EditorImageButton`
-- [ ] Invalidate setup middleware cache — call `invalidateSetupCheck()` after setup completion (`setup.global.ts:10-23`)
-- [ ] Replace `innerHTML` in `stripHtml()` with `DOMParser` (`contents/index.vue:139`)
+- [x] Fix debounce memory leaks — add `onBeforeUnmount` cleanup in `AuthorPicker`, `ContentPicker`, `MediaPicker`, `EditorImageButton`
+- [x] Invalidate setup middleware cache — `resetSetupCheck()` called after setup completion
+- [x] Replace `innerHTML` in `stripHtml()` with `DOMParser` (`contents/index.vue:139`)
 - [ ] Add composite DB index `(content_type_id, status, deleted_at)` on contents table
 - [ ] Escape LIKE wildcards in JSONB filter or document as intended (`content.service.ts:184`)
-- [ ] Increase `JWT_SECRET` min length from 10 to 32 (`environment.ts:6`)
+- [x] Increase `JWT_SECRET` min length from 10 to 32 (`environment.ts:6`)
 - [ ] Enforce `editedBy` NOT NULL on content creation (`schema/index.ts`)
 - [ ] Add vitest coverage reporting config (`vitest.config.ts` in api + web)
 - [ ] Document all env vars in `.env.example` (`FRONTEND_URL`, SMTP vars, `NODE_ENV`, `CORS_ORIGINS`)
