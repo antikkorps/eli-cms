@@ -444,7 +444,7 @@ export class ContentService {
 
     const [content] = await db
       .insert(contents)
-      .values({ contentTypeId: input.contentTypeId, slug: slug ?? null, status: input.status ?? 'draft', data: dataResult.data })
+      .values({ contentTypeId: input.contentTypeId, slug: slug ?? null, status: input.status ?? 'draft', data: dataResult.data, editedBy: actor?.id ?? null })
       .returning();
 
     const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
@@ -500,16 +500,18 @@ export class ContentService {
     }
 
     let validatedData: Record<string, unknown> | undefined;
+    // Cache contentType for reuse in unique validation inside transaction
+    let cachedContentType: Awaited<ReturnType<typeof ContentTypeService.findById>> | undefined;
     if (input.data) {
-      const contentType = await ContentTypeService.findById(existing.contentTypeId);
-      const componentMap = await this.buildComponentMap(contentType.fields);
-      const dataSchema = buildContentDataSchema(contentType.fields, componentMap);
+      cachedContentType = await ContentTypeService.findById(existing.contentTypeId);
+      const componentMap = await this.buildComponentMap(cachedContentType.fields);
+      const dataSchema = buildContentDataSchema(cachedContentType.fields, componentMap);
       const dataResult = dataSchema.safeParse(input.data);
       if (!dataResult.success) {
         throw new AppError(400, `Data validation: ${dataResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')}`);
       }
-      await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
-      await this.validateAuthorFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
+      await this.validateMediaFields(cachedContentType.fields, dataResult.data as Record<string, unknown>, componentMap);
+      await this.validateAuthorFields(cachedContentType.fields, dataResult.data as Record<string, unknown>, componentMap);
       validatedData = dataResult.data as Record<string, unknown>;
     }
 
@@ -540,9 +542,8 @@ export class ContentService {
     // Atomic transaction: unique check + snapshot + update + release lock
     const content = await db.transaction(async (tx) => {
       // Validate unique fields inside transaction to prevent TOCTOU
-      if (validatedData) {
-        const contentType = await ContentTypeService.findById(existing.contentTypeId);
-        await this.validateUniqueFields(contentType.fields, validatedData, existing.contentTypeId, id);
+      if (validatedData && cachedContentType) {
+        await this.validateUniqueFields(cachedContentType.fields, validatedData, existing.contentTypeId, id);
       }
 
       // Snapshot current state before updating (if userId provided)

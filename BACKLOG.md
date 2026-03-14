@@ -102,16 +102,16 @@
 - [x] Add composite DB index `(content_type_id, status, deleted_at)` on contents table
 - [x] Escape LIKE wildcards in JSONB filter (`content.service.ts:184`)
 - [x] Increase `JWT_SECRET` min length from 10 to 32 (`environment.ts:6`)
-- [ ] Enforce `editedBy` NOT NULL on content creation (`schema/index.ts`)
+- [x] Enforce `editedBy` on content creation — set from actor.id
 - [x] Add vitest coverage reporting config (`vitest.config.ts` in api + web)
 - [x] Document all env vars in `.env.example` (`FRONTEND_URL`, SMTP vars, `NODE_ENV`, `CORS_ORIGINS`)
 - [x] Add ReDoS protection — limit regex pattern complexity in field validation schemas
-- [ ] Cache component definitions within request scope during content create/update
+- [x] Cache component definitions within request scope during content create/update
 
 ## Medium Priority — DevOps Audit Fixes
 
 - [x] Docker prod: add API healthcheck (`docker-compose.prod.yml`)
-- [ ] Docker prod: add web container for unified deployment (`docker-compose.prod.yml`)
+- [x] Docker prod: add web container for unified deployment (`docker-compose.prod.yml`)
 - [x] Make `entrypoint.sh` resilient — exit on migration failure, don't seed if migrate fails
 - [x] Remove unused `apps/web/package.json` copy from API Dockerfile
 
