@@ -7,7 +7,7 @@ import { logger } from '../utils/logger.js';
 import { buildMeta } from '../utils/pagination.js';
 import { eventBus } from './event-bus.js';
 import type { CmsEvent } from './event-bus.js';
-import type { CreateWebhookInput, UpdateWebhookInput, WebhookListQuery, WebhookDeliveryListQuery, WebhookEvent } from '@eli-cms/shared';
+import type { CreateWebhookInput, UpdateWebhookInput, WebhookListQuery, WebhookDeliveryListQuery } from '@eli-cms/shared';
 import type { Actor } from './content.service.js';
 
 const MAX_RETRY_ATTEMPTS = 3;
@@ -207,7 +207,7 @@ export class WebhookService {
         signal: AbortSignal.timeout(10_000),
       });
 
-      const [updated] = await db
+      await db
         .update(webhookDeliveries)
         .set({
           status: response.ok ? 'success' : 'failed',
@@ -215,8 +215,7 @@ export class WebhookService {
           attempts: 1,
           nextRetryAt: response.ok ? null : this.getNextRetryAt(1),
         })
-        .where(eq(webhookDeliveries.id, deliveryId))
-        .returning();
+        .where(eq(webhookDeliveries.id, deliveryId));
 
       // If the first attempt failed, we rely on the retry poller
     } catch {

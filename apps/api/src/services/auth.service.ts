@@ -391,7 +391,6 @@ export class AuthService {
 
   private static async generateTokens(payload: JwtPayload, family: string): Promise<TokenPair> {
     const accessExpiresIn = parseDurationSec(env.JWT_ACCESS_EXPIRY);
-    const refreshExpiresIn = parseDurationSec(env.JWT_REFRESH_EXPIRY);
 
     const accessToken = jwt.sign(payload, env.JWT_SECRET, { expiresIn: accessExpiresIn });
 

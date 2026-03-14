@@ -76,7 +76,6 @@ export class ContentService {
   private static async ensureUniqueSlug(baseSlug: string, contentTypeId: string, excludeId?: string): Promise<string> {
     let slug = baseSlug;
     let suffix = 0;
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const filters = [eq(contents.slug, slug), eq(contents.contentTypeId, contentTypeId), isNull(contents.deletedAt)];
       if (excludeId) filters.push(sql`${contents.id} != ${excludeId}`);

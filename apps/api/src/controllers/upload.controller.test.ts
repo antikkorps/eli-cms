@@ -134,7 +134,7 @@ describe('Upload API', () => {
         .set('Authorization', `Bearer ${editorToken}`);
 
       expect(res.body.data.length).toBeGreaterThanOrEqual(1);
-      expect(res.body.data.every((m: any) => m.mimeType === 'application/pdf')).toBe(true);
+      expect(res.body.data.every((m: Record<string, unknown>) => m.mimeType === 'application/pdf')).toBe(true);
     });
   });
 

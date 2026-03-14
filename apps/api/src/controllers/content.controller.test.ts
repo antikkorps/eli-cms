@@ -174,7 +174,7 @@ describe('GET /api/contents', () => {
 
     expect(res.body.data).toHaveLength(2);
     expect(res.body.meta).toMatchObject({ total: 3, totalPages: 2, page: 1, limit: 2 });
-    expect(res.body.data.every((c: any) => c.status === 'draft')).toBe(true);
+    expect(res.body.data.every((c: Record<string, unknown>) => c.status === 'draft')).toBe(true);
   });
 
   // ─── Sorting ──────────────────────────────────────────

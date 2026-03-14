@@ -57,8 +57,11 @@ jobs:
       - name: Build shared package
         run: pnpm build:shared
 
+      - name: Prepare Nuxt (generate .nuxt/tsconfig.json)
+        run: pnpm --filter @eli-cms/web exec nuxt prepare
+
       - name: Run frontend tests
-        run: pnpm test:web
+        run: pnpm --filter @eli-cms/web test
 
   build:
     name: Build

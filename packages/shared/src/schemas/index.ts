@@ -240,6 +240,7 @@ export function buildContentDataSchema(fields: FieldDefinition[], componentMap?:
           if (blockSchemas.length === 1) {
             fieldSchema = z.array(blockSchemas[0]!);
           } else if (blockSchemas.length > 1) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             fieldSchema = z.array(z.discriminatedUnion('_component', blockSchemas as [z.ZodObject<any>, z.ZodObject<any>, ...z.ZodObject<any>[]]));
           } else {
             fieldSchema = z.array(z.object({ _component: z.string() }).passthrough());

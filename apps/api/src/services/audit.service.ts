@@ -75,7 +75,7 @@ export class AuditService {
     const { resourceType, resourceId } = extractResource(cmsEvent.event, data);
 
     // Build metadata: everything except actor/resource fields
-    const { actorId: _a, actorType: _b, ipAddress: _c, userAgent: _d, ...metadata } = data;
+    const { actorId: _actorId, actorType: _actorType, ipAddress: _ip, userAgent: _ua, ...metadata } = data;
 
     await db.insert(auditLogs).values({
       actorId,

@@ -1,4 +1,4 @@
-import { eq, and, count as drizzleCount, isNull } from 'drizzle-orm';
+import { eq, and, count as drizzleCount } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { mediaFolders } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';

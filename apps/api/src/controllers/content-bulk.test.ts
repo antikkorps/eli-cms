@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { agent, getAdminToken, getEditorToken } from '../__tests__/helpers/setup.js';
+import { agent, getAdminToken } from '../__tests__/helpers/setup.js';
 import { buildBlogContentType, buildBlogData } from '../__tests__/helpers/fixtures.js';
 
 describe('Content Bulk Actions', () => {
