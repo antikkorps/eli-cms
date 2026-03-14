@@ -58,10 +58,7 @@ export class ContentVersionService {
 
     const where = eq(contentVersions.contentId, contentId);
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(contentVersions)
-      .where(where);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(contentVersions).where(where);
 
     const data = await db
       .select()

@@ -6,17 +6,7 @@
  * - Provides a global $fetch mock.
  */
 import { vi } from 'vitest';
-import {
-  ref,
-  reactive,
-  computed,
-  toRef,
-  readonly,
-  watch,
-  onMounted,
-  onBeforeUnmount,
-  unref,
-} from 'vue';
+import { ref, reactive, computed, toRef, readonly, watch, onMounted, onBeforeUnmount, unref } from 'vue';
 import {
   useRuntimeConfig,
   useCookie,

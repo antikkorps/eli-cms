@@ -45,29 +45,56 @@ export function sanitize(input: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#x27;/g, "'")
     .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&')   // decode &amp; last to prevent double-unescaping
-    .replace(/[<>]/g, '')     // strip any angle brackets produced by entity decoding
+    .replace(/&amp;/g, '&') // decode &amp; last to prevent double-unescaping
+    .replace(/[<>]/g, '') // strip any angle brackets produced by entity decoding
     .trim();
 }
 
 /** Allowed HTML tags for richtext fields (whitelist approach). */
 const ALLOWED_TAGS = new Set([
   // Inline formatting
-  'b', 'i', 'em', 'strong', 'u', 's', 'sub', 'sup', 'mark', 'small',
+  'b',
+  'i',
+  'em',
+  'strong',
+  'u',
+  's',
+  'sub',
+  'sup',
+  'mark',
+  'small',
   // Block formatting
-  'p', 'br', 'hr', 'div', 'span',
+  'p',
+  'br',
+  'hr',
+  'div',
+  'span',
   // Headings
-  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
   // Lists
-  'ul', 'ol', 'li',
+  'ul',
+  'ol',
+  'li',
   // Links
   'a',
   // Code
-  'code', 'pre',
+  'code',
+  'pre',
   // Quotes
   'blockquote',
   // Tables
-  'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
+  'table',
+  'thead',
+  'tbody',
+  'tfoot',
+  'tr',
+  'th',
+  'td',
   // Media (for embedded images in richtext)
   'img',
 ]);

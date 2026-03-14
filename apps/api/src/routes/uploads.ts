@@ -25,7 +25,14 @@ uploadsRouter.get('/', authenticate, requirePermission(UPLOADS_READ), UploadCont
 uploadsRouter.get('/:id', authenticate, requirePermission(UPLOADS_READ), UploadController.get);
 
 // Upload (rate limited)
-uploadsRouter.post('/', authenticate, requirePermission(UPLOADS_CREATE), uploadRateLimit, upload.single('file'), UploadController.upload);
+uploadsRouter.post(
+  '/',
+  authenticate,
+  requirePermission(UPLOADS_CREATE),
+  uploadRateLimit,
+  upload.single('file'),
+  UploadController.upload,
+);
 
 // Rename
 uploadsRouter.patch('/:id', authenticate, requirePermission(UPLOADS_UPDATE), UploadController.update);

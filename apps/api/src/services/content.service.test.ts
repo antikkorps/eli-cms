@@ -2,7 +2,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ContentService } from './content.service.js';
 import { AppError } from '../utils/app-error.js';
 import { agent, getAdminToken } from '../__tests__/helpers/setup.js';
-import { buildBlogContentType, buildBlogData, buildPageContentType, buildPageData } from '../__tests__/helpers/fixtures.js';
+import {
+  buildBlogContentType,
+  buildBlogData,
+  buildPageContentType,
+  buildPageData,
+} from '../__tests__/helpers/fixtures.js';
 
 describe('ContentService', () => {
   let contentTypeId: string;
@@ -19,9 +24,7 @@ describe('ContentService', () => {
     contentTypeId = res.body.data.id;
 
     // Get user id from /auth/me
-    const me = await agent()
-      .get('/api/v1/auth/me')
-      .set('Authorization', `Bearer ${token}`);
+    const me = await agent().get('/api/v1/auth/me').set('Authorization', `Bearer ${token}`);
     userId = me.body.data.id;
   });
 
@@ -57,9 +60,7 @@ describe('ContentService', () => {
     });
 
     it('throws 400 for invalid data (missing required fields)', async () => {
-      await expect(
-        ContentService.create({ contentTypeId, data: {} }),
-      ).rejects.toThrow(AppError);
+      await expect(ContentService.create({ contentTypeId, data: {} })).rejects.toThrow(AppError);
     });
 
     it('throws 404 for non-existent content type', async () => {
@@ -73,14 +74,19 @@ describe('ContentService', () => {
       const singletonRes = await agent()
         .post('/api/v1/content-types')
         .set('Authorization', `Bearer ${token}`)
-        .send({ slug: 'site-settings', name: 'Site Settings', fields: [{ name: 'title', type: 'text', required: true, label: 'Title' }], isSingleton: true });
+        .send({
+          slug: 'site-settings',
+          name: 'Site Settings',
+          fields: [{ name: 'title', type: 'text', required: true, label: 'Title' }],
+          isSingleton: true,
+        });
       const singletonId = singletonRes.body.data.id;
 
       await ContentService.create({ contentTypeId: singletonId, data: { title: 'Settings' } });
 
-      await expect(
-        ContentService.create({ contentTypeId: singletonId, data: { title: 'Second' } }),
-      ).rejects.toThrow(/singleton/i);
+      await expect(ContentService.create({ contentTypeId: singletonId, data: { title: 'Second' } })).rejects.toThrow(
+        /singleton/i,
+      );
     });
 
     it('emits content.created event', async () => {
@@ -110,9 +116,7 @@ describe('ContentService', () => {
     });
 
     it('throws 404 for non-existent id', async () => {
-      await expect(
-        ContentService.findById('00000000-0000-0000-0000-000000000000'),
-      ).rejects.toThrow(AppError);
+      await expect(ContentService.findById('00000000-0000-0000-0000-000000000000')).rejects.toThrow(AppError);
     });
 
     it('throws 404 for soft-deleted content', async () => {
@@ -148,7 +152,13 @@ describe('ContentService', () => {
       await ContentService.create({ contentTypeId, data: buildBlogData() });
       await ContentService.create({ contentTypeId: pageTypeId, data: buildPageData() });
 
-      const result = await ContentService.findAll({ page: 1, limit: 20, contentTypeId, sortBy: 'createdAt', sortOrder: 'desc' });
+      const result = await ContentService.findAll({
+        page: 1,
+        limit: 20,
+        contentTypeId,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+      });
       expect(result.data).toHaveLength(1);
     });
 
@@ -156,7 +166,13 @@ describe('ContentService', () => {
       await ContentService.create({ contentTypeId, data: buildBlogData({ title: 'Draft' }) });
       await ContentService.create({ contentTypeId, data: buildBlogData({ title: 'Published' }), status: 'published' });
 
-      const result = await ContentService.findAll({ page: 1, limit: 20, status: 'published', sortBy: 'createdAt', sortOrder: 'desc' });
+      const result = await ContentService.findAll({
+        page: 1,
+        limit: 20,
+        status: 'published',
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+      });
       expect(result.data).toHaveLength(1);
       expect((result.data[0].data as Record<string, unknown>).title).toBe('Published');
     });
@@ -175,9 +191,13 @@ describe('ContentService', () => {
   describe('update', () => {
     it('updates content data', async () => {
       const created = await ContentService.create({ contentTypeId, data: buildBlogData() });
-      const updated = await ContentService.update(created.id, {
-        data: buildBlogData({ title: 'Updated Title' }),
-      }, userId);
+      const updated = await ContentService.update(
+        created.id,
+        {
+          data: buildBlogData({ title: 'Updated Title' }),
+        },
+        userId,
+      );
 
       expect((updated.data as Record<string, unknown>).title).toBe('Updated Title');
     });
@@ -186,9 +206,13 @@ describe('ContentService', () => {
       const { ContentVersionService } = await import('./content-version.service.js');
       const created = await ContentService.create({ contentTypeId, data: buildBlogData() });
 
-      await ContentService.update(created.id, {
-        data: buildBlogData({ title: 'V2' }),
-      }, userId);
+      await ContentService.update(
+        created.id,
+        {
+          data: buildBlogData({ title: 'V2' }),
+        },
+        userId,
+      );
 
       const versions = await ContentVersionService.findAll(created.id, { page: 1, limit: 10 });
       expect(versions.data.length).toBeGreaterThanOrEqual(1);
@@ -200,7 +224,9 @@ describe('ContentService', () => {
       // draft → in-review → approved → published
       await ContentService.update(created.id, { status: 'in-review' }, userId, undefined, ['content:update']);
       await ContentService.update(created.id, { status: 'approved' }, userId, undefined, ['content:review']);
-      const published = await ContentService.update(created.id, { status: 'published' }, userId, undefined, ['content:publish']);
+      const published = await ContentService.update(created.id, { status: 'published' }, userId, undefined, [
+        'content:publish',
+      ]);
 
       expect(published.publishedAt).toBeDefined();
       expect(published.status).toBe('published');
@@ -276,7 +302,12 @@ describe('ContentService', () => {
       const singletonRes = await agent()
         .post('/api/v1/content-types')
         .set('Authorization', `Bearer ${token}`)
-        .send({ slug: 'about', name: 'About', fields: [{ name: 'title', type: 'text', required: true, label: 'Title' }], isSingleton: true });
+        .send({
+          slug: 'about',
+          name: 'About',
+          fields: [{ name: 'title', type: 'text', required: true, label: 'Title' }],
+          isSingleton: true,
+        });
       const singletonId = singletonRes.body.data.id;
 
       const created = await ContentService.create({ contentTypeId: singletonId, data: { title: 'About' } });

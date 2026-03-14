@@ -13,19 +13,15 @@ describe('Upload API', () => {
   // ─── POST /api/uploads ──────────────────────────────────
   describe('POST /api/uploads', () => {
     it('returns 401 without token', async () => {
-      const res = await agent()
-        .post('/api/v1/uploads')
-        .attach('file', Buffer.from('%PDF-1.4 test'), {
-          filename: 'test.pdf',
-          contentType: 'application/pdf',
-        });
+      const res = await agent().post('/api/v1/uploads').attach('file', Buffer.from('%PDF-1.4 test'), {
+        filename: 'test.pdf',
+        contentType: 'application/pdf',
+      });
       expect(res.status).toBe(401);
     });
 
     it('returns 400 when no file is provided', async () => {
-      const res = await agent()
-        .post('/api/v1/uploads')
-        .set('Authorization', `Bearer ${editorToken}`);
+      const res = await agent().post('/api/v1/uploads').set('Authorization', `Bearer ${editorToken}`);
       expect(res.status).toBe(400);
       expect(res.body.error).toMatch(/no file/i);
     });
@@ -109,9 +105,7 @@ describe('Upload API', () => {
           contentType: 'application/pdf',
         });
 
-      const res = await agent()
-        .get('/api/v1/uploads')
-        .set('Authorization', `Bearer ${editorToken}`);
+      const res = await agent().get('/api/v1/uploads').set('Authorization', `Bearer ${editorToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -150,9 +144,7 @@ describe('Upload API', () => {
         });
 
       const id = upload.body.data.id;
-      const res = await agent()
-        .get(`/api/v1/uploads/${id}`)
-        .set('Authorization', `Bearer ${editorToken}`);
+      const res = await agent().get(`/api/v1/uploads/${id}`).set('Authorization', `Bearer ${editorToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.id).toBe(id);
@@ -213,15 +205,11 @@ describe('Upload API', () => {
         });
 
       const id = upload.body.data.id;
-      const res = await agent()
-        .delete(`/api/v1/uploads/${id}`)
-        .set('Authorization', `Bearer ${adminToken}`);
+      const res = await agent().delete(`/api/v1/uploads/${id}`).set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(204);
 
       // Confirm gone
-      const check = await agent()
-        .get(`/api/v1/uploads/${id}`)
-        .set('Authorization', `Bearer ${adminToken}`);
+      const check = await agent().get(`/api/v1/uploads/${id}`).set('Authorization', `Bearer ${adminToken}`);
       expect(check.status).toBe(404);
     });
   });
@@ -239,16 +227,12 @@ describe('Settings API', () => {
 
   describe('GET /api/settings/storage', () => {
     it('returns 403 for editor', async () => {
-      const res = await agent()
-        .get('/api/v1/settings/storage')
-        .set('Authorization', `Bearer ${editorToken}`);
+      const res = await agent().get('/api/v1/settings/storage').set('Authorization', `Bearer ${editorToken}`);
       expect(res.status).toBe(403);
     });
 
     it('returns default local config for admin', async () => {
-      const res = await agent()
-        .get('/api/v1/settings/storage')
-        .set('Authorization', `Bearer ${adminToken}`);
+      const res = await agent().get('/api/v1/settings/storage').set('Authorization', `Bearer ${adminToken}`);
       expect(res.status).toBe(200);
       expect(res.body.data.activeStorage).toBe('local');
     });

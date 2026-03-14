@@ -9,7 +9,9 @@ import type { ExportContentQuery, FieldDefinition } from '@eli-cms/shared';
 import type { Actor } from './content.service.js';
 
 export class ContentExportService {
-  static async exportContents(query: ExportContentQuery): Promise<{ data: string; mimeType: string; extension: string }> {
+  static async exportContents(
+    query: ExportContentQuery,
+  ): Promise<{ data: string; mimeType: string; extension: string }> {
     const contentType = await ContentTypeService.findById(query.contentTypeId);
 
     const filters = [eq(contents.contentTypeId, query.contentTypeId), isNull(contents.deletedAt)];
@@ -69,22 +71,28 @@ export class ContentExportService {
 
     for (let i = 0; i < records.length; i++) {
       const row = records[i];
-      const data = row.data && typeof row.data === 'object' ? row.data as Record<string, unknown> : row;
-      const status = typeof row.status === 'string' && ['draft', 'published'].includes(row.status) ? row.status : 'draft';
+      const data = row.data && typeof row.data === 'object' ? (row.data as Record<string, unknown>) : row;
+      const status =
+        typeof row.status === 'string' && ['draft', 'published'].includes(row.status) ? row.status : 'draft';
 
       const result = dataSchema.safeParse(data);
       if (!result.success) {
         failed++;
-        errors.push(`Row ${i + 1}: ${result.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join(', ')}`);
+        errors.push(
+          `Row ${i + 1}: ${result.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join(', ')}`,
+        );
         continue;
       }
 
       try {
-        await ContentService.create({
-          contentTypeId,
-          status: status as 'draft' | 'published',
-          data: result.data as Record<string, unknown>,
-        }, actor);
+        await ContentService.create(
+          {
+            contentTypeId,
+            status: status as 'draft' | 'published',
+            data: result.data as Record<string, unknown>,
+          },
+          actor,
+        );
         imported++;
       } catch (err) {
         failed++;
@@ -197,12 +205,18 @@ export class ContentExportService {
   private static coerceCSVValue(value: string, type: string): unknown {
     if (value === '') return undefined;
     switch (type) {
-      case 'number': return Number(value);
-      case 'boolean': return value === 'true';
+      case 'number':
+        return Number(value);
+      case 'boolean':
+        return value === 'true';
       default: {
         // Try JSON parse for arrays (media multiple)
         if (value.startsWith('[')) {
-          try { return JSON.parse(value); } catch { /* fall through */ }
+          try {
+            return JSON.parse(value);
+          } catch {
+            /* fall through */
+          }
         }
         return value;
       }

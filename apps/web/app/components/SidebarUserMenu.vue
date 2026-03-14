@@ -24,7 +24,9 @@ const { t } = useI18n();
   <div v-else class="space-y-2 w-full">
     <NuxtLink to="/admin/profile" class="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity">
       <UAvatar v-if="user?.email" :src="userAvatarUrl(user, 32)" size="xs" class="shrink-0" />
-      <span class="text-xs truncate">{{ [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email }}</span>
+      <span class="text-xs truncate">{{
+        [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email
+      }}</span>
     </NuxtLink>
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-1">

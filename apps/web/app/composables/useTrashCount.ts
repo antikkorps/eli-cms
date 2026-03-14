@@ -11,9 +11,7 @@ export function useTrashCount() {
     if (state.loaded || state.loading) return;
     state.loading = true;
     try {
-      const res = await apiFetch<{ success: boolean; data: { count: number } }>(
-        '/contents/trash/count',
-      );
+      const res = await apiFetch<{ success: boolean; data: { count: number } }>('/contents/trash/count');
       state.count = res.data.count;
       state.loaded = true;
     } catch {

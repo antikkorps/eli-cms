@@ -50,20 +50,20 @@ Postgres starts, migrations run, seed creates the default admin, and the API lis
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev:api` | Start API in dev mode (port 8080) |
-| `pnpm dev:web` | Start Nuxt frontend (port 3000) |
-| `pnpm build:shared` | Build the shared package |
-| `pnpm build:api` | Build the API |
-| `pnpm db:generate` | Generate Drizzle migrations |
-| `pnpm db:migrate` | Apply database migrations |
-| `pnpm db:seed` | Create default admin user |
-| `pnpm docker:up` | Start Postgres + pgAdmin (dev) |
-| `pnpm docker:down` | Stop dev containers |
-| `pnpm test:api` | Run API tests |
-| `pnpm lint` | Lint the codebase |
-| `pnpm format` | Format with Prettier |
+| Command             | Description                       |
+| ------------------- | --------------------------------- |
+| `pnpm dev:api`      | Start API in dev mode (port 8080) |
+| `pnpm dev:web`      | Start Nuxt frontend (port 3000)   |
+| `pnpm build:shared` | Build the shared package          |
+| `pnpm build:api`    | Build the API                     |
+| `pnpm db:generate`  | Generate Drizzle migrations       |
+| `pnpm db:migrate`   | Apply database migrations         |
+| `pnpm db:seed`      | Create default admin user         |
+| `pnpm docker:up`    | Start Postgres + pgAdmin (dev)    |
+| `pnpm docker:down`  | Stop dev containers               |
+| `pnpm test:api`     | Run API tests                     |
+| `pnpm lint`         | Lint the codebase                 |
+| `pnpm format`       | Format with Prettier              |
 
 ## Project Structure
 
@@ -90,54 +90,54 @@ eli-cms/
 
 ## Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DATABASE_URL` | `postgresql://eli:eli_secret@localhost:5432/eli_cms` | PostgreSQL connection string |
-| `JWT_SECRET` | — | Secret for access tokens (min 10 chars) |
-| `JWT_REFRESH_SECRET` | — | Secret for refresh tokens (min 10 chars) |
-| `API_PORT` | `8080` | API listening port |
-| `JWT_ACCESS_EXPIRY` | `15m` | Access token TTL (e.g. `15m`, `1h`) |
-| `JWT_REFRESH_EXPIRY` | `7d` | Refresh token TTL (e.g. `7d`, `30d`) |
-| `CORS_ORIGINS` | `*` | Allowed origins (comma-separated, or `*` for all) |
-| `COOKIE_SECURE` | `true` | Set `false` in dev (no HTTPS), `true` in prod |
+| Variable             | Default                                              | Description                                       |
+| -------------------- | ---------------------------------------------------- | ------------------------------------------------- |
+| `DATABASE_URL`       | `postgresql://eli:eli_secret@localhost:5432/eli_cms` | PostgreSQL connection string                      |
+| `JWT_SECRET`         | —                                                    | Secret for access tokens (min 10 chars)           |
+| `JWT_REFRESH_SECRET` | —                                                    | Secret for refresh tokens (min 10 chars)          |
+| `API_PORT`           | `8080`                                               | API listening port                                |
+| `JWT_ACCESS_EXPIRY`  | `15m`                                                | Access token TTL (e.g. `15m`, `1h`)               |
+| `JWT_REFRESH_EXPIRY` | `7d`                                                 | Refresh token TTL (e.g. `7d`, `30d`)              |
+| `CORS_ORIGINS`       | `*`                                                  | Allowed origins (comma-separated, or `*` for all) |
+| `COOKIE_SECURE`      | `true`                                               | Set `false` in dev (no HTTPS), `true` in prod     |
 
 See `.env.example` for a complete template.
 
 ## API Endpoints
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `POST` | `/api/auth/register` | — | Register a new user |
-| `POST` | `/api/auth/login` | — | Login, get tokens |
-| `POST` | `/api/auth/refresh` | — | Refresh access token |
-| `GET` | `/api/auth/me` | JWT | Current user info |
-| `POST` | `/api/auth/logout` | JWT | Revoke a refresh token |
-| `POST` | `/api/auth/logout-all` | JWT | Revoke all refresh tokens |
-| `PUT` | `/api/auth/change-password` | JWT | Change password |
-| `GET` | `/api/content-types` | JWT | List content types |
-| `GET` | `/api/content-types/:id` | JWT | Get content type |
-| `POST` | `/api/content-types` | Admin | Create content type |
-| `PUT` | `/api/content-types/:id` | Admin | Update content type |
-| `DELETE` | `/api/content-types/:id` | Admin | Delete content type |
-| `GET` | `/api/contents` | JWT | List contents |
-| `GET` | `/api/contents/:id` | JWT | Get content |
-| `POST` | `/api/contents` | JWT | Create content |
-| `PUT` | `/api/contents/:id` | JWT | Update content |
-| `DELETE` | `/api/contents/:id` | JWT | Delete content |
-| `GET` | `/api/users` | Admin | List users |
-| `GET` | `/api/users/:id` | Admin | Get user |
-| `DELETE` | `/api/users/:id` | Admin | Delete user |
-| `GET` | `/health` | — | Health check |
+| Method   | Endpoint                    | Auth  | Description               |
+| -------- | --------------------------- | ----- | ------------------------- |
+| `POST`   | `/api/auth/register`        | —     | Register a new user       |
+| `POST`   | `/api/auth/login`           | —     | Login, get tokens         |
+| `POST`   | `/api/auth/refresh`         | —     | Refresh access token      |
+| `GET`    | `/api/auth/me`              | JWT   | Current user info         |
+| `POST`   | `/api/auth/logout`          | JWT   | Revoke a refresh token    |
+| `POST`   | `/api/auth/logout-all`      | JWT   | Revoke all refresh tokens |
+| `PUT`    | `/api/auth/change-password` | JWT   | Change password           |
+| `GET`    | `/api/content-types`        | JWT   | List content types        |
+| `GET`    | `/api/content-types/:id`    | JWT   | Get content type          |
+| `POST`   | `/api/content-types`        | Admin | Create content type       |
+| `PUT`    | `/api/content-types/:id`    | Admin | Update content type       |
+| `DELETE` | `/api/content-types/:id`    | Admin | Delete content type       |
+| `GET`    | `/api/contents`             | JWT   | List contents             |
+| `GET`    | `/api/contents/:id`         | JWT   | Get content               |
+| `POST`   | `/api/contents`             | JWT   | Create content            |
+| `PUT`    | `/api/contents/:id`         | JWT   | Update content            |
+| `DELETE` | `/api/contents/:id`         | JWT   | Delete content            |
+| `GET`    | `/api/users`                | Admin | List users                |
+| `GET`    | `/api/users/:id`            | Admin | Get user                  |
+| `DELETE` | `/api/users/:id`            | Admin | Delete user               |
+| `GET`    | `/health`                   | —     | Health check              |
 
 ### Public API (no auth, read-only)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/public/content-types` | List content types (pagination, search) |
-| `GET` | `/api/public/content-types/:slug` | Get content type by slug |
-| `GET` | `/api/public/contents` | List published contents (pagination, sort) |
-| `GET` | `/api/public/contents/:id` | Get published content by ID |
-| `GET` | `/api/public/contents/by-type/:slug` | List published contents by content type slug |
+| Method | Endpoint                             | Description                                  |
+| ------ | ------------------------------------ | -------------------------------------------- |
+| `GET`  | `/api/public/content-types`          | List content types (pagination, search)      |
+| `GET`  | `/api/public/content-types/:slug`    | Get content type by slug                     |
+| `GET`  | `/api/public/contents`               | List published contents (pagination, sort)   |
+| `GET`  | `/api/public/contents/:id`           | Get published content by ID                  |
+| `GET`  | `/api/public/contents/by-type/:slug` | List published contents by content type slug |
 
 Public endpoints only return `published` contents. Rate limited to 100 req/min per IP.
 
@@ -145,6 +145,6 @@ All list endpoints support **pagination** (`?page=&limit=`), **filtering** (`?fi
 
 ## Default Credentials
 
-| Email | Password | Role |
-|-------|----------|------|
+| Email                 | Password   | Role  |
+| --------------------- | ---------- | ----- |
 | `admin@eli-cms.local` | `admin123` | admin |

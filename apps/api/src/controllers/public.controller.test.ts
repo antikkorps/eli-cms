@@ -38,9 +38,7 @@ describe('Public API — full-text search', () => {
     await seedPublished({ title: 'Docker Basics', body: 'Container fundamentals' });
     await seedPublished({ title: 'Kubernetes Intro', body: 'Orchestration overview' });
 
-    const res = await agent()
-      .get('/api/v1/public/contents/by-type/blog')
-      .query({ search: 'Docker' });
+    const res = await agent().get('/api/v1/public/contents/by-type/blog').query({ search: 'Docker' });
 
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);

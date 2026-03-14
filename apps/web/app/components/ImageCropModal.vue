@@ -13,15 +13,15 @@ const emit = defineEmits<{
 
 const open = computed({
   get: () => !!props.file,
-  set: (v) => { if (!v) emit('cancel'); },
+  set: (v) => {
+    if (!v) emit('cancel');
+  },
 });
 const imageUrl = ref('');
 const cropperRef = ref<any>(null);
 const processing = ref(false);
 
-const CropperComponent = defineAsyncComponent(() =>
-  import('vue-advanced-cropper').then((m) => m.Cropper),
-);
+const CropperComponent = defineAsyncComponent(() => import('vue-advanced-cropper').then((m) => m.Cropper));
 
 const aspectRatios = [
   { label: t('imageCrop.free'), value: 0 },
@@ -33,19 +33,20 @@ const aspectRatios = [
 ];
 const selectedRatio = ref(0);
 
-const stencilProps = computed(() =>
-  selectedRatio.value ? { aspectRatio: selectedRatio.value } : {},
-);
+const stencilProps = computed(() => (selectedRatio.value ? { aspectRatio: selectedRatio.value } : {}));
 
-watch(() => props.file, (file) => {
-  if (imageUrl.value) URL.revokeObjectURL(imageUrl.value);
-  if (file) {
-    imageUrl.value = URL.createObjectURL(file);
-    selectedRatio.value = 0;
-  } else {
-    imageUrl.value = '';
-  }
-});
+watch(
+  () => props.file,
+  (file) => {
+    if (imageUrl.value) URL.revokeObjectURL(imageUrl.value);
+    if (file) {
+      imageUrl.value = URL.createObjectURL(file);
+      selectedRatio.value = 0;
+    } else {
+      imageUrl.value = '';
+    }
+  },
+);
 
 onUnmounted(() => {
   if (imageUrl.value) URL.revokeObjectURL(imageUrl.value);
@@ -103,7 +104,7 @@ function cancel() {
 
         <!-- Cropper (client-only to avoid SSR issues with canvas) -->
         <ClientOnly>
-          <div class="relative bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden" style="height: 400px;">
+          <div class="relative bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden" style="height: 400px">
             <CropperComponent
               v-if="imageUrl"
               ref="cropperRef"

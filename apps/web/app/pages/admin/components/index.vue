@@ -47,7 +47,11 @@ const columns = computed(() => [
     accessorKey: 'fields',
     header: t('components.columnFields'),
     cell: ({ row }: { row: { original: ComponentItem } }) => {
-      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', size: 'sm' }, () => `${row.original.fields.length}`);
+      return h(
+        UBadge as ReturnType<typeof resolveComponent>,
+        { variant: 'subtle', size: 'sm' },
+        () => `${row.original.fields.length}`,
+      );
     },
   },
   {

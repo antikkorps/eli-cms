@@ -32,9 +32,12 @@ interface MediaItem {
 const selectedFolderId = ref<string | null>((route.query.folder as string) ?? null);
 
 // Sync with route changes
-watch(() => route.query.folder, (val) => {
-  selectedFolderId.value = (val as string) ?? null;
-});
+watch(
+  () => route.query.folder,
+  (val) => {
+    selectedFolderId.value = (val as string) ?? null;
+  },
+);
 
 const {
   items: uploads,
@@ -121,7 +124,9 @@ function onCropCancel() {
 const previewItem = ref<MediaItem | null>(null);
 const previewOpen = computed({
   get: () => previewItem.value !== null,
-  set: (v) => { if (!v) previewItem.value = null; },
+  set: (v) => {
+    if (!v) previewItem.value = null;
+  },
 });
 
 // Edit media state
@@ -232,7 +237,9 @@ const columns = computed(() => [
           class: 'w-10 h-10 rounded object-cover cursor-pointer hover:ring-2 hover:ring-primary transition-shadow',
           alt: row.original.alt || row.original.originalName,
           loading: 'lazy',
-          onClick: () => { previewItem.value = row.original; },
+          onClick: () => {
+            previewItem.value = row.original;
+          },
         });
       }
       return h('div', { class: 'w-10 h-10 rounded bg-muted flex items-center justify-center' }, [
@@ -249,7 +256,11 @@ const columns = computed(() => [
     accessorKey: 'mimeType',
     header: t('uploads.columnType'),
     cell: ({ row }: { row: { original: MediaItem } }) => {
-      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', size: 'sm' }, () => row.original.mimeType);
+      return h(
+        UBadge as ReturnType<typeof resolveComponent>,
+        { variant: 'subtle', size: 'sm' },
+        () => row.original.mimeType,
+      );
     },
   },
   {
@@ -270,7 +281,8 @@ const columns = computed(() => [
   {
     accessorKey: 'createdAt',
     header: t('uploads.columnCreated'),
-    cell: ({ row }: { row: { original: MediaItem } }) => new Date(row.original.createdAt).toLocaleDateString(locale.value),
+    cell: ({ row }: { row: { original: MediaItem } }) =>
+      new Date(row.original.createdAt).toLocaleDateString(locale.value),
   },
   {
     accessorKey: 'actions',
@@ -356,7 +368,11 @@ const columns = computed(() => [
     </div>
 
     <!-- Delete modal -->
-    <UModal v-model:open="deleteOpen" :title="$t('uploads.deleteTitle')" :description="$t('uploads.deleteConfirm', { name: deleteTarget?.originalName })">
+    <UModal
+      v-model:open="deleteOpen"
+      :title="$t('uploads.deleteTitle')"
+      :description="$t('uploads.deleteConfirm', { name: deleteTarget?.originalName })"
+    >
       <template #content>
         <div class="p-6 space-y-4">
           <h3 class="text-lg font-semibold">{{ $t('uploads.deleteTitle') }}</h3>
@@ -378,7 +394,11 @@ const columns = computed(() => [
     </UModal>
 
     <!-- Edit media modal -->
-    <UModal v-model:open="editOpen" :title="$t('uploads.editMediaTitle')" :description="$t('uploads.editMediaDescription')">
+    <UModal
+      v-model:open="editOpen"
+      :title="$t('uploads.editMediaTitle')"
+      :description="$t('uploads.editMediaDescription')"
+    >
       <template #content>
         <div class="p-4 sm:p-6">
           <h3 class="text-lg font-semibold mb-4">{{ $t('uploads.editMediaTitle') }}</h3>
@@ -426,7 +446,7 @@ const columns = computed(() => [
                   icon="i-lucide-folder"
                   :items="[
                     { label: $t('mediaFolders.rootFolder'), value: null },
-                    ...flatFolderList.map(f => ({ label: '\u00A0\u00A0'.repeat(f.depth) + f.name, value: f.id })),
+                    ...flatFolderList.map((f) => ({ label: '\u00A0\u00A0'.repeat(f.depth) + f.name, value: f.id })),
                   ]"
                   value-key="value"
                 />
@@ -468,11 +488,6 @@ const columns = computed(() => [
     </UModal>
 
     <!-- Image crop modal -->
-    <ImageCropModal
-      :file="cropFile"
-      @confirm="onCropConfirm"
-      @skip="onCropSkip"
-      @cancel="onCropCancel"
-    />
+    <ImageCropModal :file="cropFile" @confirm="onCropConfirm" @skip="onCropSkip" @cancel="onCropCancel" />
   </div>
 </template>

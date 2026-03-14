@@ -168,12 +168,21 @@ onMounted(() => {
     </div>
 
     <!-- Create folder modal -->
-    <UModal v-model:open="createOpen" :title="$t('mediaFolders.createTitle')" :description="$t('mediaFolders.nameLabel')">
+    <UModal
+      v-model:open="createOpen"
+      :title="$t('mediaFolders.createTitle')"
+      :description="$t('mediaFolders.nameLabel')"
+    >
       <template #content>
         <div class="p-6 space-y-4">
           <h3 class="text-lg font-semibold">{{ $t('mediaFolders.createTitle') }}</h3>
           <UFormField :label="$t('mediaFolders.nameLabel')">
-            <UInput v-model="createName" :placeholder="$t('mediaFolders.namePlaceholder')" autofocus @keydown.enter="handleCreate" />
+            <UInput
+              v-model="createName"
+              :placeholder="$t('mediaFolders.namePlaceholder')"
+              autofocus
+              @keydown.enter="handleCreate"
+            />
           </UFormField>
           <div class="flex justify-end gap-2">
             <UButton variant="ghost" color="neutral" @click="createOpen = false">
@@ -188,7 +197,11 @@ onMounted(() => {
     </UModal>
 
     <!-- Rename folder modal -->
-    <UModal v-model:open="renameOpen" :title="$t('mediaFolders.renameTitle')" :description="$t('mediaFolders.nameLabel')">
+    <UModal
+      v-model:open="renameOpen"
+      :title="$t('mediaFolders.renameTitle')"
+      :description="$t('mediaFolders.nameLabel')"
+    >
       <template #content>
         <div class="p-6 space-y-4">
           <h3 class="text-lg font-semibold">{{ $t('mediaFolders.renameTitle') }}</h3>
@@ -208,7 +221,11 @@ onMounted(() => {
     </UModal>
 
     <!-- Delete folder modal -->
-    <UModal v-model:open="deleteOpen" :title="$t('mediaFolders.deleteTitle')" :description="$t('mediaFolders.deleteConfirm')">
+    <UModal
+      v-model:open="deleteOpen"
+      :title="$t('mediaFolders.deleteTitle')"
+      :description="$t('mediaFolders.deleteConfirm')"
+    >
       <template #content>
         <div class="p-6 space-y-4">
           <h3 class="text-lg font-semibold">{{ $t('mediaFolders.deleteTitle') }}</h3>

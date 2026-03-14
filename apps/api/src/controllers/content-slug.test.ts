@@ -64,7 +64,14 @@ describe('Content Slug', () => {
     const ctRes = await api
       .post('/api/v1/content-types')
       .set('Authorization', `Bearer ${token}`)
-      .send({ slug: 'page', name: 'Page', fields: [{ name: 'title', type: 'text', required: true, label: 'Title' }, { name: 'content', type: 'textarea', required: true, label: 'Content' }] });
+      .send({
+        slug: 'page',
+        name: 'Page',
+        fields: [
+          { name: 'title', type: 'text', required: true, label: 'Title' },
+          { name: 'content', type: 'textarea', required: true, label: 'Content' },
+        ],
+      });
 
     const res = await api
       .post('/api/v1/contents')

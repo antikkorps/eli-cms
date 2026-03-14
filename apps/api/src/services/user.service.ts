@@ -19,10 +19,7 @@ export class UserService {
 
     const where = filters.length > 0 ? and(...filters) : undefined;
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(users)
-      .where(where);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(users).where(where);
 
     const data = await db
       .select({
@@ -93,7 +90,9 @@ export class UserService {
       })
       .returning({ id: users.id, email: users.email, roleId: users.roleId, createdAt: users.createdAt });
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('user.created', { userId: user.id, email: user.email, ...actorData });
 
     return this.findById(user.id);
@@ -131,7 +130,9 @@ export class UserService {
       await db.update(users).set(updates).where(eq(users.id, id));
     }
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('user.updated', { userId: id, ...actorData });
 
     return this.findById(id);
@@ -140,7 +141,9 @@ export class UserService {
   static async delete(id: string, actor?: Actor) {
     await this.findById(id);
     await db.delete(users).where(eq(users.id, id));
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('user.deleted', { userId: id, ...actorData });
   }
 }

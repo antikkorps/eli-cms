@@ -8,7 +8,15 @@ import { buildContentDataSchema, type ComponentFieldsMap } from '@eli-cms/shared
 import { ComponentService } from './component.service.js';
 import { ContentVersionService } from './content-version.service.js';
 import { LockService } from './lock.service.js';
-import type { CreateContentInput, UpdateContentInput, ContentListQuery, PublicContentListQuery, TrashListQuery, ActorType, FieldDefinition } from '@eli-cms/shared';
+import type {
+  CreateContentInput,
+  UpdateContentInput,
+  ContentListQuery,
+  PublicContentListQuery,
+  TrashListQuery,
+  ActorType,
+  FieldDefinition,
+} from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
 import { UploadService } from './upload.service.js';
 import { UserService } from './user.service.js';
@@ -51,9 +59,12 @@ function resolveSlugPattern(pattern: string, data: Record<string, unknown>): str
   const now = new Date();
   const resolved = pattern.replace(/\{(\w+)\}/g, (_, token: string) => {
     switch (token) {
-      case 'year': return String(now.getFullYear());
-      case 'month': return String(now.getMonth() + 1).padStart(2, '0');
-      case 'day': return String(now.getDate()).padStart(2, '0');
+      case 'year':
+        return String(now.getFullYear());
+      case 'month':
+        return String(now.getMonth() + 1).padStart(2, '0');
+      case 'day':
+        return String(now.getDate()).padStart(2, '0');
       default: {
         const val = data[token];
         return typeof val === 'string' && val.length > 0 ? toSlug(val) : '';
@@ -61,14 +72,18 @@ function resolveSlugPattern(pattern: string, data: Record<string, unknown>): str
     }
   });
   // Clean up double separators and trim
-  return resolved.replace(/\/+/g, '/').replace(/^\/|\/$/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  return resolved
+    .replace(/\/+/g, '/')
+    .replace(/^\/|\/$/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 function sanitizeSearchTerms(raw: string): string | null {
   const terms = raw
     .split(/\s+/)
-    .map(t => t.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, ''))
-    .filter(t => t.length > 0);
+    .map((t) => t.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, ''))
+    .filter((t) => t.length > 0);
   return terms.length > 0 ? terms.join(' & ') : null;
 }
 
@@ -79,7 +94,11 @@ export class ContentService {
     while (true) {
       const filters = [eq(contents.slug, slug), eq(contents.contentTypeId, contentTypeId), isNull(contents.deletedAt)];
       if (excludeId) filters.push(sql`${contents.id} != ${excludeId}`);
-      const [existing] = await db.select({ id: contents.id }).from(contents).where(and(...filters)).limit(1);
+      const [existing] = await db
+        .select({ id: contents.id })
+        .from(contents)
+        .where(and(...filters))
+        .limit(1);
       if (!existing) return slug;
       suffix++;
       slug = `${baseSlug}-${suffix}`;
@@ -101,10 +120,7 @@ export class ContentService {
 
     const where = filters.length > 0 ? and(...filters) : undefined;
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(contents)
-      .where(where);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(contents).where(where);
 
     // Determine ordering
     let orderByClause;
@@ -194,10 +210,7 @@ export class ContentService {
 
     const where = filters.length > 0 ? and(...filters) : undefined;
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(contents)
-      .where(where);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(contents).where(where);
 
     // Determine ordering
     let orderByClause;
@@ -209,22 +222,23 @@ export class ContentService {
       orderByClause = orderFn(orderCol);
     }
 
-    const data = await db
-      .select()
-      .from(contents)
-      .where(where)
-      .orderBy(orderByClause)
-      .limit(limit)
-      .offset(offset);
+    const data = await db.select().from(contents).where(where).orderBy(orderByClause).limit(limit).offset(offset);
 
     return { data, meta: buildMeta(total, page, limit) };
   }
 
   static async findById(id: string) {
-    const [content] = await db.select().from(contents).where(and(eq(contents.id, id), isNull(contents.deletedAt))).limit(1);
+    const [content] = await db
+      .select()
+      .from(contents)
+      .where(and(eq(contents.id, id), isNull(contents.deletedAt)))
+      .limit(1);
     if (!content) throw new AppError(404, 'Content not found');
     const contentType = await ContentTypeService.findById(content.contentTypeId);
-    return { ...content, contentType: { id: contentType.id, slug: contentType.slug, name: contentType.name, fields: contentType.fields } };
+    return {
+      ...content,
+      contentType: { id: contentType.id, slug: contentType.slug, name: contentType.name, fields: contentType.fields },
+    };
   }
 
   static async findPublishedById(id: string) {
@@ -237,14 +251,19 @@ export class ContentService {
     return content;
   }
 
-  private static collectMediaIds(fields: FieldDefinition[], data: Record<string, unknown>, componentMap?: ComponentFieldsMap): Set<string> {
+  private static collectMediaIds(
+    fields: FieldDefinition[],
+    data: Record<string, unknown>,
+    componentMap?: ComponentFieldsMap,
+  ): Set<string> {
     const ids = new Set<string>();
     for (const field of fields) {
       if (field.type === 'repeatable' && field.subFields) {
         const items = data[field.name];
         if (Array.isArray(items)) {
           for (const item of items) {
-            for (const id of this.collectMediaIds(field.subFields, item as Record<string, unknown>, componentMap)) ids.add(id);
+            for (const id of this.collectMediaIds(field.subFields, item as Record<string, unknown>, componentMap))
+              ids.add(id);
           }
         }
         continue;
@@ -274,14 +293,19 @@ export class ContentService {
     return ids;
   }
 
-  private static collectAuthorIds(fields: FieldDefinition[], data: Record<string, unknown>, componentMap?: ComponentFieldsMap): Set<string> {
+  private static collectAuthorIds(
+    fields: FieldDefinition[],
+    data: Record<string, unknown>,
+    componentMap?: ComponentFieldsMap,
+  ): Set<string> {
     const ids = new Set<string>();
     for (const field of fields) {
       if (field.type === 'repeatable' && field.subFields) {
         const items = data[field.name];
         if (Array.isArray(items)) {
           for (const item of items) {
-            for (const id of this.collectAuthorIds(field.subFields, item as Record<string, unknown>, componentMap)) ids.add(id);
+            for (const id of this.collectAuthorIds(field.subFields, item as Record<string, unknown>, componentMap))
+              ids.add(id);
           }
         }
         continue;
@@ -306,21 +330,29 @@ export class ContentService {
     return ids;
   }
 
-  private static async validateMediaFields(fields: FieldDefinition[], data: Record<string, unknown>, componentMap?: ComponentFieldsMap) {
+  private static async validateMediaFields(
+    fields: FieldDefinition[],
+    data: Record<string, unknown>,
+    componentMap?: ComponentFieldsMap,
+  ) {
     const ids = [...this.collectMediaIds(fields, data, componentMap)];
     if (ids.length === 0) return;
     const found = await UploadService.findByIds(ids);
-    const foundIds = new Set(found.map(m => m.id));
+    const foundIds = new Set(found.map((m) => m.id));
     for (const id of ids) {
       if (!foundIds.has(id)) throw new AppError(400, `Media not found: ${id}`);
     }
   }
 
-  private static async validateAuthorFields(fields: FieldDefinition[], data: Record<string, unknown>, componentMap?: ComponentFieldsMap) {
+  private static async validateAuthorFields(
+    fields: FieldDefinition[],
+    data: Record<string, unknown>,
+    componentMap?: ComponentFieldsMap,
+  ) {
     const ids = [...this.collectAuthorIds(fields, data, componentMap)];
     if (ids.length === 0) return;
     const found = await UserService.findByIds(ids);
-    const foundIds = new Set(found.map(u => u.id));
+    const foundIds = new Set(found.map((u) => u.id));
     for (const id of ids) {
       if (!foundIds.has(id)) throw new AppError(400, `User not found: ${id}`);
     }
@@ -394,7 +426,14 @@ export class ContentService {
     const [content] = await db
       .select()
       .from(contents)
-      .where(and(eq(contents.slug, slug), eq(contents.contentTypeId, contentTypeId), eq(contents.status, 'published'), isNull(contents.deletedAt)))
+      .where(
+        and(
+          eq(contents.slug, slug),
+          eq(contents.contentTypeId, contentTypeId),
+          eq(contents.status, 'published'),
+          isNull(contents.deletedAt),
+        ),
+      )
       .limit(1);
     if (!content) throw new AppError(404, 'Content not found');
     return content;
@@ -419,12 +458,19 @@ export class ContentService {
     const dataSchema = buildContentDataSchema(contentType.fields, componentMap);
     const dataResult = dataSchema.safeParse(input.data);
     if (!dataResult.success) {
-      throw new AppError(400, `Data validation: ${dataResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')}`);
+      throw new AppError(
+        400,
+        `Data validation: ${dataResult.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`,
+      );
     }
 
     await this.validateMediaFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
     await this.validateAuthorFields(contentType.fields, dataResult.data as Record<string, unknown>, componentMap);
-    await this.validateUniqueFields(contentType.fields, dataResult.data as Record<string, unknown>, input.contentTypeId);
+    await this.validateUniqueFields(
+      contentType.fields,
+      dataResult.data as Record<string, unknown>,
+      input.contentTypeId,
+    );
 
     // Auto-generate slug from pattern or first text field if not provided
     let slug = (input as Record<string, unknown>).slug as string | undefined;
@@ -443,10 +489,18 @@ export class ContentService {
 
     const [content] = await db
       .insert(contents)
-      .values({ contentTypeId: input.contentTypeId, slug: slug ?? null, status: input.status ?? 'draft', data: dataResult.data, editedBy: actor?.id ?? null })
+      .values({
+        contentTypeId: input.contentTypeId,
+        slug: slug ?? null,
+        status: input.status ?? 'draft',
+        data: dataResult.data,
+        editedBy: actor?.id ?? null,
+      })
       .returning();
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('content.created', { content, ...actorData });
     if (content.status === 'published') {
       eventBus.emit('content.published', { content, ...actorData });
@@ -479,13 +533,21 @@ export class ContentService {
       .values({ contentTypeId: existing.contentTypeId, slug, status: 'draft', data: existing.data })
       .returning();
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('content.created', { content, ...actorData });
 
     return content;
   }
 
-  static async update(id: string, input: UpdateContentInput, userId?: string, actor?: Actor, userPermissions?: string[]) {
+  static async update(
+    id: string,
+    input: UpdateContentInput,
+    userId?: string,
+    actor?: Actor,
+    userPermissions?: string[],
+  ) {
     const existing = await this.findById(id);
 
     // Check content lock — reject if locked by another user
@@ -507,10 +569,21 @@ export class ContentService {
       const dataSchema = buildContentDataSchema(cachedContentType.fields, componentMap);
       const dataResult = dataSchema.safeParse(input.data);
       if (!dataResult.success) {
-        throw new AppError(400, `Data validation: ${dataResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')}`);
+        throw new AppError(
+          400,
+          `Data validation: ${dataResult.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`,
+        );
       }
-      await this.validateMediaFields(cachedContentType.fields, dataResult.data as Record<string, unknown>, componentMap);
-      await this.validateAuthorFields(cachedContentType.fields, dataResult.data as Record<string, unknown>, componentMap);
+      await this.validateMediaFields(
+        cachedContentType.fields,
+        dataResult.data as Record<string, unknown>,
+        componentMap,
+      );
+      await this.validateAuthorFields(
+        cachedContentType.fields,
+        dataResult.data as Record<string, unknown>,
+        componentMap,
+      );
       validatedData = dataResult.data as Record<string, unknown>;
     }
 
@@ -560,7 +633,9 @@ export class ContentService {
       return updated;
     });
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('content.updated', { content, ...actorData });
 
     // Emit workflow-specific events
@@ -586,19 +661,34 @@ export class ContentService {
   static async delete(id: string, actor?: Actor) {
     const content = await this.findById(id);
     await db.update(contents).set({ deletedAt: new Date() }).where(eq(contents.id, id));
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('content.trashed', { content, ...actorData });
     eventBus.emit('content.deleted', { content, ...actorData }); // backward compat
   }
 
   static async bulkAction(ids: string[], action: string, actor?: Actor) {
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
 
     switch (action) {
       case 'delete': {
-        const toDelete = await db.select().from(contents).where(and(inArray(contents.id, ids), isNull(contents.deletedAt)));
+        const toDelete = await db
+          .select()
+          .from(contents)
+          .where(and(inArray(contents.id, ids), isNull(contents.deletedAt)));
         if (toDelete.length > 0) {
-          await db.update(contents).set({ deletedAt: new Date() }).where(inArray(contents.id, toDelete.map(c => c.id)));
+          await db
+            .update(contents)
+            .set({ deletedAt: new Date() })
+            .where(
+              inArray(
+                contents.id,
+                toDelete.map((c) => c.id),
+              ),
+            );
           for (const content of toDelete) {
             eventBus.emit('content.trashed', { content, ...actorData });
             eventBus.emit('content.deleted', { content, ...actorData });
@@ -607,9 +697,20 @@ export class ContentService {
         return { affected: toDelete.length };
       }
       case 'restore': {
-        const toRestore = await db.select().from(contents).where(and(inArray(contents.id, ids), isNotNull(contents.deletedAt)));
+        const toRestore = await db
+          .select()
+          .from(contents)
+          .where(and(inArray(contents.id, ids), isNotNull(contents.deletedAt)));
         if (toRestore.length > 0) {
-          await db.update(contents).set({ deletedAt: null }).where(inArray(contents.id, toRestore.map(c => c.id)));
+          await db
+            .update(contents)
+            .set({ deletedAt: null })
+            .where(
+              inArray(
+                contents.id,
+                toRestore.map((c) => c.id),
+              ),
+            );
           for (const content of toRestore) {
             eventBus.emit('content.restored', { content, ...actorData });
           }
@@ -617,9 +718,17 @@ export class ContentService {
         return { affected: toRestore.length };
       }
       case 'permanent-delete': {
-        const toPurge = await db.select().from(contents).where(and(inArray(contents.id, ids), isNotNull(contents.deletedAt)));
+        const toPurge = await db
+          .select()
+          .from(contents)
+          .where(and(inArray(contents.id, ids), isNotNull(contents.deletedAt)));
         if (toPurge.length > 0) {
-          await db.delete(contents).where(inArray(contents.id, toPurge.map(c => c.id)));
+          await db.delete(contents).where(
+            inArray(
+              contents.id,
+              toPurge.map((c) => c.id),
+            ),
+          );
           for (const content of toPurge) {
             eventBus.emit('content.purged', { content, ...actorData });
           }
@@ -638,11 +747,7 @@ export class ContentService {
         return { affected: result.length };
       }
       case 'unpublish': {
-        const result = await db
-          .update(contents)
-          .set({ status: 'draft' })
-          .where(inArray(contents.id, ids))
-          .returning();
+        const result = await db.update(contents).set({ status: 'draft' }).where(inArray(contents.id, ids)).returning();
         for (const content of result) {
           eventBus.emit('content.updated', { content, ...actorData });
         }
@@ -656,7 +761,11 @@ export class ContentService {
   // ─── Trash methods ─────────────────────────────────────
 
   static async findTrashedById(id: string) {
-    const [content] = await db.select().from(contents).where(and(eq(contents.id, id), isNotNull(contents.deletedAt))).limit(1);
+    const [content] = await db
+      .select()
+      .from(contents)
+      .where(and(eq(contents.id, id), isNotNull(contents.deletedAt)))
+      .limit(1);
     if (!content) throw new AppError(404, 'Trashed content not found');
     return content;
   }
@@ -675,23 +784,13 @@ export class ContentService {
 
     const where = and(...filters);
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(contents)
-      .where(where);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(contents).where(where);
 
     const orderFn = sortOrder === 'asc' ? asc : desc;
-    const orderByClause = sortBy === 'deletedAt'
-      ? orderFn(contents.deletedAt)
-      : orderFn(sortColumns[sortBy as keyof typeof sortColumns]);
+    const orderByClause =
+      sortBy === 'deletedAt' ? orderFn(contents.deletedAt) : orderFn(sortColumns[sortBy as keyof typeof sortColumns]);
 
-    const data = await db
-      .select()
-      .from(contents)
-      .where(where)
-      .orderBy(orderByClause)
-      .limit(limit)
-      .offset(offset);
+    const data = await db.select().from(contents).where(where).orderBy(orderByClause).limit(limit).offset(offset);
 
     return { data, meta: buildMeta(total, page, limit) };
   }
@@ -699,7 +798,9 @@ export class ContentService {
   static async restore(id: string, actor?: Actor) {
     await this.findTrashedById(id);
     const [restored] = await db.update(contents).set({ deletedAt: null }).where(eq(contents.id, id)).returning();
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('content.restored', { content: restored, ...actorData });
     return restored;
   }
@@ -707,15 +808,14 @@ export class ContentService {
   static async permanentDelete(id: string, actor?: Actor) {
     const content = await this.findTrashedById(id);
     await db.delete(contents).where(eq(contents.id, id));
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('content.purged', { content, ...actorData });
   }
 
   static async trashCount() {
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(contents)
-      .where(isNotNull(contents.deletedAt));
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(contents).where(isNotNull(contents.deletedAt));
     return total;
   }
 }

@@ -50,7 +50,11 @@ const columns = computed(() => [
     cell: ({ row }: { row: { original: Role } }) => {
       const perms = row.original.permissions;
       if (perms.includes('*')) {
-        return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: 'warning', size: 'sm' }, () => 'All (*)');
+        return h(
+          UBadge as ReturnType<typeof resolveComponent>,
+          { variant: 'subtle', color: 'warning', size: 'sm' },
+          () => 'All (*)',
+        );
       }
       const displayed = perms.slice(0, 3);
       const remaining = perms.length - 3;
@@ -61,7 +65,11 @@ const columns = computed(() => [
         const tooltipText = perms.slice(3).join(', ');
         badges.push(
           h(UTooltip as ReturnType<typeof resolveComponent>, { text: tooltipText }, () =>
-            h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: 'neutral', size: 'sm', class: 'cursor-help' }, () => `+${remaining}`),
+            h(
+              UBadge as ReturnType<typeof resolveComponent>,
+              { variant: 'subtle', color: 'neutral', size: 'sm', class: 'cursor-help' },
+              () => `+${remaining}`,
+            ),
           ),
         );
       }
@@ -73,7 +81,9 @@ const columns = computed(() => [
     header: t('roles.columnSystem'),
     cell: ({ row }: { row: { original: Role } }) => {
       if (!row.original.isSystem) return '';
-      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: 'info', size: 'sm' }, () => t('roles.systemRole'));
+      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: 'info', size: 'sm' }, () =>
+        t('roles.systemRole'),
+      );
     },
   },
   {

@@ -3,7 +3,12 @@ import { db } from '../db/index.js';
 import { mediaFolders } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
-import type { CreateMediaFolderInput, UpdateMediaFolderInput, MediaFolderListQuery, MediaFolderTree } from '@eli-cms/shared';
+import type {
+  CreateMediaFolderInput,
+  UpdateMediaFolderInput,
+  MediaFolderListQuery,
+  MediaFolderTree,
+} from '@eli-cms/shared';
 
 function toSlug(text: string): string {
   return text
@@ -27,10 +32,7 @@ export class MediaFolderService {
       }
       const where = filters.length > 0 ? and(...filters) : undefined;
 
-      const [{ total }] = await db
-        .select({ total: drizzleCount() })
-        .from(mediaFolders)
-        .where(where);
+      const [{ total }] = await db.select({ total: drizzleCount() }).from(mediaFolders).where(where);
 
       const data = await db
         .select()
@@ -63,10 +65,7 @@ export class MediaFolderService {
       await this.findById(parentId);
     }
 
-    const [folder] = await db
-      .insert(mediaFolders)
-      .values({ name: input.name, slug, parentId })
-      .returning();
+    const [folder] = await db.insert(mediaFolders).values({ name: input.name, slug, parentId }).returning();
 
     return folder;
   }
@@ -97,11 +96,7 @@ export class MediaFolderService {
       throw new AppError(400, 'No fields to update');
     }
 
-    const [updated] = await db
-      .update(mediaFolders)
-      .set(setData)
-      .where(eq(mediaFolders.id, id))
-      .returning();
+    const [updated] = await db.update(mediaFolders).set(setData).where(eq(mediaFolders.id, id)).returning();
 
     return updated;
   }

@@ -7,7 +7,12 @@ import { logger } from '../utils/logger.js';
 import { buildMeta } from '../utils/pagination.js';
 import { eventBus } from './event-bus.js';
 import type { CmsEvent } from './event-bus.js';
-import type { CreateWebhookInput, UpdateWebhookInput, WebhookListQuery, WebhookDeliveryListQuery } from '@eli-cms/shared';
+import type {
+  CreateWebhookInput,
+  UpdateWebhookInput,
+  WebhookListQuery,
+  WebhookDeliveryListQuery,
+} from '@eli-cms/shared';
 import type { Actor } from './content.service.js';
 
 const MAX_RETRY_ATTEMPTS = 3;
@@ -28,18 +33,9 @@ export class WebhookService {
 
     const where = filters.length > 0 ? and(...filters) : undefined;
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(webhooks)
-      .where(where);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(webhooks).where(where);
 
-    const data = await db
-      .select()
-      .from(webhooks)
-      .where(where)
-      .orderBy(webhooks.createdAt)
-      .limit(limit)
-      .offset(offset);
+    const data = await db.select().from(webhooks).where(where).orderBy(webhooks.createdAt).limit(limit).offset(offset);
 
     return { data, meta: buildMeta(total, page, limit) };
   }
@@ -68,7 +64,9 @@ export class WebhookService {
       this.registerWebhookListeners(webhook);
     }
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('webhook.created', { webhook, ...actorData });
     return webhook;
   }
@@ -81,7 +79,9 @@ export class WebhookService {
     // Re-initialize to pick up event changes
     await this.initialize();
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('webhook.updated', { webhook, ...actorData });
     return webhook;
   }
@@ -92,7 +92,9 @@ export class WebhookService {
     // Re-initialize to remove listeners
     await this.initialize();
 
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('webhook.deleted', { webhook, ...actorData });
   }
 
@@ -105,10 +107,7 @@ export class WebhookService {
 
     const where = and(...filters);
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(webhookDeliveries)
-      .where(where);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(webhookDeliveries).where(where);
 
     const data = await db
       .select()
@@ -131,10 +130,7 @@ export class WebhookService {
     webhookListeners.length = 0;
 
     // Load active webhooks
-    const activeWebhooks = await db
-      .select()
-      .from(webhooks)
-      .where(eq(webhooks.isActive, true));
+    const activeWebhooks = await db.select().from(webhooks).where(eq(webhooks.isActive, true));
 
     for (const webhook of activeWebhooks) {
       this.registerWebhookListeners(webhook);
@@ -168,10 +164,7 @@ export class WebhookService {
 
   // ─── Delivery ─────────────────────────────────────────
 
-  private static async deliver(
-    webhook: typeof webhooks.$inferSelect,
-    cmsEvent: CmsEvent,
-  ) {
+  private static async deliver(webhook: typeof webhooks.$inferSelect, cmsEvent: CmsEvent) {
     // Create delivery record
     const [delivery] = await db
       .insert(webhookDeliveries)
@@ -187,11 +180,7 @@ export class WebhookService {
     await this.attemptDelivery(delivery.id, webhook, cmsEvent);
   }
 
-  private static async attemptDelivery(
-    deliveryId: string,
-    webhook: typeof webhooks.$inferSelect,
-    cmsEvent: CmsEvent,
-  ) {
+  private static async attemptDelivery(deliveryId: string, webhook: typeof webhooks.$inferSelect, cmsEvent: CmsEvent) {
     const body = JSON.stringify(cmsEvent);
     const signature = createHmac('sha256', webhook.secret).update(body).digest('hex');
 
@@ -255,10 +244,7 @@ export class WebhookService {
       const [webhook] = await db.select().from(webhooks).where(eq(webhooks.id, delivery.webhookId)).limit(1);
       if (!webhook || !webhook.isActive) {
         // Mark as failed permanently
-        await db
-          .update(webhookDeliveries)
-          .set({ nextRetryAt: null })
-          .where(eq(webhookDeliveries.id, delivery.id));
+        await db.update(webhookDeliveries).set({ nextRetryAt: null }).where(eq(webhookDeliveries.id, delivery.id));
         continue;
       }
 

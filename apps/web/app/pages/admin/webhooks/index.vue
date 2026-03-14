@@ -74,7 +74,11 @@ const columns = computed(() => [
         const tooltipText = events.slice(2).join(', ');
         badges.push(
           h(UTooltip as ReturnType<typeof resolveComponent>, { text: tooltipText }, () =>
-            h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: 'neutral', size: 'sm', class: 'cursor-help' }, () => `+${remaining}`),
+            h(
+              UBadge as ReturnType<typeof resolveComponent>,
+              { variant: 'subtle', color: 'neutral', size: 'sm', class: 'cursor-help' },
+              () => `+${remaining}`,
+            ),
           ),
         );
       }
@@ -85,11 +89,15 @@ const columns = computed(() => [
     accessorKey: 'isActive',
     header: t('webhooks.columnActive'),
     cell: ({ row }: { row: { original: WebhookItem } }) => {
-      return h(UBadge as ReturnType<typeof resolveComponent>, {
-        variant: 'subtle',
-        color: row.original.isActive ? 'success' : 'neutral',
-        size: 'sm',
-      }, () => row.original.isActive ? t('common.active') : t('common.inactive'));
+      return h(
+        UBadge as ReturnType<typeof resolveComponent>,
+        {
+          variant: 'subtle',
+          color: row.original.isActive ? 'success' : 'neutral',
+          size: 'sm',
+        },
+        () => (row.original.isActive ? t('common.active') : t('common.inactive')),
+      );
     },
   },
   {

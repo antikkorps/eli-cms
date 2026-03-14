@@ -19,9 +19,7 @@ describe('Users CRUD', () => {
       });
       const userId = regRes.body.data.id;
 
-      const res = await api
-        .get(`/api/v1/users/${userId}`)
-        .set('Authorization', `Bearer ${adminToken}`);
+      const res = await api.get(`/api/v1/users/${userId}`).set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -70,16 +68,12 @@ describe('Users CRUD', () => {
       });
       const userId = regRes.body.data.id;
 
-      const res = await api
-        .delete(`/api/v1/users/${userId}`)
-        .set('Authorization', `Bearer ${adminToken}`);
+      const res = await api.delete(`/api/v1/users/${userId}`).set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(204);
 
       // Verify it's gone
-      const getRes = await api
-        .get(`/api/v1/users/${userId}`)
-        .set('Authorization', `Bearer ${adminToken}`);
+      const getRes = await api.get(`/api/v1/users/${userId}`).set('Authorization', `Bearer ${adminToken}`);
       expect(getRes.status).toBe(404);
     });
 

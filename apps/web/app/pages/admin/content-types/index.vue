@@ -46,7 +46,9 @@ const columns = computed(() => [
       if (row.original.isSingleton) {
         children.push(
           ' ',
-          h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: 'info', size: 'sm' }, () => t('contentTypes.singletonLabel')),
+          h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', color: 'info', size: 'sm' }, () =>
+            t('contentTypes.singletonLabel'),
+          ),
         );
       }
       return h('span', { class: 'flex items-center gap-1.5' }, children);
@@ -57,7 +59,11 @@ const columns = computed(() => [
     accessorKey: 'fields',
     header: t('contentTypes.columnFields'),
     cell: ({ row }: { row: { original: ContentTypeItem } }) => {
-      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', size: 'sm' }, () => `${row.original.fields.length}`);
+      return h(
+        UBadge as ReturnType<typeof resolveComponent>,
+        { variant: 'subtle', size: 'sm' },
+        () => `${row.original.fields.length}`,
+      );
     },
   },
   {

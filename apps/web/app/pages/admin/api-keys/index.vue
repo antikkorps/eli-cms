@@ -54,22 +54,30 @@ const columns = computed(() => [
       const displayed = perms.slice(0, 3);
       const remaining = perms.length - 3;
       const badges = displayed.map((p: string) =>
-        h(UBadge as ReturnType<typeof resolveComponent>, {
-          variant: 'subtle',
-          size: 'sm',
-          class: 'mr-1',
-        }, () => p),
+        h(
+          UBadge as ReturnType<typeof resolveComponent>,
+          {
+            variant: 'subtle',
+            size: 'sm',
+            class: 'mr-1',
+          },
+          () => p,
+        ),
       );
       if (remaining > 0) {
         const tooltipText = perms.slice(3).join(', ');
         badges.push(
           h(UTooltip as ReturnType<typeof resolveComponent>, { text: tooltipText }, () =>
-            h(UBadge as ReturnType<typeof resolveComponent>, {
-              variant: 'subtle',
-              color: 'neutral',
-              size: 'sm',
-              class: 'cursor-help',
-            }, () => `+${remaining}`),
+            h(
+              UBadge as ReturnType<typeof resolveComponent>,
+              {
+                variant: 'subtle',
+                color: 'neutral',
+                size: 'sm',
+                class: 'cursor-help',
+              },
+              () => `+${remaining}`,
+            ),
           ),
         );
       }
@@ -80,11 +88,15 @@ const columns = computed(() => [
     accessorKey: 'isActive',
     header: t('apiKeys.columnStatus'),
     cell: ({ row }: { row: { original: ApiKey } }) => {
-      return h(UBadge as ReturnType<typeof resolveComponent>, {
-        variant: 'subtle',
-        color: row.original.isActive ? 'success' : 'neutral',
-        size: 'sm',
-      }, () => row.original.isActive ? t('apiKeys.statusActive') : t('apiKeys.statusInactive'));
+      return h(
+        UBadge as ReturnType<typeof resolveComponent>,
+        {
+          variant: 'subtle',
+          color: row.original.isActive ? 'success' : 'neutral',
+          size: 'sm',
+        },
+        () => (row.original.isActive ? t('apiKeys.statusActive') : t('apiKeys.statusInactive')),
+      );
     },
   },
   {
@@ -103,11 +115,15 @@ const columns = computed(() => [
       if (!row.original.expiresAt) return t('apiKeys.never');
       const date = new Date(row.original.expiresAt);
       const isExpired = date < new Date();
-      return h('span', {
-        class: isExpired ? 'text-error' : '',
-      }, isExpired
-        ? t('apiKeys.expired', { date: date.toLocaleDateString(locale.value) })
-        : date.toLocaleDateString(locale.value));
+      return h(
+        'span',
+        {
+          class: isExpired ? 'text-error' : '',
+        },
+        isExpired
+          ? t('apiKeys.expired', { date: date.toLocaleDateString(locale.value) })
+          : date.toLocaleDateString(locale.value),
+      );
     },
   },
   {
@@ -214,12 +230,7 @@ const totalPages = computed(() => Math.ceil(total.value / limit));
       <UIcon name="i-lucide-key" class="size-12 text-muted" />
       <p class="mt-3 text-sm text-muted">{{ $t('common.noResults') }}</p>
     </div>
-    <UTable
-      v-else
-      :data="keys"
-      :columns="columns"
-      :loading="loading"
-    />
+    <UTable v-else :data="keys" :columns="columns" :loading="loading" />
 
     <div v-if="totalPages > 1" class="flex items-center justify-between">
       <p class="text-sm text-muted">

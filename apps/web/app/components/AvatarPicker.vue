@@ -27,14 +27,17 @@ function regenerateSeeds() {
 }
 
 // Reset on open
-watch(() => props.open, (val) => {
-  if (val) {
-    step.value = 'style';
-    selectedStyle.value = (props.currentStyle as DiceBearStyle) || 'initials';
-    selectedSeed.value = props.currentSeed || props.email;
-    regenerateSeeds();
-  }
-});
+watch(
+  () => props.open,
+  (val) => {
+    if (val) {
+      step.value = 'style';
+      selectedStyle.value = (props.currentStyle as DiceBearStyle) || 'initials';
+      selectedSeed.value = props.currentSeed || props.email;
+      regenerateSeeds();
+    }
+  },
+);
 
 function selectStyle(style: DiceBearStyle) {
   selectedStyle.value = style;
@@ -88,14 +91,12 @@ const allSeeds = computed(() => [props.email, ...seeds.value]);
               v-for="style in DICEBEAR_STYLES"
               :key="style"
               class="flex flex-col items-center gap-1.5 p-3 rounded-lg border transition-all hover:border-primary hover:bg-primary/5"
-              :class="style === selectedStyle ? 'border-primary bg-primary/10 ring-2 ring-primary/30' : 'border-default'"
+              :class="
+                style === selectedStyle ? 'border-primary bg-primary/10 ring-2 ring-primary/30' : 'border-default'
+              "
               @click="selectStyle(style)"
             >
-              <img
-                :src="avatarUrl(email, style, 64)"
-                :alt="styleLabels[style]"
-                class="size-14 rounded-full"
-              />
+              <img :src="avatarUrl(email, style, 64)" :alt="styleLabels[style]" class="size-14 rounded-full" />
               <span class="text-xs truncate max-w-full">{{ styleLabels[style] }}</span>
             </button>
           </div>
@@ -125,11 +126,7 @@ const allSeeds = computed(() => [props.email, ...seeds.value]);
               :class="seed === selectedSeed ? 'border-primary bg-primary/10 ring-2 ring-primary/30' : 'border-default'"
               @click="selectSeed(seed)"
             >
-              <img
-                :src="avatarUrl(seed, selectedStyle, 64)"
-                :alt="seed"
-                class="size-14 rounded-full"
-              />
+              <img :src="avatarUrl(seed, selectedStyle, 64)" :alt="seed" class="size-14 rounded-full" />
               <span class="text-xs truncate max-w-full">{{ seed === email ? 'Default' : seed }}</span>
             </button>
           </div>

@@ -80,22 +80,11 @@ async function handleSubmit() {
 
       <form class="space-y-4" @submit.prevent="handleSubmit">
         <UFormField :label="$t('setup.emailLabel')">
-          <UInput
-            v-model="form.email"
-            type="email"
-            :placeholder="$t('setup.emailPlaceholder')"
-            required
-            autofocus
-          />
+          <UInput v-model="form.email" type="email" :placeholder="$t('setup.emailPlaceholder')" required autofocus />
         </UFormField>
 
         <UFormField :label="$t('setup.passwordLabel')">
-          <UInput
-            v-model="form.password"
-            type="password"
-            :placeholder="$t('setup.passwordPlaceholder')"
-            required
-          />
+          <UInput v-model="form.password" type="password" :placeholder="$t('setup.passwordPlaceholder')" required />
         </UFormField>
 
         <UFormField :label="$t('setup.confirmPasswordLabel')">

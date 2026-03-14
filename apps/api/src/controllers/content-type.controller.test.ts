@@ -69,15 +69,9 @@ describe('GET /api/content-types', () => {
 
   it('returns empty data for page beyond total', async () => {
     const api = agent();
-    await api
-      .post('/api/v1/content-types')
-      .set('Authorization', `Bearer ${token}`)
-      .send(buildBlogContentType());
+    await api.post('/api/v1/content-types').set('Authorization', `Bearer ${token}`).send(buildBlogContentType());
 
-    const res = await api
-      .get('/api/v1/content-types')
-      .query({ page: 99 })
-      .set('Authorization', `Bearer ${token}`);
+    const res = await api.get('/api/v1/content-types').query({ page: 99 }).set('Authorization', `Bearer ${token}`);
 
     expect(res.body.data).toHaveLength(0);
     expect(res.body.meta.total).toBe(1);
@@ -86,14 +80,8 @@ describe('GET /api/content-types', () => {
   // ─── Search ───────────────────────────────────────────
   it('searches by name (ILIKE)', async () => {
     const api = agent();
-    await api
-      .post('/api/v1/content-types')
-      .set('Authorization', `Bearer ${token}`)
-      .send(buildBlogContentType());
-    await api
-      .post('/api/v1/content-types')
-      .set('Authorization', `Bearer ${token}`)
-      .send(buildPageContentType());
+    await api.post('/api/v1/content-types').set('Authorization', `Bearer ${token}`).send(buildBlogContentType());
+    await api.post('/api/v1/content-types').set('Authorization', `Bearer ${token}`).send(buildPageContentType());
 
     const res = await api
       .get('/api/v1/content-types')
@@ -106,10 +94,7 @@ describe('GET /api/content-types', () => {
 
   it('search is case-insensitive', async () => {
     const api = agent();
-    await api
-      .post('/api/v1/content-types')
-      .set('Authorization', `Bearer ${token}`)
-      .send(buildBlogContentType());
+    await api.post('/api/v1/content-types').set('Authorization', `Bearer ${token}`).send(buildBlogContentType());
 
     const res = await api
       .get('/api/v1/content-types')
@@ -121,10 +106,7 @@ describe('GET /api/content-types', () => {
 
   it('search works on slug field', async () => {
     const api = agent();
-    await api
-      .post('/api/v1/content-types')
-      .set('Authorization', `Bearer ${token}`)
-      .send(buildPageContentType());
+    await api.post('/api/v1/content-types').set('Authorization', `Bearer ${token}`).send(buildPageContentType());
 
     const res = await api
       .get('/api/v1/content-types')
@@ -143,10 +125,7 @@ describe('GET /api/content-types', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({ slug: `article-${i}`, name: `Article ${i}`, fields: buildBlogContentType().fields });
     }
-    await api
-      .post('/api/v1/content-types')
-      .set('Authorization', `Bearer ${token}`)
-      .send(buildPageContentType());
+    await api.post('/api/v1/content-types').set('Authorization', `Bearer ${token}`).send(buildPageContentType());
 
     const res = await api
       .get('/api/v1/content-types')
@@ -159,10 +138,7 @@ describe('GET /api/content-types', () => {
 
   // ─── Validation ───────────────────────────────────────
   it('returns 400 for page=0', async () => {
-    const res = await agent()
-      .get('/api/v1/content-types')
-      .query({ page: 0 })
-      .set('Authorization', `Bearer ${token}`);
+    const res = await agent().get('/api/v1/content-types').query({ page: 0 }).set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(400);
   });
 

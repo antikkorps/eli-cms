@@ -37,10 +37,7 @@ const isExpanded = computed(() => props.expanded.has(props.folder.id));
         class="shrink-0 p-0.5 rounded hover:bg-muted"
         @click="emit('toggle', folder.id)"
       >
-        <UIcon
-          :name="isExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
-          class="size-4 text-muted"
-        />
+        <UIcon :name="isExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" class="size-4 text-muted" />
       </button>
       <span v-else class="shrink-0 w-5" />
 
@@ -64,13 +61,7 @@ const isExpanded = computed(() => props.expanded.has(props.folder.id));
           size="xs"
           @click="emit('create', folder.id)"
         />
-        <UButton
-          icon="i-lucide-pencil"
-          variant="ghost"
-          color="neutral"
-          size="xs"
-          @click="emit('rename', folder)"
-        />
+        <UButton icon="i-lucide-pencil" variant="ghost" color="neutral" size="xs" @click="emit('rename', folder)" />
         <UButton
           v-if="canDelete"
           icon="i-lucide-trash-2"

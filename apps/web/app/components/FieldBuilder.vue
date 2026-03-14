@@ -44,7 +44,13 @@ function ensureUid(field: FieldDefinition): FieldDefinition {
 }
 
 // Ensure existing fields get UIDs
-watch(model, (fields) => { fields.forEach(ensureUid); }, { immediate: true, deep: false });
+watch(
+  model,
+  (fields) => {
+    fields.forEach(ensureUid);
+  },
+  { immediate: true, deep: false },
+);
 
 const props = defineProps<{
   /** When true, hides the repeatable type (used for sub-field builders) */
@@ -73,9 +79,7 @@ const fieldTypes = computed(() =>
     : allFieldTypes.value,
 );
 
-const componentSelectItems = computed(() =>
-  availableComponents.value.map((c) => ({ label: c.name, value: c.slug })),
-);
+const componentSelectItems = computed(() => availableComponents.value.map((c) => ({ label: c.name, value: c.slug })));
 
 function addField() {
   const field = { name: '', type: 'text', required: false, label: '' } as FieldDefinition;
@@ -96,7 +100,10 @@ function updateField(index: number, key: keyof FieldDefinition, value: unknown) 
 function updateOptions(index: number, raw: string) {
   const updated = [...model.value];
   updated[index] = Object.assign({}, updated[index]!, {
-    options: raw.split('\n').map((s) => s.trim()).filter(Boolean),
+    options: raw
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean),
   });
   model.value = updated;
 }
@@ -108,9 +115,18 @@ function getOptionsRaw(index: number): string {
 const mediaAcceptCategories = [
   { label: 'Images (JPEG, PNG, GIF, WebP, SVG)', value: 'image/*' },
   { label: 'PDF', value: 'application/pdf' },
-  { label: 'Word', value: 'application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
-  { label: 'Excel', value: 'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
-  { label: 'PowerPoint', value: 'application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation' },
+  {
+    label: 'Word',
+    value: 'application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  },
+  {
+    label: 'Excel',
+    value: 'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  },
+  {
+    label: 'PowerPoint',
+    value: 'application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  },
 ];
 
 function getAcceptSelected(index: number): string[] {
@@ -165,7 +181,13 @@ function updateSubFieldOptions(fieldIndex: number, subIndex: number, raw: string
   const updated = [...model.value];
   const field = { ...updated[fieldIndex]! };
   const subs = [...(field.subFields ?? [])];
-  subs[subIndex] = { ...subs[subIndex]!, options: raw.split('\n').map((s) => s.trim()).filter(Boolean) };
+  subs[subIndex] = {
+    ...subs[subIndex]!,
+    options: raw
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean),
+  };
   field.subFields = subs;
   updated[fieldIndex] = field;
   model.value = updated;
@@ -258,7 +280,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
       animation="200"
       ghost-class="opacity-30"
       class="space-y-4"
-      @update:model-value="(v: FieldDefinition[]) => model = v"
+      @update:model-value="(v: FieldDefinition[]) => (model = v)"
     >
       <template #item="{ element: field, index }">
         <div class="border border-accented rounded-lg p-4 space-y-4">
@@ -323,9 +345,7 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                   />
                 </UFormField>
 
-                <UFormField
-                  v-if="!['media', 'author', 'richtext', 'repeatable', 'select'].includes(field.type)"
-                >
+                <UFormField v-if="!['media', 'author', 'richtext', 'repeatable', 'select'].includes(field.type)">
                   <template #label>
                     <span class="flex items-center gap-1">
                       {{ $t('fieldBuilder.fieldDefault') }}
@@ -347,7 +367,9 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                     type="number"
                     :placeholder="$t('fieldBuilder.fieldDefaultPlaceholder')"
                     class="w-full"
-                    @update:model-value="(v: number | string) => updateField(index, 'defaultValue', v === '' ? undefined : Number(v))"
+                    @update:model-value="
+                      (v: number | string) => updateField(index, 'defaultValue', v === '' ? undefined : Number(v))
+                    "
                   />
                   <div v-else-if="field.type === 'boolean'" class="h-9 flex items-center">
                     <USwitch
@@ -400,7 +422,10 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                 </template>
                 <USelect
                   :model-value="(field.defaultValue as string) ?? ''"
-                  :items="[{ label: $t('fieldBuilder.noDefault'), value: '' }, ...(field.options ?? []).map((o: string) => ({ label: o, value: o }))]"
+                  :items="[
+                    { label: $t('fieldBuilder.noDefault'), value: '' },
+                    ...(field.options ?? []).map((o: string) => ({ label: o, value: o })),
+                  ]"
                   class="w-full"
                   @update:model-value="(v: string) => updateField(index, 'defaultValue', v || undefined)"
                 />
@@ -464,27 +489,47 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
 
           <!-- Validation rules (collapsible) -->
           <UCollapsible v-if="showValidation(field.type)" class="mt-1">
-            <UButton variant="ghost" color="neutral" size="sm" icon="i-lucide-shield-check" trailing-icon="i-lucide-chevron-down" block class="justify-start">
+            <UButton
+              variant="ghost"
+              color="neutral"
+              size="sm"
+              icon="i-lucide-shield-check"
+              trailing-icon="i-lucide-chevron-down"
+              block
+              class="justify-start"
+            >
               {{ $t('fieldBuilder.validation') }}
             </UButton>
             <template #content>
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-2 mt-1 border border-accented rounded-lg">
-                <UFormField v-if="validatableStringTypes.includes(field.type)" :label="$t('fieldBuilder.validationMinLength')">
+              <div
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-2 mt-1 border border-accented rounded-lg"
+              >
+                <UFormField
+                  v-if="validatableStringTypes.includes(field.type)"
+                  :label="$t('fieldBuilder.validationMinLength')"
+                >
                   <UInput
                     type="number"
                     :model-value="field.validation?.minLength ?? ''"
                     placeholder="0"
                     class="w-full"
-                    @update:model-value="(v: string | number) => updateValidation(index, 'minLength', v === '' ? undefined : Number(v))"
+                    @update:model-value="
+                      (v: string | number) => updateValidation(index, 'minLength', v === '' ? undefined : Number(v))
+                    "
                   />
                 </UFormField>
-                <UFormField v-if="validatableStringTypes.includes(field.type)" :label="$t('fieldBuilder.validationMaxLength')">
+                <UFormField
+                  v-if="validatableStringTypes.includes(field.type)"
+                  :label="$t('fieldBuilder.validationMaxLength')"
+                >
                   <UInput
                     type="number"
                     :model-value="field.validation?.maxLength ?? ''"
                     placeholder="1000"
                     class="w-full"
-                    @update:model-value="(v: string | number) => updateValidation(index, 'maxLength', v === '' ? undefined : Number(v))"
+                    @update:model-value="
+                      (v: string | number) => updateValidation(index, 'maxLength', v === '' ? undefined : Number(v))
+                    "
                   />
                 </UFormField>
                 <UFormField v-if="field.type === 'number'" :label="$t('fieldBuilder.validationMin')">
@@ -492,7 +537,9 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                     type="number"
                     :model-value="field.validation?.min ?? ''"
                     class="w-full"
-                    @update:model-value="(v: string | number) => updateValidation(index, 'min', v === '' ? undefined : Number(v))"
+                    @update:model-value="
+                      (v: string | number) => updateValidation(index, 'min', v === '' ? undefined : Number(v))
+                    "
                   />
                 </UFormField>
                 <UFormField v-if="field.type === 'number'" :label="$t('fieldBuilder.validationMax')">
@@ -500,7 +547,9 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                     type="number"
                     :model-value="field.validation?.max ?? ''"
                     class="w-full"
-                    @update:model-value="(v: string | number) => updateValidation(index, 'max', v === '' ? undefined : Number(v))"
+                    @update:model-value="
+                      (v: string | number) => updateValidation(index, 'max', v === '' ? undefined : Number(v))
+                    "
                   />
                 </UFormField>
                 <UFormField v-if="patternTypes.includes(field.type)" :label="$t('fieldBuilder.validationPattern')">
@@ -536,7 +585,10 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
           </UCollapsible>
 
           <!-- Sub-field builder for repeatable fields -->
-          <div v-if="field.type === 'repeatable'" class="mt-1 ml-4 border-l-2 border-primary-200 dark:border-primary-800 pl-4 space-y-3">
+          <div
+            v-if="field.type === 'repeatable'"
+            class="mt-1 ml-4 border-l-2 border-primary-200 dark:border-primary-800 pl-4 space-y-3"
+          >
             <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ $t('fieldBuilder.subFields') }}</p>
 
             <draggable
@@ -585,7 +637,11 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                         <UFormField :label="$t('fieldBuilder.fieldType')">
                           <USelect
                             :model-value="sub.type"
-                            :items="allFieldTypes.filter((ft: { value: string }) => ft.value !== 'repeatable' && ft.value !== 'component')"
+                            :items="
+                              allFieldTypes.filter(
+                                (ft: { value: string }) => ft.value !== 'repeatable' && ft.value !== 'component',
+                              )
+                            "
                             class="w-full"
                             @update:model-value="(v: string) => updateSubField(index, si, 'type', v)"
                           />
@@ -623,27 +679,49 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
 
                   <!-- Sub-field validation rules -->
                   <UCollapsible v-if="showValidation(sub.type)" class="mt-1">
-                    <UButton variant="ghost" color="neutral" size="xs" icon="i-lucide-shield-check" trailing-icon="i-lucide-chevron-down" block class="justify-start">
+                    <UButton
+                      variant="ghost"
+                      color="neutral"
+                      size="xs"
+                      icon="i-lucide-shield-check"
+                      trailing-icon="i-lucide-chevron-down"
+                      block
+                      class="justify-start"
+                    >
                       {{ $t('fieldBuilder.validation') }}
                     </UButton>
                     <template #content>
-                      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-2 mt-1 border border-accented rounded-lg">
-                        <UFormField v-if="validatableStringTypes.includes(sub.type)" :label="$t('fieldBuilder.validationMinLength')">
+                      <div
+                        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-2 mt-1 border border-accented rounded-lg"
+                      >
+                        <UFormField
+                          v-if="validatableStringTypes.includes(sub.type)"
+                          :label="$t('fieldBuilder.validationMinLength')"
+                        >
                           <UInput
                             type="number"
                             :model-value="sub.validation?.minLength ?? ''"
                             placeholder="0"
                             class="w-full"
-                            @update:model-value="(v: string | number) => updateSubFieldValidation(index, si, 'minLength', v === '' ? undefined : Number(v))"
+                            @update:model-value="
+                              (v: string | number) =>
+                                updateSubFieldValidation(index, si, 'minLength', v === '' ? undefined : Number(v))
+                            "
                           />
                         </UFormField>
-                        <UFormField v-if="validatableStringTypes.includes(sub.type)" :label="$t('fieldBuilder.validationMaxLength')">
+                        <UFormField
+                          v-if="validatableStringTypes.includes(sub.type)"
+                          :label="$t('fieldBuilder.validationMaxLength')"
+                        >
                           <UInput
                             type="number"
                             :model-value="sub.validation?.maxLength ?? ''"
                             placeholder="1000"
                             class="w-full"
-                            @update:model-value="(v: string | number) => updateSubFieldValidation(index, si, 'maxLength', v === '' ? undefined : Number(v))"
+                            @update:model-value="
+                              (v: string | number) =>
+                                updateSubFieldValidation(index, si, 'maxLength', v === '' ? undefined : Number(v))
+                            "
                           />
                         </UFormField>
                         <UFormField v-if="sub.type === 'number'" :label="$t('fieldBuilder.validationMin')">
@@ -651,7 +729,10 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                             type="number"
                             :model-value="sub.validation?.min ?? ''"
                             class="w-full"
-                            @update:model-value="(v: string | number) => updateSubFieldValidation(index, si, 'min', v === '' ? undefined : Number(v))"
+                            @update:model-value="
+                              (v: string | number) =>
+                                updateSubFieldValidation(index, si, 'min', v === '' ? undefined : Number(v))
+                            "
                           />
                         </UFormField>
                         <UFormField v-if="sub.type === 'number'" :label="$t('fieldBuilder.validationMax')">
@@ -659,15 +740,23 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                             type="number"
                             :model-value="sub.validation?.max ?? ''"
                             class="w-full"
-                            @update:model-value="(v: string | number) => updateSubFieldValidation(index, si, 'max', v === '' ? undefined : Number(v))"
+                            @update:model-value="
+                              (v: string | number) =>
+                                updateSubFieldValidation(index, si, 'max', v === '' ? undefined : Number(v))
+                            "
                           />
                         </UFormField>
-                        <UFormField v-if="patternTypes.includes(sub.type)" :label="$t('fieldBuilder.validationPattern')">
+                        <UFormField
+                          v-if="patternTypes.includes(sub.type)"
+                          :label="$t('fieldBuilder.validationPattern')"
+                        >
                           <UInput
                             :model-value="sub.validation?.pattern ?? ''"
                             :placeholder="$t('fieldBuilder.validationPatternPlaceholder')"
                             class="w-full"
-                            @update:model-value="(v: string) => updateSubFieldValidation(index, si, 'pattern', v || undefined)"
+                            @update:model-value="
+                              (v: string) => updateSubFieldValidation(index, si, 'pattern', v || undefined)
+                            "
                           />
                         </UFormField>
                         <UFormField v-if="sub.validation?.pattern" :label="$t('fieldBuilder.validationPatternMessage')">
@@ -675,7 +764,9 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                             :model-value="sub.validation?.patternMessage ?? ''"
                             :placeholder="$t('fieldBuilder.validationPatternMessagePlaceholder')"
                             class="w-full"
-                            @update:model-value="(v: string) => updateSubFieldValidation(index, si, 'patternMessage', v || undefined)"
+                            @update:model-value="
+                              (v: string) => updateSubFieldValidation(index, si, 'patternMessage', v || undefined)
+                            "
                           />
                         </UFormField>
                       </div>

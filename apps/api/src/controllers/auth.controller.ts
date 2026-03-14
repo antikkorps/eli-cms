@@ -1,5 +1,14 @@
 import type { Context } from 'koa';
-import { loginSchema, registerSchema, refreshTokenSchema, logoutSchema, changePasswordSchema, updateProfileSchema, forgotPasswordSchema, resetPasswordSchema } from '@eli-cms/shared';
+import {
+  loginSchema,
+  registerSchema,
+  refreshTokenSchema,
+  logoutSchema,
+  changePasswordSchema,
+  updateProfileSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from '@eli-cms/shared';
 import type { TokenPair } from '@eli-cms/shared';
 import { AuthService } from '../services/auth.service.js';
 import { AppError } from '../utils/app-error.js';
@@ -43,7 +52,7 @@ export class AuthController {
   static async register(ctx: Context) {
     const result = registerSchema.safeParse(ctx.request.body);
     if (!result.success) {
-      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
 
     const actor: Actor = { id: 'anonymous', type: 'user', ip: ctx.ip, userAgent: ctx.get('user-agent') || undefined };
@@ -55,7 +64,7 @@ export class AuthController {
   static async login(ctx: Context) {
     const result = loginSchema.safeParse(ctx.request.body);
     if (!result.success) {
-      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
 
     const actor: Actor = { id: 'anonymous', type: 'user', ip: ctx.ip, userAgent: ctx.get('user-agent') || undefined };
@@ -105,10 +114,15 @@ export class AuthController {
   static async changePassword(ctx: Context) {
     const result = changePasswordSchema.safeParse(ctx.request.body);
     if (!result.success) {
-      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
 
-    const actor: Actor = { id: ctx.state.user.userId, type: ctx.state.user.apiKeyId ? 'api_key' : 'user', ip: ctx.ip, userAgent: ctx.get('user-agent') || undefined };
+    const actor: Actor = {
+      id: ctx.state.user.userId,
+      type: ctx.state.user.apiKeyId ? 'api_key' : 'user',
+      ip: ctx.ip,
+      userAgent: ctx.get('user-agent') || undefined,
+    };
     await AuthService.changePassword(ctx.state.user.userId, result.data, actor);
     clearAuthCookies(ctx);
     ctx.body = { success: true };
@@ -117,7 +131,7 @@ export class AuthController {
   static async updateProfile(ctx: Context) {
     const result = updateProfileSchema.safeParse(ctx.request.body);
     if (!result.success) {
-      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
 
     const user = await AuthService.updateProfile(ctx.state.user.userId, result.data);
@@ -132,7 +146,7 @@ export class AuthController {
   static async forgotPassword(ctx: Context) {
     const result = forgotPasswordSchema.safeParse(ctx.request.body);
     if (!result.success) {
-      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
 
     await AuthService.forgotPassword(result.data.email, env.FRONTEND_URL);
@@ -143,7 +157,7 @@ export class AuthController {
   static async resetPassword(ctx: Context) {
     const result = resetPasswordSchema.safeParse(ctx.request.body);
     if (!result.success) {
-      throw new AppError(400, result.error.issues.map(i => i.message).join(', '));
+      throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
 
     await AuthService.resetPassword(result.data.token, result.data.newPassword);

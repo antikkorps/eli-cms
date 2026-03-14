@@ -16,10 +16,7 @@ export class ComponentService {
       ? or(ilike(components.name, `%${search}%`), ilike(components.slug, `%${search}%`))
       : undefined;
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(components)
-      .where(conditions);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(components).where(conditions);
 
     const data = await db
       .select()
@@ -57,7 +54,9 @@ export class ComponentService {
     if (existing) throw new AppError(409, `Slug "${input.slug}" already exists`);
 
     const [comp] = await db.insert(components).values(input).returning();
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('component.created', { component: comp, ...actorData });
     return comp;
   }
@@ -73,7 +72,9 @@ export class ComponentService {
     }
 
     const [comp] = await db.update(components).set(input).where(eq(components.id, id)).returning();
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('component.updated', { component: comp, ...actorData });
     return comp;
   }
@@ -81,7 +82,9 @@ export class ComponentService {
   static async delete(id: string, actor?: Actor) {
     const comp = await this.findById(id);
     await db.delete(components).where(eq(components.id, id));
-    const actorData = actor ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent } : {};
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
     eventBus.emit('component.deleted', { component: comp, ...actorData });
   }
 }

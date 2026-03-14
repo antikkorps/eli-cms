@@ -55,7 +55,9 @@ async function handleSubmit() {
   <div class="flex min-h-screen">
     <!-- Left panel — branding -->
     <div class="hidden lg:flex lg:w-1/2 bg-primary items-center justify-center relative overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-primary/90 to-indigo-900 dark:from-primary/80 dark:to-indigo-950" />
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-primary/90 to-indigo-900 dark:from-primary/80 dark:to-indigo-950"
+      />
       <div class="relative z-10 text-center text-white px-12 max-w-md">
         <div class="flex justify-center mb-6">
           <div

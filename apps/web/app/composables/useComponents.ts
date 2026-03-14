@@ -26,9 +26,7 @@ export function useComponents() {
     if (state.loaded || state.loading) return;
     state.loading = true;
     try {
-      const res = await apiFetch<{ success: boolean; data: ComponentItem[] }>(
-        '/components?limit=100',
-      );
+      const res = await apiFetch<{ success: boolean; data: ComponentItem[] }>('/components?limit=100');
       state.items = res.data;
       state.loaded = true;
     } catch {

@@ -17,7 +17,13 @@ export const contentsRouter = new Router({ prefix: '/api/v1/contents' });
 contentsRouter.get('/', authenticate, requirePermission(CONTENT_READ), ContentController.list);
 contentsRouter.post('/bulk-action', authenticate, requirePermission(CONTENT_UPDATE), ContentController.bulkAction);
 contentsRouter.get('/export', authenticate, requirePermission(CONTENT_READ), ContentExportController.exportContents);
-contentsRouter.post('/import', authenticate, requirePermission(CONTENT_CREATE), importUpload.single('file'), ContentExportController.importContents);
+contentsRouter.post(
+  '/import',
+  authenticate,
+  requirePermission(CONTENT_CREATE),
+  importUpload.single('file'),
+  ContentExportController.importContents,
+);
 
 // Lock routes (before /:id to avoid param conflicts)
 contentsRouter.post('/:id/lock', authenticate, requirePermission(CONTENT_UPDATE), LockController.acquire);

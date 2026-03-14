@@ -99,7 +99,13 @@ export function useAuth() {
     }
   }
 
-  async function updateProfile(input: { email?: string; firstName?: string | null; lastName?: string | null; avatarStyle?: string | null; avatarSeed?: string | null }) {
+  async function updateProfile(input: {
+    email?: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    avatarStyle?: string | null;
+    avatarSeed?: string | null;
+  }) {
     const csrf = getCsrfToken();
     const res = await $fetch<{ success: boolean; data: AuthUser }>(`${baseURL}/auth/profile`, {
       method: 'PUT',

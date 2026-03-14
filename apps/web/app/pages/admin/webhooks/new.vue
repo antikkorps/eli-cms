@@ -108,7 +108,11 @@ async function submit() {
         <UButton to="/admin/webhooks" variant="ghost" color="neutral">
           {{ $t('common.cancel') }}
         </UButton>
-        <UButton type="submit" :loading="saving" :disabled="!form.name || !form.url || !form.secret || !form.events.length">
+        <UButton
+          type="submit"
+          :loading="saving"
+          :disabled="!form.name || !form.url || !form.secret || !form.events.length"
+        >
           {{ $t('common.create') }}
         </UButton>
       </div>

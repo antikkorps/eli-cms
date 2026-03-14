@@ -41,41 +41,67 @@ export const updateProfileSchema = z.object({
 });
 
 // Content Type schemas
-const scalarFieldTypes = ['text', 'textarea', 'number', 'boolean', 'date', 'email', 'url', 'select', 'media', 'richtext', 'author', 'component'] as const;
+const scalarFieldTypes = [
+  'text',
+  'textarea',
+  'number',
+  'boolean',
+  'date',
+  'email',
+  'url',
+  'select',
+  'media',
+  'richtext',
+  'author',
+  'component',
+] as const;
 
-const fieldValidationSchema = z.object({
-  minLength: z.number().int().min(0).optional(),
-  maxLength: z.number().int().min(1).optional(),
-  min: z.number().optional(),
-  max: z.number().optional(),
-  pattern: z.string().max(500).optional(),
-  patternMessage: z.string().max(255).optional(),
-  unique: z.boolean().optional(),
-}).refine(
-  (v) => {
-    if (v.minLength !== undefined && v.maxLength !== undefined) return v.minLength <= v.maxLength;
-    return true;
-  },
-  { message: 'minLength must be ≤ maxLength', path: ['minLength'] },
-).refine(
-  (v) => {
-    if (v.min !== undefined && v.max !== undefined) return v.min <= v.max;
-    return true;
-  },
-  { message: 'min must be ≤ max', path: ['min'] },
-).refine(
-  (v) => {
-    if (!v.pattern) return true;
-    if (v.pattern.length > 200) return false;
-    // Reject patterns with common ReDoS constructs: nested quantifiers
-    if (/(\+|\*|\{)\s*(\+|\*|\{)/.test(v.pattern)) return false;
-    try { new RegExp(v.pattern); return true; } catch { return false; }
-  },
-  { message: 'Invalid or unsafe regex pattern (max 200 chars, no nested quantifiers)', path: ['pattern'] },
-).optional();
+const fieldValidationSchema = z
+  .object({
+    minLength: z.number().int().min(0).optional(),
+    maxLength: z.number().int().min(1).optional(),
+    min: z.number().optional(),
+    max: z.number().optional(),
+    pattern: z.string().max(500).optional(),
+    patternMessage: z.string().max(255).optional(),
+    unique: z.boolean().optional(),
+  })
+  .refine(
+    (v) => {
+      if (v.minLength !== undefined && v.maxLength !== undefined) return v.minLength <= v.maxLength;
+      return true;
+    },
+    { message: 'minLength must be ≤ maxLength', path: ['minLength'] },
+  )
+  .refine(
+    (v) => {
+      if (v.min !== undefined && v.max !== undefined) return v.min <= v.max;
+      return true;
+    },
+    { message: 'min must be ≤ max', path: ['min'] },
+  )
+  .refine(
+    (v) => {
+      if (!v.pattern) return true;
+      if (v.pattern.length > 200) return false;
+      // Reject patterns with common ReDoS constructs: nested quantifiers
+      if (/(\+|\*|\{)\s*(\+|\*|\{)/.test(v.pattern)) return false;
+      try {
+        new RegExp(v.pattern);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    { message: 'Invalid or unsafe regex pattern (max 200 chars, no nested quantifiers)', path: ['pattern'] },
+  )
+  .optional();
 
 const baseFieldDefinitionSchema = z.object({
-  name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
+  name: z
+    .string()
+    .min(1)
+    .regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
   type: z.enum([...scalarFieldTypes, 'repeatable']),
   required: z.boolean(),
   label: safeString(255).pipe(z.string().min(1)),
@@ -86,21 +112,28 @@ const baseFieldDefinitionSchema = z.object({
   group: z.string().max(255).optional(),
   componentSlugs: z.array(z.string().max(255)).optional(),
   validation: fieldValidationSchema,
-  subFields: z.lazy(() =>
-    z.array(
-      z.object({
-        name: z.string().min(1).regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
-        type: z.enum(scalarFieldTypes),
-        required: z.boolean(),
-        label: safeString(255).pipe(z.string().min(1)),
-        options: z.array(safeString(255)).optional(),
-        multiple: z.boolean().optional(),
-        accept: z.array(z.string()).optional(),
-        defaultValue: z.unknown().optional(),
-        validation: fieldValidationSchema,
-      }),
-    ).min(1),
-  ).optional(),
+  subFields: z
+    .lazy(() =>
+      z
+        .array(
+          z.object({
+            name: z
+              .string()
+              .min(1)
+              .regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
+            type: z.enum(scalarFieldTypes),
+            required: z.boolean(),
+            label: safeString(255).pipe(z.string().min(1)),
+            options: z.array(safeString(255)).optional(),
+            multiple: z.boolean().optional(),
+            accept: z.array(z.string()).optional(),
+            defaultValue: z.unknown().optional(),
+            validation: fieldValidationSchema,
+          }),
+        )
+        .min(1),
+    )
+    .optional(),
 });
 
 const fieldDefinitionSchema = baseFieldDefinitionSchema.refine(
@@ -109,7 +142,11 @@ const fieldDefinitionSchema = baseFieldDefinitionSchema.refine(
 );
 
 export const createContentTypeSchema = z.object({
-  slug: z.string().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
+  slug: z
+    .string()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
   name: safeString(255).pipe(z.string().min(1)),
   fields: z.array(fieldDefinitionSchema).min(1),
   isSingleton: z.boolean().default(false),
@@ -123,14 +160,23 @@ export const CONTENT_STATUSES = ['draft', 'in-review', 'approved', 'scheduled', 
 
 export const createContentSchema = z.object({
   contentTypeId: z.string().uuid(),
-  slug: z.string().max(255).regex(/^[a-z0-9]+(?:[-/][a-z0-9]+)*$/, 'Slug must be lowercase with hyphens or slashes').optional(),
+  slug: z
+    .string()
+    .max(255)
+    .regex(/^[a-z0-9]+(?:[-/][a-z0-9]+)*$/, 'Slug must be lowercase with hyphens or slashes')
+    .optional(),
   status: z.enum(CONTENT_STATUSES).default('draft'),
   data: z.record(z.unknown()),
   publishedAt: z.string().datetime({ offset: true }).optional(),
 });
 
 export const updateContentSchema = z.object({
-  slug: z.string().max(255).regex(/^[a-z0-9]+(?:[-/][a-z0-9]+)*$/, 'Slug must be lowercase with hyphens or slashes').nullable().optional(),
+  slug: z
+    .string()
+    .max(255)
+    .regex(/^[a-z0-9]+(?:[-/][a-z0-9]+)*$/, 'Slug must be lowercase with hyphens or slashes')
+    .nullable()
+    .optional(),
   status: z.enum(CONTENT_STATUSES).optional(),
   data: z.record(z.unknown()).optional(),
   publishedAt: z.string().datetime({ offset: true }).nullable().optional(),
@@ -146,7 +192,10 @@ export type ComponentFieldsMap = Map<string, FieldDefinition[]>;
  * Builds a Zod schema dynamically from field definitions.
  * This is the core of the CPT system — zero code, zero migration.
  */
-export function buildContentDataSchema(fields: FieldDefinition[], componentMap?: ComponentFieldsMap): z.ZodObject<Record<string, z.ZodTypeAny>> {
+export function buildContentDataSchema(
+  fields: FieldDefinition[],
+  componentMap?: ComponentFieldsMap,
+): z.ZodObject<Record<string, z.ZodTypeAny>> {
   const shape: Record<string, z.ZodTypeAny> = {};
 
   for (const field of fields) {
@@ -158,14 +207,26 @@ export function buildContentDataSchema(fields: FieldDefinition[], componentMap?:
       case 'text': {
         let s = z.string().max(v?.maxLength ? Math.min(v.maxLength, 1000) : 1000);
         if (v?.minLength) s = s.min(v.minLength);
-        if (v?.pattern) { try { s = s.regex(new RegExp(v.pattern), v.patternMessage || 'Invalid format'); } catch { /* skip invalid */ } }
+        if (v?.pattern) {
+          try {
+            s = s.regex(new RegExp(v.pattern), v.patternMessage || 'Invalid format');
+          } catch {
+            /* skip invalid */
+          }
+        }
         fieldSchema = s.transform(sanitize);
         break;
       }
       case 'textarea': {
         let s = z.string().max(v?.maxLength ? Math.min(v.maxLength, 50000) : 50000);
         if (v?.minLength) s = s.min(v.minLength);
-        if (v?.pattern) { try { s = s.regex(new RegExp(v.pattern), v.patternMessage || 'Invalid format'); } catch { /* skip invalid */ } }
+        if (v?.pattern) {
+          try {
+            s = s.regex(new RegExp(v.pattern), v.patternMessage || 'Invalid format');
+          } catch {
+            /* skip invalid */
+          }
+        }
         fieldSchema = s.transform(sanitize);
         break;
       }
@@ -186,7 +247,13 @@ export function buildContentDataSchema(fields: FieldDefinition[], componentMap?:
         let s = z.string().email();
         if (v?.maxLength) s = s.max(v.maxLength);
         if (v?.minLength) s = s.min(v.minLength);
-        if (v?.pattern) { try { s = s.regex(new RegExp(v.pattern), v.patternMessage || 'Invalid format'); } catch { /* skip invalid */ } }
+        if (v?.pattern) {
+          try {
+            s = s.regex(new RegExp(v.pattern), v.patternMessage || 'Invalid format');
+          } catch {
+            /* skip invalid */
+          }
+        }
         fieldSchema = s;
         break;
       }
@@ -194,7 +261,13 @@ export function buildContentDataSchema(fields: FieldDefinition[], componentMap?:
         let s = z.string().url();
         if (v?.maxLength) s = s.max(v.maxLength);
         if (v?.minLength) s = s.min(v.minLength);
-        if (v?.pattern) { try { s = s.regex(new RegExp(v.pattern), v.patternMessage || 'Invalid format'); } catch { /* skip invalid */ } }
+        if (v?.pattern) {
+          try {
+            s = s.regex(new RegExp(v.pattern), v.patternMessage || 'Invalid format');
+          } catch {
+            /* skip invalid */
+          }
+        }
         fieldSchema = s;
         break;
       }
@@ -241,7 +314,12 @@ export function buildContentDataSchema(fields: FieldDefinition[], componentMap?:
             fieldSchema = z.array(blockSchemas[0]!);
           } else if (blockSchemas.length > 1) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            fieldSchema = z.array(z.discriminatedUnion('_component', blockSchemas as [z.ZodObject<any>, z.ZodObject<any>, ...z.ZodObject<any>[]]));
+            fieldSchema = z.array(
+              z.discriminatedUnion(
+                '_component',
+                blockSchemas as [z.ZodObject<any>, z.ZodObject<any>, ...z.ZodObject<any>[]],
+              ),
+            );
           } else {
             fieldSchema = z.array(z.object({ _component: z.string() }).passthrough());
           }
@@ -289,7 +367,11 @@ export const paginationSchema = z.object({
 
 // Component schemas
 export const createComponentSchema = z.object({
-  slug: z.string().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
+  slug: z
+    .string()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
   name: safeString(255).pipe(z.string().min(1)),
   icon: z.string().max(255).nullable().optional(),
   fields: z.array(fieldDefinitionSchema).min(1),
@@ -303,7 +385,10 @@ export const componentListQuerySchema = paginationSchema.extend({
 
 export const contentTypeListQuerySchema = paginationSchema.extend({
   search: z.string().max(200).optional(),
-  includeCounts: z.enum(['true', 'false']).transform(v => v === 'true').optional(),
+  includeCounts: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .optional(),
 });
 
 export const contentListQuerySchema = paginationSchema.extend({
@@ -321,22 +406,30 @@ export const trashListQuerySchema = paginationSchema.extend({
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
-const publicFilterSchema = z.object({
-  contentTypeId: z.string().uuid().optional(),
-  slug: z.string().max(255).optional(),
-  createdAt: z.object({
-    gte: z.string().datetime({ offset: true }).optional(),
-    lte: z.string().datetime({ offset: true }).optional(),
-  }).optional(),
-  publishedAt: z.object({
-    gte: z.string().datetime({ offset: true }).optional(),
-    lte: z.string().datetime({ offset: true }).optional(),
-  }).optional(),
-  data: z.record(
-    z.string().regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Invalid field name'),
-    z.union([z.string(), z.object({ like: z.string().max(200) })]),
-  ).optional(),
-}).optional();
+const publicFilterSchema = z
+  .object({
+    contentTypeId: z.string().uuid().optional(),
+    slug: z.string().max(255).optional(),
+    createdAt: z
+      .object({
+        gte: z.string().datetime({ offset: true }).optional(),
+        lte: z.string().datetime({ offset: true }).optional(),
+      })
+      .optional(),
+    publishedAt: z
+      .object({
+        gte: z.string().datetime({ offset: true }).optional(),
+        lte: z.string().datetime({ offset: true }).optional(),
+      })
+      .optional(),
+    data: z
+      .record(
+        z.string().regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Invalid field name'),
+        z.union([z.string(), z.object({ like: z.string().max(200) })]),
+      )
+      .optional(),
+  })
+  .optional();
 
 export const publicContentListQuerySchema = paginationSchema.extend({
   search: z.string().max(200).optional(),
@@ -345,7 +438,10 @@ export const publicContentListQuerySchema = paginationSchema.extend({
   filter: publicFilterSchema,
   fields: z.string().max(500).optional(),
   populate: z.enum(['relations']).optional(),
-  preview: z.enum(['true', 'false']).transform(v => v === 'true').optional(),
+  preview: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .optional(),
 });
 
 export const userListQuerySchema = paginationSchema.extend({
@@ -383,10 +479,10 @@ export const storageConfigSchema = z
     activeStorage: z.enum(['local', 's3']),
     s3: s3ConfigSchema.optional(),
   })
-  .refine(
-    (data) => data.activeStorage !== 's3' || data.s3 !== undefined,
-    { message: 'S3 configuration is required when activeStorage is "s3"', path: ['s3'] },
-  );
+  .refine((data) => data.activeStorage !== 's3' || data.s3 !== undefined, {
+    message: 'S3 configuration is required when activeStorage is "s3"',
+    path: ['s3'],
+  });
 
 export const uploadListQuerySchema = paginationSchema.extend({
   mimeType: z.string().optional(),
@@ -446,7 +542,11 @@ const permissionEnum = z.enum(ALL_PERMISSIONS as unknown as [string, ...string[]
 
 export const createRoleSchema = z.object({
   name: safeString(255).pipe(z.string().min(1)),
-  slug: z.string().min(1).max(255).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
+  slug: z
+    .string()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
   description: safeString(500).nullable().optional(),
   permissions: z.array(permissionEnum).min(1),
 });
@@ -494,7 +594,8 @@ function isSafeWebhookUrl(url: string): boolean {
     const hostname = parsed.hostname.toLowerCase();
 
     // Block localhost variants
-    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]') return false;
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]')
+      return false;
 
     // Block cloud metadata endpoints
     if (hostname === '169.254.169.254' || hostname === 'metadata.google.internal') return false;
@@ -594,10 +695,10 @@ export const smtpConfigSchema = z
     fromName: z.string().min(1).max(255),
     fromAddress: z.string().email(),
   })
-  .refine(
-    (data) => data.authType !== 'password' || (data.user && data.password),
-    { message: 'User and password are required for password authentication', path: ['password'] },
-  )
+  .refine((data) => data.authType !== 'password' || (data.user && data.password), {
+    message: 'User and password are required for password authentication',
+    path: ['password'],
+  })
   .refine(
     (data) => data.authType !== 'oauth2' || (data.user && data.clientId && data.clientSecret && data.refreshToken),
     { message: 'User, Client ID, Client Secret and Refresh Token are required for OAuth2', path: ['refreshToken'] },

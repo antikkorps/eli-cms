@@ -56,10 +56,7 @@ export class ApiKeyService {
 
     const where = filters.length > 0 ? and(...filters) : undefined;
 
-    const [{ total }] = await db
-      .select({ total: drizzleCount() })
-      .from(apiKeys)
-      .where(where);
+    const [{ total }] = await db.select({ total: drizzleCount() }).from(apiKeys).where(where);
 
     const data = await db
       .select({
@@ -116,22 +113,18 @@ export class ApiKeyService {
       values.expiresAt = input.expiresAt ? new Date(input.expiresAt) : null;
     }
 
-    const [apiKey] = await db
-      .update(apiKeys)
-      .set(values)
-      .where(eq(apiKeys.id, id))
-      .returning({
-        id: apiKeys.id,
-        name: apiKeys.name,
-        keyPrefix: apiKeys.keyPrefix,
-        permissions: apiKeys.permissions,
-        createdBy: apiKeys.createdBy,
-        expiresAt: apiKeys.expiresAt,
-        lastUsedAt: apiKeys.lastUsedAt,
-        isActive: apiKeys.isActive,
-        createdAt: apiKeys.createdAt,
-        updatedAt: apiKeys.updatedAt,
-      });
+    const [apiKey] = await db.update(apiKeys).set(values).where(eq(apiKeys.id, id)).returning({
+      id: apiKeys.id,
+      name: apiKeys.name,
+      keyPrefix: apiKeys.keyPrefix,
+      permissions: apiKeys.permissions,
+      createdBy: apiKeys.createdBy,
+      expiresAt: apiKeys.expiresAt,
+      lastUsedAt: apiKeys.lastUsedAt,
+      isActive: apiKeys.isActive,
+      createdAt: apiKeys.createdAt,
+      updatedAt: apiKeys.updatedAt,
+    });
 
     return apiKey;
   }
@@ -144,11 +137,7 @@ export class ApiKeyService {
   static async validateKey(rawKey: string) {
     const keyHash = hashKey(rawKey);
 
-    const [apiKey] = await db
-      .select()
-      .from(apiKeys)
-      .where(eq(apiKeys.keyHash, keyHash))
-      .limit(1);
+    const [apiKey] = await db.select().from(apiKeys).where(eq(apiKeys.keyHash, keyHash)).limit(1);
 
     if (!apiKey) return null;
     if (!apiKey.isActive) return null;

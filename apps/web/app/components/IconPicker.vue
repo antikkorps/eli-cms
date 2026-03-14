@@ -9,55 +9,192 @@ const open = ref(false);
 // Curated list of useful Lucide icons for a CMS context
 const ICONS = [
   // Layout & structure
-  'layout', 'layout-grid', 'layout-list', 'layout-template', 'layout-dashboard',
-  'columns-2', 'columns-3', 'rows-3', 'panel-left', 'panel-right', 'panel-top',
-  'app-window', 'square', 'rectangle-horizontal', 'rectangle-vertical',
+  'layout',
+  'layout-grid',
+  'layout-list',
+  'layout-template',
+  'layout-dashboard',
+  'columns-2',
+  'columns-3',
+  'rows-3',
+  'panel-left',
+  'panel-right',
+  'panel-top',
+  'app-window',
+  'square',
+  'rectangle-horizontal',
+  'rectangle-vertical',
   // Content & text
-  'file-text', 'file', 'file-check', 'file-plus', 'file-image', 'file-video',
-  'text', 'heading', 'heading-1', 'heading-2', 'heading-3',
-  'align-left', 'align-center', 'align-right', 'align-justify',
-  'list', 'list-ordered', 'quote', 'type', 'text-cursor',
+  'file-text',
+  'file',
+  'file-check',
+  'file-plus',
+  'file-image',
+  'file-video',
+  'text',
+  'heading',
+  'heading-1',
+  'heading-2',
+  'heading-3',
+  'align-left',
+  'align-center',
+  'align-right',
+  'align-justify',
+  'list',
+  'list-ordered',
+  'quote',
+  'type',
+  'text-cursor',
   // Media
-  'image', 'images', 'camera', 'video', 'film', 'play', 'music',
-  'gallery-vertical', 'picture-in-picture', 'monitor-play',
+  'image',
+  'images',
+  'camera',
+  'video',
+  'film',
+  'play',
+  'music',
+  'gallery-vertical',
+  'picture-in-picture',
+  'monitor-play',
   // UI elements
-  'toggle-left', 'toggle-right', 'sliders-vertical',
-  'menu', 'navigation', 'panel-bottom',
-  'credit-card', 'badge', 'tag', 'tags',
+  'toggle-left',
+  'toggle-right',
+  'sliders-vertical',
+  'menu',
+  'navigation',
+  'panel-bottom',
+  'credit-card',
+  'badge',
+  'tag',
+  'tags',
   // Icons & shapes
-  'star', 'heart', 'thumbs-up', 'award', 'trophy', 'crown', 'diamond',
-  'circle', 'triangle', 'hexagon', 'octagon', 'pentagon',
-  'sparkles', 'zap', 'flame', 'rocket', 'target',
+  'star',
+  'heart',
+  'thumbs-up',
+  'award',
+  'trophy',
+  'crown',
+  'diamond',
+  'circle',
+  'triangle',
+  'hexagon',
+  'octagon',
+  'pentagon',
+  'sparkles',
+  'zap',
+  'flame',
+  'rocket',
+  'target',
   // Communication
-  'message-square', 'message-circle', 'mail', 'send', 'at-sign',
-  'phone', 'megaphone', 'bell', 'speech',
+  'message-square',
+  'message-circle',
+  'mail',
+  'send',
+  'at-sign',
+  'phone',
+  'megaphone',
+  'bell',
+  'speech',
   // People & social
-  'user', 'users', 'user-circle', 'contact', 'person-standing',
-  'share-2', 'globe', 'link', 'external-link',
+  'user',
+  'users',
+  'user-circle',
+  'contact',
+  'person-standing',
+  'share-2',
+  'globe',
+  'link',
+  'external-link',
   // Commerce
-  'shopping-cart', 'shopping-bag', 'store', 'package', 'gift',
-  'dollar-sign', 'euro', 'receipt', 'wallet', 'banknote',
+  'shopping-cart',
+  'shopping-bag',
+  'store',
+  'package',
+  'gift',
+  'dollar-sign',
+  'euro',
+  'receipt',
+  'wallet',
+  'banknote',
   // Navigation & maps
-  'map', 'map-pin', 'compass', 'navigation-2', 'route',
-  'home', 'building', 'building-2', 'landmark', 'warehouse',
+  'map',
+  'map-pin',
+  'compass',
+  'navigation-2',
+  'route',
+  'home',
+  'building',
+  'building-2',
+  'landmark',
+  'warehouse',
   // Data & charts
-  'bar-chart', 'bar-chart-3', 'line-chart', 'pie-chart', 'trending-up',
-  'table', 'database', 'server', 'hard-drive',
+  'bar-chart',
+  'bar-chart-3',
+  'line-chart',
+  'pie-chart',
+  'trending-up',
+  'table',
+  'database',
+  'server',
+  'hard-drive',
   // Actions
-  'download', 'upload', 'search', 'filter', 'settings', 'sliders-horizontal',
-  'refresh-cw', 'rotate-cw', 'move', 'maximize', 'minimize',
+  'download',
+  'upload',
+  'search',
+  'filter',
+  'settings',
+  'sliders-horizontal',
+  'refresh-cw',
+  'rotate-cw',
+  'move',
+  'maximize',
+  'minimize',
   // Status
-  'check', 'check-circle', 'x', 'x-circle', 'alert-triangle', 'alert-circle', 'info',
-  'clock', 'calendar', 'calendar-days', 'timer', 'hourglass',
+  'check',
+  'check-circle',
+  'x',
+  'x-circle',
+  'alert-triangle',
+  'alert-circle',
+  'info',
+  'clock',
+  'calendar',
+  'calendar-days',
+  'timer',
+  'hourglass',
   // Objects
-  'book', 'book-open', 'bookmark', 'newspaper', 'scroll',
-  'pen', 'pencil', 'palette', 'brush', 'paintbrush',
-  'wrench', 'hammer', 'puzzle', 'blocks', 'component',
-  'lightbulb', 'lamp', 'sun', 'moon', 'cloud',
+  'book',
+  'book-open',
+  'bookmark',
+  'newspaper',
+  'scroll',
+  'pen',
+  'pencil',
+  'palette',
+  'brush',
+  'paintbrush',
+  'wrench',
+  'hammer',
+  'puzzle',
+  'blocks',
+  'component',
+  'lightbulb',
+  'lamp',
+  'sun',
+  'moon',
+  'cloud',
   // Arrows & indicators
-  'arrow-right', 'arrow-left', 'arrow-up', 'arrow-down',
-  'chevron-right', 'chevron-down', 'chevrons-right',
-  'move-right', 'corner-down-right', 'redo', 'undo',
+  'arrow-right',
+  'arrow-left',
+  'arrow-up',
+  'arrow-down',
+  'chevron-right',
+  'chevron-down',
+  'chevrons-right',
+  'move-right',
+  'corner-down-right',
+  'redo',
+  'undo',
 ];
 
 const filteredIcons = computed(() => {
@@ -88,11 +225,7 @@ const displayName = computed(() => {
 
 <template>
   <div class="flex items-center gap-2">
-    <UButton
-      variant="outline"
-      class="min-w-48 justify-start"
-      @click="open = true"
-    >
+    <UButton variant="outline" class="min-w-48 justify-start" @click="open = true">
       <template #leading>
         <UIcon v-if="model" :name="model" class="size-4" />
         <UIcon v-else name="i-lucide-image" class="size-4 text-muted" />
@@ -102,14 +235,7 @@ const displayName = computed(() => {
       </span>
     </UButton>
 
-    <UButton
-      v-if="model"
-      variant="ghost"
-      size="xs"
-      icon="i-lucide-x"
-      color="neutral"
-      @click="clear"
-    />
+    <UButton v-if="model" variant="ghost" size="xs" icon="i-lucide-x" color="neutral" @click="clear" />
 
     <UModal v-model:open="open" :title="t('components.iconPickerTitle')" :description="t('components.iconPlaceholder')">
       <template #content>
@@ -118,13 +244,7 @@ const displayName = computed(() => {
             <h3 class="text-lg font-semibold">{{ t('components.iconPickerTitle') }}</h3>
           </div>
 
-          <UInput
-            v-model="search"
-            :placeholder="t('common.search')"
-            icon="i-lucide-search"
-            autofocus
-            class="w-full"
-          />
+          <UInput v-model="search" :placeholder="t('common.search')" icon="i-lucide-search" autofocus class="w-full" />
 
           <div class="max-h-80 overflow-y-auto">
             <div v-if="filteredIcons.length === 0" class="text-sm text-muted text-center py-8">

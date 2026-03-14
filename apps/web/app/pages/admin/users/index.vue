@@ -61,9 +61,7 @@ async function fetchRoles() {
   }
 }
 
-const roleFilterItems = computed(() =>
-  roleOptions.value.map((r) => ({ label: r.name, value: r.id })),
-);
+const roleFilterItems = computed(() => roleOptions.value.map((r) => ({ label: r.name, value: r.id })));
 
 function tryDelete(user: UserItem) {
   if (user.id === currentUser.value?.id) {
@@ -100,7 +98,11 @@ const columns = computed(() => [
     accessorKey: 'roleName',
     header: t('users.columnRole'),
     cell: ({ row }: { row: { original: UserItem } }) => {
-      return h(UBadge as ReturnType<typeof resolveComponent>, { variant: 'subtle', size: 'sm' }, () => row.original.roleName);
+      return h(
+        UBadge as ReturnType<typeof resolveComponent>,
+        { variant: 'subtle', size: 'sm' },
+        () => row.original.roleName,
+      );
     },
   },
   {
@@ -161,8 +163,21 @@ onMounted(fetchRoles);
     <div class="flex flex-wrap gap-3">
       <UInput v-model="search" :placeholder="$t('common.search')" icon="i-lucide-search" class="w-64" />
       <div class="flex items-center gap-1">
-        <USelect v-model="roleFilter" nullable :items="roleFilterItems" :placeholder="$t('users.allRoles')" class="w-48" />
-        <UButton v-if="roleFilter" icon="i-lucide-x" variant="ghost" color="neutral" size="xs" @click="roleFilter = undefined" />
+        <USelect
+          v-model="roleFilter"
+          nullable
+          :items="roleFilterItems"
+          :placeholder="$t('users.allRoles')"
+          class="w-48"
+        />
+        <UButton
+          v-if="roleFilter"
+          icon="i-lucide-x"
+          variant="ghost"
+          color="neutral"
+          size="xs"
+          @click="roleFilter = undefined"
+        />
       </div>
     </div>
 

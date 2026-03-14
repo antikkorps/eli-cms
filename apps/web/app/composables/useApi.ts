@@ -19,10 +19,7 @@ export function useApi() {
   const tokenCookie = useCookie('eli_access', { maxAge: 60 * 15 });
   const refreshCookie = useCookie('eli_refresh', { maxAge: 60 * 60 * 24 * 7 });
 
-  async function apiFetch<T = unknown>(
-    path: string,
-    options: ApiFetchOptions = {},
-  ): Promise<T> {
+  async function apiFetch<T = unknown>(path: string, options: ApiFetchOptions = {}): Promise<T> {
     const headers: Record<string, string> = {
       ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       ...options.headers,

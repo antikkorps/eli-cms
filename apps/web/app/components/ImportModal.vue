@@ -18,9 +18,7 @@ const file = ref<File | null>(null);
 const importing = ref(false);
 const result = ref<{ imported: number; failed: number; errors: string[] } | null>(null);
 
-const typeItems = computed(() =>
-  props.contentTypes.map((ct) => ({ label: ct.name, value: ct.id })),
-);
+const typeItems = computed(() => props.contentTypes.map((ct) => ({ label: ct.name, value: ct.id })));
 
 function onFileChange(event: Event) {
   const input = event.target as HTMLInputElement;
@@ -38,10 +36,13 @@ async function handleImport() {
     formData.append('file', file.value);
     formData.append('contentTypeId', selectedTypeId.value);
 
-    const res = await apiFetch<{ success: boolean; data: { imported: number; failed: number; errors: string[] } }>('/contents/import', {
-      method: 'POST',
-      body: formData,
-    });
+    const res = await apiFetch<{ success: boolean; data: { imported: number; failed: number; errors: string[] } }>(
+      '/contents/import',
+      {
+        method: 'POST',
+        body: formData,
+      },
+    );
 
     result.value = res.data;
     if (res.data.imported > 0) {
@@ -91,7 +92,9 @@ function reset() {
         <div v-if="result" class="rounded-lg border p-4 space-y-2">
           <p class="text-sm font-medium">{{ $t('export.importResult') }}</p>
           <p class="text-sm text-green-600 dark:text-green-400">{{ $t('export.imported') }}: {{ result.imported }}</p>
-          <p v-if="result.failed > 0" class="text-sm text-red-600 dark:text-red-400">{{ $t('export.failed') }}: {{ result.failed }}</p>
+          <p v-if="result.failed > 0" class="text-sm text-red-600 dark:text-red-400">
+            {{ $t('export.failed') }}: {{ result.failed }}
+          </p>
           <div v-if="result.errors.length > 0" class="max-h-40 overflow-y-auto">
             <p v-for="(err, i) in result.errors" :key="i" class="text-xs text-red-500 dark:text-red-400">{{ err }}</p>
           </div>

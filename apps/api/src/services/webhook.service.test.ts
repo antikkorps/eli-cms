@@ -10,9 +10,7 @@ describe('WebhookService', () => {
 
   beforeEach(async () => {
     token = await getAdminToken();
-    const me = await agent()
-      .get('/api/v1/auth/me')
-      .set('Authorization', `Bearer ${token}`);
+    const me = await agent().get('/api/v1/auth/me').set('Authorization', `Bearer ${token}`);
     userId = me.body.data.id;
   });
 
@@ -24,13 +22,16 @@ describe('WebhookService', () => {
 
   describe('create', () => {
     it('creates a webhook', async () => {
-      const webhook = await WebhookService.create({
-        name: 'Test Hook',
-        url: 'https://example.com/hook',
-        secret: 'my-secret-key-long',
-        events: ['content.created'],
-        isActive: true,
-      }, userId);
+      const webhook = await WebhookService.create(
+        {
+          name: 'Test Hook',
+          url: 'https://example.com/hook',
+          secret: 'my-secret-key-long',
+          events: ['content.created'],
+          isActive: true,
+        },
+        userId,
+      );
 
       expect(webhook.id).toBeDefined();
       expect(webhook.name).toBe('Test Hook');
@@ -40,13 +41,16 @@ describe('WebhookService', () => {
     });
 
     it('creates inactive webhook', async () => {
-      const webhook = await WebhookService.create({
-        name: 'Inactive',
-        url: 'https://example.com/hook',
-        secret: 'secret-long-enough',
-        events: ['content.created'],
-        isActive: false,
-      }, userId);
+      const webhook = await WebhookService.create(
+        {
+          name: 'Inactive',
+          url: 'https://example.com/hook',
+          secret: 'secret-long-enough',
+          events: ['content.created'],
+          isActive: false,
+        },
+        userId,
+      );
 
       expect(webhook.isActive).toBe(false);
     });
@@ -54,13 +58,16 @@ describe('WebhookService', () => {
 
   describe('findById', () => {
     it('returns the webhook', async () => {
-      const created = await WebhookService.create({
-        name: 'Find Me',
-        url: 'https://example.com/hook',
-        secret: 'secret-long-enough',
-        events: ['content.created'],
-        isActive: true,
-      }, userId);
+      const created = await WebhookService.create(
+        {
+          name: 'Find Me',
+          url: 'https://example.com/hook',
+          secret: 'secret-long-enough',
+          events: ['content.created'],
+          isActive: true,
+        },
+        userId,
+      );
 
       const found = await WebhookService.findById(created.id);
       expect(found.id).toBe(created.id);
@@ -68,16 +75,32 @@ describe('WebhookService', () => {
     });
 
     it('throws 404 for non-existent id', async () => {
-      await expect(
-        WebhookService.findById('00000000-0000-0000-0000-000000000000'),
-      ).rejects.toThrow(AppError);
+      await expect(WebhookService.findById('00000000-0000-0000-0000-000000000000')).rejects.toThrow(AppError);
     });
   });
 
   describe('findAll', () => {
     it('returns paginated results', async () => {
-      await WebhookService.create({ name: 'Hook 1', url: 'https://a.com', secret: 'secret-long-enough', events: ['content.created'], isActive: true }, userId);
-      await WebhookService.create({ name: 'Hook 2', url: 'https://b.com', secret: 'secret-long-enough', events: ['content.updated'], isActive: true }, userId);
+      await WebhookService.create(
+        {
+          name: 'Hook 1',
+          url: 'https://a.com',
+          secret: 'secret-long-enough',
+          events: ['content.created'],
+          isActive: true,
+        },
+        userId,
+      );
+      await WebhookService.create(
+        {
+          name: 'Hook 2',
+          url: 'https://b.com',
+          secret: 'secret-long-enough',
+          events: ['content.updated'],
+          isActive: true,
+        },
+        userId,
+      );
 
       const result = await WebhookService.findAll({ page: 1, limit: 10 });
       expect(result.data).toHaveLength(2);
@@ -85,8 +108,26 @@ describe('WebhookService', () => {
     });
 
     it('filters by isActive', async () => {
-      await WebhookService.create({ name: 'Active', url: 'https://a.com', secret: 'secret-long-enough', events: ['content.created'], isActive: true }, userId);
-      await WebhookService.create({ name: 'Inactive', url: 'https://b.com', secret: 'secret-long-enough', events: ['content.created'], isActive: false }, userId);
+      await WebhookService.create(
+        {
+          name: 'Active',
+          url: 'https://a.com',
+          secret: 'secret-long-enough',
+          events: ['content.created'],
+          isActive: true,
+        },
+        userId,
+      );
+      await WebhookService.create(
+        {
+          name: 'Inactive',
+          url: 'https://b.com',
+          secret: 'secret-long-enough',
+          events: ['content.created'],
+          isActive: false,
+        },
+        userId,
+      );
 
       const result = await WebhookService.findAll({ page: 1, limit: 10, isActive: true });
       expect(result.data).toHaveLength(1);
@@ -96,13 +137,16 @@ describe('WebhookService', () => {
 
   describe('update', () => {
     it('updates webhook fields', async () => {
-      const created = await WebhookService.create({
-        name: 'Original',
-        url: 'https://example.com/hook',
-        secret: 'secret-long-enough',
-        events: ['content.created'],
-        isActive: true,
-      }, userId);
+      const created = await WebhookService.create(
+        {
+          name: 'Original',
+          url: 'https://example.com/hook',
+          secret: 'secret-long-enough',
+          events: ['content.created'],
+          isActive: true,
+        },
+        userId,
+      );
 
       const updated = await WebhookService.update(created.id, {
         name: 'Updated',
@@ -114,21 +158,24 @@ describe('WebhookService', () => {
     });
 
     it('throws 404 for non-existent webhook', async () => {
-      await expect(
-        WebhookService.update('00000000-0000-0000-0000-000000000000', { name: 'X' }),
-      ).rejects.toThrow(AppError);
+      await expect(WebhookService.update('00000000-0000-0000-0000-000000000000', { name: 'X' })).rejects.toThrow(
+        AppError,
+      );
     });
   });
 
   describe('delete', () => {
     it('deletes the webhook', async () => {
-      const created = await WebhookService.create({
-        name: 'To Delete',
-        url: 'https://example.com/hook',
-        secret: 'secret-long-enough',
-        events: ['content.created'],
-        isActive: true,
-      }, userId);
+      const created = await WebhookService.create(
+        {
+          name: 'To Delete',
+          url: 'https://example.com/hook',
+          secret: 'secret-long-enough',
+          events: ['content.created'],
+          isActive: true,
+        },
+        userId,
+      );
 
       await WebhookService.delete(created.id);
 
@@ -152,13 +199,16 @@ describe('WebhookService', () => {
       }) as typeof fetch;
 
       try {
-        await WebhookService.create({
-          name: 'Delivery Test',
-          url: 'https://example.com/webhook',
-          secret: 'test-secret-long-enough',
-          events: ['content.created'],
-          isActive: true,
-        }, userId);
+        await WebhookService.create(
+          {
+            name: 'Delivery Test',
+            url: 'https://example.com/webhook',
+            secret: 'test-secret-long-enough',
+            events: ['content.created'],
+            isActive: true,
+          },
+          userId,
+        );
 
         await WebhookService.initialize();
 
@@ -186,13 +236,16 @@ describe('WebhookService', () => {
       globalThis.fetch = vi.fn().mockResolvedValue(new Response('OK', { status: 200 })) as typeof fetch;
 
       try {
-        const webhook = await WebhookService.create({
-          name: 'DB Record Test',
-          url: 'https://example.com/webhook',
-          secret: 'secret-long-enough',
-          events: ['content.updated'],
-          isActive: true,
-        }, userId);
+        const webhook = await WebhookService.create(
+          {
+            name: 'DB Record Test',
+            url: 'https://example.com/webhook',
+            secret: 'secret-long-enough',
+            events: ['content.updated'],
+            isActive: true,
+          },
+          userId,
+        );
 
         await WebhookService.initialize();
 
@@ -216,13 +269,16 @@ describe('WebhookService', () => {
       globalThis.fetch = vi.fn().mockResolvedValue(new Response('Server Error', { status: 500 })) as typeof fetch;
 
       try {
-        const webhook = await WebhookService.create({
-          name: 'Fail Test',
-          url: 'https://example.com/webhook',
-          secret: 'secret-long-enough',
-          events: ['content.deleted'],
-          isActive: true,
-        }, userId);
+        const webhook = await WebhookService.create(
+          {
+            name: 'Fail Test',
+            url: 'https://example.com/webhook',
+            secret: 'secret-long-enough',
+            events: ['content.deleted'],
+            isActive: true,
+          },
+          userId,
+        );
 
         await WebhookService.initialize();
 
@@ -245,13 +301,16 @@ describe('WebhookService', () => {
       globalThis.fetch = vi.fn().mockRejectedValue(new Error('ECONNREFUSED')) as typeof fetch;
 
       try {
-        const webhook = await WebhookService.create({
-          name: 'Network Error Test',
-          url: 'https://example.com/webhook',
-          secret: 'secret-long-enough',
-          events: ['media.uploaded'],
-          isActive: true,
-        }, userId);
+        const webhook = await WebhookService.create(
+          {
+            name: 'Network Error Test',
+            url: 'https://example.com/webhook',
+            secret: 'secret-long-enough',
+            events: ['media.uploaded'],
+            isActive: true,
+          },
+          userId,
+        );
 
         await WebhookService.initialize();
 
@@ -276,13 +335,16 @@ describe('WebhookService', () => {
       globalThis.fetch = fetchMock as typeof fetch;
 
       try {
-        await WebhookService.create({
-          name: 'Inactive Hook',
-          url: 'https://example.com/webhook',
-          secret: 'secret-long-enough',
-          events: ['content.created'],
-          isActive: false,
-        }, userId);
+        await WebhookService.create(
+          {
+            name: 'Inactive Hook',
+            url: 'https://example.com/webhook',
+            secret: 'secret-long-enough',
+            events: ['content.created'],
+            isActive: false,
+          },
+          userId,
+        );
 
         await WebhookService.initialize();
 
@@ -302,13 +364,16 @@ describe('WebhookService', () => {
 
   describe('initialize', () => {
     it('loads active webhooks and starts retry poller', async () => {
-      await WebhookService.create({
-        name: 'Init Test',
-        url: 'https://example.com/hook',
-        secret: 'secret-long-enough',
-        events: ['content.created'],
-        isActive: true,
-      }, userId);
+      await WebhookService.create(
+        {
+          name: 'Init Test',
+          url: 'https://example.com/hook',
+          secret: 'secret-long-enough',
+          events: ['content.created'],
+          isActive: true,
+        },
+        userId,
+      );
 
       await WebhookService.initialize();
     });

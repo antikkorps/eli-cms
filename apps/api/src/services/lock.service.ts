@@ -16,9 +16,7 @@ export class LockService {
       const now = new Date();
 
       // Delete expired locks within the transaction
-      await tx.delete(contentLocks).where(
-        and(eq(contentLocks.contentId, contentId), lte(contentLocks.expiresAt, now)),
-      );
+      await tx.delete(contentLocks).where(and(eq(contentLocks.contentId, contentId), lte(contentLocks.expiresAt, now)));
 
       // SELECT … FOR UPDATE to serialize concurrent lock attempts
       const rows = await tx.execute(
@@ -27,7 +25,8 @@ export class LockService {
             WHERE content_id = ${contentId}
             FOR UPDATE`,
       );
-      const existing = (rows as unknown as { rows: Array<{ id: string; locked_by: string; expires_at: Date }> }).rows?.[0];
+      const existing = (rows as unknown as { rows: Array<{ id: string; locked_by: string; expires_at: Date }> })
+        .rows?.[0];
 
       if (existing) {
         if (existing.locked_by === userId) {
@@ -40,7 +39,11 @@ export class LockService {
           return refreshed;
         }
         // Locked by another user
-        const [locker] = await tx.select({ email: users.email }).from(users).where(eq(users.id, existing.locked_by)).limit(1);
+        const [locker] = await tx
+          .select({ email: users.email })
+          .from(users)
+          .where(eq(users.id, existing.locked_by))
+          .limit(1);
         throw new AppError(423, `Content is being edited by ${locker?.email ?? 'another user'}`);
       }
 
@@ -108,10 +111,7 @@ export class LockService {
 
   static async cleanExpired() {
     const now = new Date();
-    const result = await db
-      .delete(contentLocks)
-      .where(lte(contentLocks.expiresAt, now))
-      .returning();
+    const result = await db.delete(contentLocks).where(lte(contentLocks.expiresAt, now)).returning();
 
     if (result.length > 0) {
       logger.info({ count: result.length }, 'Cleaned expired content locks');

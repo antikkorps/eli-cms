@@ -33,7 +33,8 @@ const items = computed(() =>
 
 function getLabel(item: ContentOption): string {
   const first = Object.values(item.data).find((v) => typeof v === 'string' && v.length > 0);
-  const label = typeof first === 'string' ? (first.length > 50 ? first.substring(0, 50) + '...' : first) : item.id.substring(0, 8);
+  const label =
+    typeof first === 'string' ? (first.length > 50 ? first.substring(0, 50) + '...' : first) : item.id.substring(0, 8);
   return item.contentType?.name ? `${label} (${item.contentType.name})` : label;
 }
 

@@ -92,7 +92,16 @@ async function submit() {
         <UButton to="/admin/components" variant="ghost" color="neutral">
           {{ $t('common.cancel') }}
         </UButton>
-        <UButton type="submit" :loading="saving" :disabled="!form.name || !form.slug || !form.fields.length || form.fields.some(f => !f.name || !f.label || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(f.name))">
+        <UButton
+          type="submit"
+          :loading="saving"
+          :disabled="
+            !form.name ||
+            !form.slug ||
+            !form.fields.length ||
+            form.fields.some((f) => !f.name || !f.label || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(f.name))
+          "
+        >
           {{ $t('common.create') }}
         </UButton>
       </div>

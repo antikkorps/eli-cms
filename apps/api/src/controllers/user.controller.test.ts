@@ -94,10 +94,7 @@ describe('GET /api/users', () => {
       password: 'password123',
     });
 
-    const res = await api
-      .get('/api/v1/users')
-      .query({ search: 'findme' })
-      .set('Authorization', `Bearer ${adminToken}`);
+    const res = await api.get('/api/v1/users').query({ search: 'findme' }).set('Authorization', `Bearer ${adminToken}`);
 
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].email).toBe('findme@test.local');
@@ -134,18 +131,12 @@ describe('GET /api/users', () => {
 
   // ─── Validation ───────────────────────────────────────
   it('returns 400 for page=0', async () => {
-    const res = await agent()
-      .get('/api/v1/users')
-      .query({ page: 0 })
-      .set('Authorization', `Bearer ${adminToken}`);
+    const res = await agent().get('/api/v1/users').query({ page: 0 }).set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(400);
   });
 
   it('returns 400 for limit>100', async () => {
-    const res = await agent()
-      .get('/api/v1/users')
-      .query({ limit: 101 })
-      .set('Authorization', `Bearer ${adminToken}`);
+    const res = await agent().get('/api/v1/users').query({ limit: 101 }).set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(400);
   });
 });
