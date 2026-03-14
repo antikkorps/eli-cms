@@ -119,6 +119,7 @@
 
 - [ ] SDK Client (`@eli-cms/client`) — typed JS/TS wrapper around the public API with caching, retry, pagination helpers. Package in `packages/client/`, works in Node + browser + any framework. Unlocks typed frontend integration.
 - [ ] TypeScript Codegen — CLI `eli codegen` reads content types via API (`GET /api/v1/public/schema`), generates TS interfaces per content type. Output: `eli-cms.d.ts`. Requires new schema export endpoint + CLI in `packages/cli/`.
+- [ ] MCP Server (`packages/mcp/`) — Model Context Protocol server exposing Eli CMS as tools for LLMs (Claude, Cursor, Copilot). Tools: `list_content_types`, `get_content_type`, `create_content_type`, `list_contents`, `create_content`, `list_components`, `get_schema`. Enables AI-native CMS workflows: "ajoute un champ image au blog", "crée 10 articles de démo", scaffold frontend code from content models. First-of-its-kind for headless CMS.
 - [ ] Autosave drafts (periodic save while editing, every 30s if changes detected, visual indicator)
 
 ## Medium Priority — Features
