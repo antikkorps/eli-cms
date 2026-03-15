@@ -2,11 +2,17 @@ import { describe, it, expect, vi } from 'vitest';
 import { ContentQueryBuilder } from '../query-builder.js';
 import type { HttpTransport } from '../http.js';
 
-function createMockHttp(responses?: Array<{ data: unknown[]; meta: { page: number; limit: number; total: number; totalPages: number } }>) {
+function createMockHttp(
+  responses?: Array<{ data: unknown[]; meta: { page: number; limit: number; total: number; totalPages: number } }>,
+) {
   const queue = [...(responses ?? [])];
   return {
     get: vi.fn().mockImplementation(() => {
-      const response = queue.shift() ?? { success: true, data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } };
+      const response = queue.shift() ?? {
+        success: true,
+        data: [],
+        meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
+      };
       return Promise.resolve({ success: true, ...response });
     }),
   } as unknown as HttpTransport;
@@ -14,13 +20,9 @@ function createMockHttp(responses?: Array<{ data: unknown[]; meta: { page: numbe
 
 describe('ContentQueryBuilder', () => {
   it('should build query with filters', async () => {
-    const http = createMockHttp([
-      { data: [{ id: '1' }], meta: { page: 1, limit: 20, total: 1, totalPages: 1 } },
-    ]);
+    const http = createMockHttp([{ data: [{ id: '1' }], meta: { page: 1, limit: 20, total: 1, totalPages: 1 } }]);
 
-    await new ContentQueryBuilder(http, 'blog')
-      .filter('data.category', 'tech')
-      .execute();
+    await new ContentQueryBuilder(http, 'blog').filter('data.category', 'tech').execute();
 
     expect(http.get).toHaveBeenCalledWith(
       '/api/v1/public/contents/by-type/blog',
@@ -31,9 +33,7 @@ describe('ContentQueryBuilder', () => {
   });
 
   it('should build nested filters from dot-notation', async () => {
-    const http = createMockHttp([
-      { data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } },
-    ]);
+    const http = createMockHttp([{ data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } }]);
 
     await new ContentQueryBuilder(http)
       .filter('publishedAt.gte', '2024-01-01')
@@ -52,9 +52,7 @@ describe('ContentQueryBuilder', () => {
   });
 
   it('should chain all fluent methods', async () => {
-    const http = createMockHttp([
-      { data: [{ id: '1' }], meta: { page: 1, limit: 10, total: 1, totalPages: 1 } },
-    ]);
+    const http = createMockHttp([{ data: [{ id: '1' }], meta: { page: 1, limit: 10, total: 1, totalPages: 1 } }]);
 
     await new ContentQueryBuilder(http, 'blog')
       .filter('data.category', 'tech')
@@ -66,25 +64,20 @@ describe('ContentQueryBuilder', () => {
       .page(2)
       .execute();
 
-    expect(http.get).toHaveBeenCalledWith(
-      '/api/v1/public/contents/by-type/blog',
-      {
-        filter: { data: { category: 'tech' } },
-        fields: ['id', 'slug', 'data.title'],
-        sortBy: 'publishedAt',
-        sortOrder: 'desc',
-        populate: 'relations',
-        search: 'hello',
-        limit: 10,
-        page: 2,
-      },
-    );
+    expect(http.get).toHaveBeenCalledWith('/api/v1/public/contents/by-type/blog', {
+      filter: { data: { category: 'tech' } },
+      fields: ['id', 'slug', 'data.title'],
+      sortBy: 'publishedAt',
+      sortOrder: 'desc',
+      populate: 'relations',
+      search: 'hello',
+      limit: 10,
+      page: 2,
+    });
   });
 
   it('should use /contents when no typeSlug', async () => {
-    const http = createMockHttp([
-      { data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } },
-    ]);
+    const http = createMockHttp([{ data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } }]);
 
     await new ContentQueryBuilder(http).execute();
 
@@ -101,9 +94,7 @@ describe('ContentQueryBuilder', () => {
   });
 
   it('first() should return null when empty', async () => {
-    const http = createMockHttp([
-      { data: [], meta: { page: 1, limit: 1, total: 0, totalPages: 0 } },
-    ]);
+    const http = createMockHttp([{ data: [], meta: { page: 1, limit: 1, total: 0, totalPages: 0 } }]);
 
     const result = await new ContentQueryBuilder(http, 'blog').first();
     expect(result).toBeNull();
@@ -136,9 +127,7 @@ describe('ContentQueryBuilder', () => {
   });
 
   it('preview() should set preview param', async () => {
-    const http = createMockHttp([
-      { data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } },
-    ]);
+    const http = createMockHttp([{ data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } }]);
 
     await new ContentQueryBuilder(http, 'blog').preview().execute();
 

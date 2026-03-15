@@ -9,13 +9,7 @@ export function registerComponentTools(server: McpServer, api: ApiClient) {
     'List all reusable components (blocks). Components define field groups that can be used inside content via the "component" field type.',
     {
       page: z.number().int().positive().optional().describe('Page number (default: 1)'),
-      limit: z
-        .number()
-        .int()
-        .min(1)
-        .max(100)
-        .optional()
-        .describe('Items per page (default: 20)'),
+      limit: z.number().int().min(1).max(100).optional().describe('Items per page (default: 20)'),
       search: z.string().optional().describe('Search by name'),
     },
     async (params) => {

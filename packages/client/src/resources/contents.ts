@@ -1,18 +1,11 @@
 import type { HttpTransport } from '../http.js';
 import { ContentQueryBuilder } from '../query-builder.js';
-import type {
-  ContentGetParams,
-  ContentListParams,
-  PaginatedResult,
-  TypedContent,
-} from '../types.js';
+import type { ContentGetParams, ContentListParams, PaginatedResult, TypedContent } from '../types.js';
 
 export class ContentsResource {
   constructor(private readonly http: HttpTransport) {}
 
-  async list<T = Record<string, unknown>>(
-    params?: ContentListParams,
-  ): Promise<PaginatedResult<TypedContent<T>>> {
+  async list<T = Record<string, unknown>>(params?: ContentListParams): Promise<PaginatedResult<TypedContent<T>>> {
     const { contentType, ...rest } = params ?? {};
     const queryParams = this.buildQueryParams(rest);
 
@@ -27,10 +20,7 @@ export class ContentsResource {
     };
   }
 
-  async get<T = Record<string, unknown>>(
-    id: string,
-    params?: ContentGetParams,
-  ): Promise<TypedContent<T>> {
+  async get<T = Record<string, unknown>>(id: string, params?: ContentGetParams): Promise<TypedContent<T>> {
     const queryParams = params ? this.buildQueryParams(params) : undefined;
     const response = await this.http.get<TypedContent<T>>(
       `/api/v1/public/contents/${encodeURIComponent(id)}`,
@@ -62,9 +52,7 @@ export class ContentsResource {
     return new ContentQueryBuilder<T>(this.http, typeSlug);
   }
 
-  private buildQueryParams(
-    params: Omit<ContentListParams, 'contentType'> | ContentGetParams,
-  ): Record<string, unknown> {
+  private buildQueryParams(params: Omit<ContentListParams, 'contentType'> | ContentGetParams): Record<string, unknown> {
     const result: Record<string, unknown> = {};
 
     if ('page' in params && params.page !== undefined) result.page = params.page;

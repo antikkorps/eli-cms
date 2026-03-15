@@ -28,8 +28,10 @@ export class HttpTransport {
   private readonly retry: Required<RetryOptions>;
 
   constructor(options: EliClientOptions) {
-    // Strip trailing slash
-    this.baseUrl = options.baseUrl.replace(/\/+$/, '');
+    // Strip trailing slashes
+    let base = options.baseUrl;
+    while (base.endsWith('/')) base = base.slice(0, -1);
+    this.baseUrl = base;
 
     this.headers = {
       Accept: 'application/json',
@@ -88,10 +90,7 @@ export class HttpTransport {
     return qs ? `${url}?${qs}` : url;
   }
 
-  serializeParams(
-    obj: Record<string, unknown>,
-    prefix?: string,
-  ): URLSearchParams {
+  serializeParams(obj: Record<string, unknown>, prefix?: string): URLSearchParams {
     const params = new URLSearchParams();
 
     for (const [key, value] of Object.entries(obj)) {

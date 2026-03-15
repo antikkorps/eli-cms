@@ -16,9 +16,7 @@ export class ContentTypesResource {
   }
 
   async get(slug: string): Promise<TypedContentType> {
-    const response = await this.http.get<TypedContentType>(
-      `/api/v1/public/content-types/${encodeURIComponent(slug)}`,
-    );
+    const response = await this.http.get<TypedContentType>(`/api/v1/public/content-types/${encodeURIComponent(slug)}`);
     if (!response.data) {
       throw new Error(`Content type "${slug}" not found`);
     }

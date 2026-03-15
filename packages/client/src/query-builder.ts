@@ -126,8 +126,18 @@ export class ContentQueryBuilder<T = Record<string, unknown>> {
    * - "data.category" → { data: { category: value } }
    * - "publishedAt.gte" → { publishedAt: { gte: value } }
    */
+  private isSafeKey(part: string): boolean {
+    return part !== '__proto__' && part !== 'constructor' && part !== 'prototype';
+  }
+
   private setNestedFilter(obj: Record<string, unknown>, key: string, value: unknown): void {
     const parts = key.split('.');
+
+    // Prevent prototype pollution via crafted keys
+    for (const part of parts) {
+      if (!this.isSafeKey(part)) return;
+    }
+
     let current = obj;
 
     for (let i = 0; i < parts.length - 1; i++) {

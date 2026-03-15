@@ -20,9 +20,7 @@ describe('HttpTransport', () => {
         fetch: mockFetch({}),
         cache: false,
       });
-      expect(http.buildUrl('/api/v1/public/contents')).toBe(
-        'https://cms.example.com/api/v1/public/contents',
-      );
+      expect(http.buildUrl('/api/v1/public/contents')).toBe('https://cms.example.com/api/v1/public/contents');
     });
 
     it('should strip trailing slash from baseUrl', () => {
@@ -184,13 +182,9 @@ describe('HttpTransport', () => {
       const fetchFn = vi.fn().mockImplementation(() => {
         attempt++;
         if (attempt < 3) {
-          return Promise.resolve(
-            new Response(JSON.stringify({ error: 'Server error' }), { status: 500 }),
-          );
+          return Promise.resolve(new Response(JSON.stringify({ error: 'Server error' }), { status: 500 }));
         }
-        return Promise.resolve(
-          new Response(JSON.stringify({ success: true, data: 'ok' }), { status: 200 }),
-        );
+        return Promise.resolve(new Response(JSON.stringify({ success: true, data: 'ok' }), { status: 200 }));
       });
 
       const http = new HttpTransport({
@@ -212,9 +206,7 @@ describe('HttpTransport', () => {
         if (attempt < 2) {
           return Promise.reject(new TypeError('fetch failed'));
         }
-        return Promise.resolve(
-          new Response(JSON.stringify({ success: true }), { status: 200 }),
-        );
+        return Promise.resolve(new Response(JSON.stringify({ success: true }), { status: 200 }));
       });
 
       const http = new HttpTransport({

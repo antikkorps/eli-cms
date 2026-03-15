@@ -43,10 +43,7 @@ export function loadConfig(): EliConfig {
 }
 
 function loadTomlConfig(): { url?: string; key?: string } | null {
-  const candidates = [
-    resolve(process.cwd(), '.elicms.toml'),
-    join(homedir(), '.elicms.toml'),
-  ];
+  const candidates = [resolve(process.cwd(), '.elicms.toml'), join(homedir(), '.elicms.toml')];
 
   for (const path of candidates) {
     if (!existsSync(path)) continue;

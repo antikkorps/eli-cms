@@ -46,14 +46,8 @@ const fieldDefinitionSchema: z.ZodType = z.lazy(() =>
       .describe('MIME type filters for media (e.g. ["image/*", "application/pdf"])'),
     defaultValue: z.unknown().optional().describe('Default value for new content'),
     group: z.string().optional().describe('Group/tab name for UI organization'),
-    subFields: z
-      .array(fieldDefinitionSchema)
-      .optional()
-      .describe('Sub-fields for repeatable type'),
-    componentSlugs: z
-      .array(z.string())
-      .optional()
-      .describe('Allowed component slugs for component type'),
+    subFields: z.array(fieldDefinitionSchema).optional().describe('Sub-fields for repeatable type'),
+    componentSlugs: z.array(z.string()).optional().describe('Allowed component slugs for component type'),
     validation: fieldValidationSchema,
   }),
 );
@@ -66,10 +60,7 @@ export function registerContentTypeTools(server: McpServer, api: ApiClient) {
       page: z.number().int().positive().optional().describe('Page number (default: 1)'),
       limit: z.number().int().min(1).max(100).optional().describe('Items per page (default: 20)'),
       search: z.string().optional().describe('Search by name'),
-      includeCounts: z
-        .boolean()
-        .optional()
-        .describe('Include content count per type'),
+      includeCounts: z.boolean().optional().describe('Include content count per type'),
     },
     async (params) => {
       try {
@@ -104,10 +95,7 @@ export function registerContentTypeTools(server: McpServer, api: ApiClient) {
       slug: z.string().describe('Unique slug in kebab-case (e.g. "blog-post")'),
       name: z.string().describe('Display name (e.g. "Blog Post")'),
       fields: z.array(fieldDefinitionSchema).describe('Field definitions'),
-      isSingleton: z
-        .boolean()
-        .optional()
-        .describe('Only one content of this type can exist'),
+      isSingleton: z.boolean().optional().describe('Only one content of this type can exist'),
     },
     async (params) => {
       try {

@@ -30,12 +30,7 @@ export function registerSchemaTools(server: McpServer, api: ApiClient) {
     'get_schema',
     'Get the full CMS schema: all content types and components with their field definitions. Useful to understand the data model before creating or querying content.',
     {
-      slug: z
-        .string()
-        .optional()
-        .describe(
-          'Optional: get schema for a specific content type slug only',
-        ),
+      slug: z.string().optional().describe('Optional: get schema for a specific content type slug only'),
     },
     async ({ slug }) => {
       try {

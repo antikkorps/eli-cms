@@ -4,15 +4,15 @@ Model Context Protocol (MCP) server for Eli CMS. Expose your CMS as tools for AI
 
 ## Tools
 
-| Tool | Description |
-|------|-------------|
-| `list_content_types` | List all content types (paginated, search, includeCounts) |
-| `get_content_type` | Get a content type by slug with full field definitions |
-| `create_content_type` | Create a new content type with field definitions |
-| `list_contents` | List contents (filter by type, status, search, sort) |
-| `create_content` | Create content entry (data validated against content type) |
-| `list_components` | List reusable component blocks |
-| `get_schema` | Full CMS schema dump — all types + components |
+| Tool                  | Description                                                |
+| --------------------- | ---------------------------------------------------------- |
+| `list_content_types`  | List all content types (paginated, search, includeCounts)  |
+| `get_content_type`    | Get a content type by slug with full field definitions     |
+| `create_content_type` | Create a new content type with field definitions           |
+| `list_contents`       | List contents (filter by type, status, search, sort)       |
+| `create_content`      | Create content entry (data validated against content type) |
+| `list_components`     | List reusable component blocks                             |
+| `get_schema`          | Full CMS schema dump — all types + components              |
 
 ## Setup
 
@@ -113,11 +113,11 @@ Add to `.cursor/mcp.json`:
 
 Once connected, you can ask your AI assistant:
 
-- *"Liste tous les types de contenu du CMS"*
-- *"Montre-moi le schéma du type blog"*
-- *"Crée un content type 'recette' avec les champs titre, ingrédients (repeatable), et temps de cuisson"*
-- *"Crée 5 articles de blog de démo"*
-- *"Quels composants sont disponibles ?"*
+- _"Liste tous les types de contenu du CMS"_
+- _"Montre-moi le schéma du type blog"_
+- _"Crée un content type 'recette' avec les champs titre, ingrédients (repeatable), et temps de cuisson"_
+- _"Crée 5 articles de blog de démo"_
+- _"Quels composants sont disponibles ?"_
 
 ## Configuration File Reference
 
@@ -133,10 +133,10 @@ key = "eli_..."                 # API key (create in admin → Settings → API 
 
 Minimum permissions for the API key depending on the tools you want to use:
 
-| Tool | Permissions |
-|------|-------------|
-| `list_content_types` / `get_content_type` / `get_schema` | `content-types:read` |
-| `create_content_type` | `content-types:create` |
-| `list_contents` | `content:read` |
-| `create_content` | `content:create` |
-| `list_components` / `get_schema` | `components:read` |
+| Tool                                                     | Permissions            |
+| -------------------------------------------------------- | ---------------------- |
+| `list_content_types` / `get_content_type` / `get_schema` | `content-types:read`   |
+| `create_content_type`                                    | `content-types:create` |
+| `list_contents`                                          | `content:read`         |
+| `create_content`                                         | `content:create`       |
+| `list_components` / `get_schema`                         | `components:read`      |
