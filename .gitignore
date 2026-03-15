@@ -11,3 +11,4 @@ apps/api/uploads/.cache/
 !apps/api/uploads/.gitkeep
 .gotk.toml
 .mcp.json
+.elicms.toml
