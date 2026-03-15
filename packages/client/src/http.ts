@@ -100,9 +100,9 @@ export class HttpTransport {
       const fullKey = prefix ? `${prefix}.${key}` : key;
 
       if (Array.isArray(value)) {
-        // Arrays: repeat the key (e.g. fields=id&fields=slug)
-        for (const item of value) {
-          params.append(fullKey, String(item));
+        // Arrays: comma-separated (e.g. fields=id,slug,data.title)
+        if (value.length > 0) {
+          params.append(fullKey, value.map(String).join(','));
         }
       } else if (typeof value === 'object') {
         // Nested objects: recurse with dot-notation prefix

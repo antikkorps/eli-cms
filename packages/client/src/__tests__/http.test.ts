@@ -57,7 +57,7 @@ describe('HttpTransport', () => {
       expect(url).toContain('filter.data.category=tech');
     });
 
-    it('should serialize array params', () => {
+    it('should serialize array params as comma-separated', () => {
       const http = new HttpTransport({
         baseUrl: 'https://cms.example.com',
         fetch: mockFetch({}),
@@ -66,9 +66,21 @@ describe('HttpTransport', () => {
       const url = http.buildUrl('/api/test', {
         fields: ['id', 'slug', 'data.title'],
       });
-      expect(url).toContain('fields=id');
-      expect(url).toContain('fields=slug');
-      expect(url).toContain('fields=data.title');
+      expect(url).toContain('fields=id%2Cslug%2Cdata.title');
+    });
+
+    it('should skip empty arrays', () => {
+      const http = new HttpTransport({
+        baseUrl: 'https://cms.example.com',
+        fetch: mockFetch({}),
+        cache: false,
+      });
+      const url = http.buildUrl('/api/test', {
+        fields: [],
+        page: 1,
+      });
+      expect(url).not.toContain('fields');
+      expect(url).toContain('page=1');
     });
 
     it('should skip null and undefined values', () => {

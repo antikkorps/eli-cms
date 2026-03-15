@@ -7,6 +7,7 @@
     "dev:web": "pnpm --filter @eli-cms/web dev",
     "build:shared": "pnpm --filter @eli-cms/shared build",
     "build:client": "pnpm --filter @eli-cms/client build",
+    "build:mcp": "pnpm --filter @eli-cms/mcp build",
     "build:api": "pnpm --filter @eli-cms/api build",
     "build:web": "pnpm --filter @eli-cms/web build",
     "db:generate": "pnpm --filter @eli-cms/api db:generate",
