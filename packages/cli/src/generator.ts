@@ -50,7 +50,9 @@ function fieldToTsType(
 
     case 'select':
       if (field.options && field.options.length > 0) {
-        return field.options.map((o) => `'${o.replace(/'/g, "\\'")}'`).join(' | ');
+        return field.options
+          .map((o) => `'${o.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`)
+          .join(' | ');
       }
       return 'string';
 
