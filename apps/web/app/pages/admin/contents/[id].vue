@@ -277,6 +277,8 @@ async function performAutosave() {
         data: form.data,
       },
     });
+    // PUT auto-releases the lock server-side, re-acquire it
+    await acquireLock(route.params.id as string);
     autosaveStatus.value = 'saved';
     // Reset to idle after 3s
     setTimeout(() => {
