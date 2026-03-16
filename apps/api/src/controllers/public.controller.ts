@@ -4,6 +4,7 @@ import type { JwtPayload } from '@eli-cms/shared';
 import { ContentTypeService } from '../services/content-type.service.js';
 import { ContentService } from '../services/content.service.js';
 import { ContentRelationService } from '../services/content-relation.service.js';
+import { ComponentService } from '../services/component.service.js';
 import { AppError } from '../utils/app-error.js';
 import { parsePublicQuery } from '../utils/parse-public-query.js';
 import { selectFields, selectFieldsMany } from '../utils/field-selector.js';
@@ -14,6 +15,14 @@ function isPreviewAllowed(ctx: Context): boolean {
 }
 
 export class PublicController {
+  static async getSchema(ctx: Context) {
+    const [contentTypes, components] = await Promise.all([
+      ContentTypeService.findAllRaw(),
+      ComponentService.findAllRaw(),
+    ]);
+    ctx.body = { success: true, data: { contentTypes, components } };
+  }
+
   static async listContentTypes(ctx: Context) {
     const result = contentTypeListQuerySchema.safeParse(ctx.query);
     if (!result.success) {

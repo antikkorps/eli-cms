@@ -61,6 +61,10 @@ export class ContentTypeService {
     return { data, meta: buildMeta(total, page, limit) };
   }
 
+  static async findAllRaw() {
+    return db.select().from(contentTypes).orderBy(contentTypes.createdAt);
+  }
+
   static async findById(id: string) {
     const [ct] = await db.select().from(contentTypes).where(eq(contentTypes.id, id)).limit(1);
     if (!ct) throw new AppError(404, 'Content type not found');
