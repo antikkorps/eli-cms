@@ -50,6 +50,12 @@ const loading = ref(true);
 const saving = ref(false);
 const activeTab = ref('content');
 
+// Autosave
+const AUTOSAVE_DELAY = 30_000; // 30 seconds
+const autosaveStatus = ref<'idle' | 'saving' | 'saved' | 'failed'>('idle');
+let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+let formLoaded = false; // skip initial watch trigger
+
 // Versions
 const versions = ref<ContentVersion[]>([]);
 const loadingVersions = ref(false);
@@ -222,6 +228,7 @@ async function submit() {
     const { valid } = validate(fields.value as import('@eli-cms/shared').FieldDefinition[], form.data);
     if (!valid) return;
   }
+  clearAutosaveTimer();
   saving.value = true;
   try {
     await apiFetch(`/contents/${route.params.id}`, {
@@ -239,6 +246,46 @@ async function submit() {
     toast.add({ title: msg, color: 'error' });
   } finally {
     saving.value = false;
+  }
+}
+
+function clearAutosaveTimer() {
+  if (autosaveTimer) {
+    clearTimeout(autosaveTimer);
+    autosaveTimer = null;
+  }
+}
+
+function scheduleAutosave() {
+  // Only autosave drafts / in-review — not published content
+  if (isLockedByOther.value) return;
+  if (!['draft', 'in-review'].includes(form.status)) return;
+
+  clearAutosaveTimer();
+  autosaveTimer = setTimeout(performAutosave, AUTOSAVE_DELAY);
+}
+
+async function performAutosave() {
+  if (saving.value || isLockedByOther.value) return;
+
+  autosaveStatus.value = 'saving';
+  try {
+    await apiFetch(`/contents/${route.params.id}`, {
+      method: 'PUT',
+      body: {
+        slug: form.slug || null,
+        data: form.data,
+      },
+    });
+    // PUT auto-releases the lock server-side, re-acquire it
+    await acquireLock(route.params.id as string);
+    autosaveStatus.value = 'saved';
+    // Reset to idle after 3s
+    setTimeout(() => {
+      if (autosaveStatus.value === 'saved') autosaveStatus.value = 'idle';
+    }, 3000);
+  } catch {
+    autosaveStatus.value = 'failed';
   }
 }
 
@@ -260,8 +307,18 @@ defineShortcuts({
 
 watch(
   () => form.data,
-  () => clearErrors(),
+  () => {
+    clearErrors();
+    if (formLoaded) scheduleAutosave();
+  },
   { deep: true },
+);
+
+watch(
+  () => form.slug,
+  () => {
+    if (formLoaded) scheduleAutosave();
+  },
 );
 
 watch(activeTab, (tab) => {
@@ -273,7 +330,15 @@ onMounted(async () => {
   await fetchContent();
   if (!loading.value) {
     await acquireLock(route.params.id as string);
+    // Enable autosave after initial data is loaded
+    nextTick(() => {
+      formLoaded = true;
+    });
   }
+});
+
+onBeforeUnmount(() => {
+  clearAutosaveTimer();
 });
 </script>
 
@@ -284,6 +349,18 @@ onMounted(async () => {
       <div>
         <h1 class="text-2xl font-bold">{{ $t('contents.editTitle') }}</h1>
       </div>
+      <span v-if="autosaveStatus === 'saving'" class="text-sm text-muted flex items-center gap-1">
+        <UIcon name="i-lucide-loader-2" class="animate-spin" />
+        {{ $t('contents.autosaving') }}
+      </span>
+      <span v-else-if="autosaveStatus === 'saved'" class="text-sm text-green-500 flex items-center gap-1">
+        <UIcon name="i-lucide-check" />
+        {{ $t('contents.autosaved') }}
+      </span>
+      <span v-else-if="autosaveStatus === 'failed'" class="text-sm text-red-500 flex items-center gap-1">
+        <UIcon name="i-lucide-alert-circle" />
+        {{ $t('contents.autosaveFailed') }}
+      </span>
     </div>
 
     <div v-if="loading" class="text-sm text-muted">{{ $t('common.loading') }}</div>

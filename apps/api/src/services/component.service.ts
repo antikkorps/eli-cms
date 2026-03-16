@@ -29,6 +29,10 @@ export class ComponentService {
     return { data, meta: buildMeta(total, page, limit) };
   }
 
+  static async findAllRaw() {
+    return db.select().from(components).orderBy(components.createdAt);
+  }
+
   static async findById(id: string) {
     const [comp] = await db.select().from(components).where(eq(components.id, id)).limit(1);
     if (!comp) throw new AppError(404, 'Component not found');

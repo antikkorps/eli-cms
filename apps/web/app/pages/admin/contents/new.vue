@@ -19,7 +19,7 @@ const { errors: validationErrors, validate, clearErrors } = useContentValidation
 
 const selectedTypeId = ref('');
 const slug = ref('');
-const status = ref<'draft' | 'published'>('draft');
+const status = ref('draft');
 const data = ref<Record<string, unknown>>({});
 const saving = ref(false);
 
@@ -155,7 +155,7 @@ onMounted(async () => {
         </UFormField>
 
         <UFormField :label="$t('contents.statusLabel')">
-          <USelect v-model="status" :items="statusItems" class="w-full" />
+          <USelect v-model="status" :items="statusItems" :placeholder="$t('contents.statusLabel')" class="w-full" />
         </UFormField>
       </div>
 

@@ -7,6 +7,7 @@ export const publicRouter = new Router({ prefix: '/api/v1/public' });
 
 publicRouter.use(publicRateLimit);
 
+publicRouter.get('/schema', PublicController.getSchema);
 publicRouter.get('/content-types', PublicController.listContentTypes);
 publicRouter.get('/content-types/:slug', PublicController.getContentTypeBySlug);
 publicRouter.get('/contents', optionalAuth, PublicController.listContents);
