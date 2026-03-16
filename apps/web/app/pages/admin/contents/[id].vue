@@ -329,7 +329,9 @@ onMounted(async () => {
   if (!loading.value) {
     await acquireLock(route.params.id as string);
     // Enable autosave after initial data is loaded
-    nextTick(() => { formLoaded = true; });
+    nextTick(() => {
+      formLoaded = true;
+    });
   }
 });
 

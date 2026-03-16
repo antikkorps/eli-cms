@@ -85,25 +85,25 @@ export interface EliContentMap {
 }
 
 export interface EliComponentMap {
-  'hero': HeroBlock;
+  hero: HeroBlock;
 }
 ```
 
 ### Type Mapping
 
-| Field Type   | TypeScript Type              |
-| ------------ | ---------------------------- |
-| `text`, `textarea`, `email`, `url`, `richtext` | `string` |
-| `number`     | `number`                     |
-| `boolean`    | `boolean`                    |
-| `date`       | `string` (ISO 8601)          |
-| `author`     | `string` (user ID)           |
-| `select` (with options) | `'opt1' \| 'opt2'` |
-| `select` (no options) | `string`              |
-| `media`      | `string` (UUID)              |
-| `media` + `multiple` | `string[]`            |
-| `repeatable` | `{Parent}{Field}Item[]`      |
-| `component`  | `({Block1} \| {Block2})[]`   |
+| Field Type                                     | TypeScript Type            |
+| ---------------------------------------------- | -------------------------- |
+| `text`, `textarea`, `email`, `url`, `richtext` | `string`                   |
+| `number`                                       | `number`                   |
+| `boolean`                                      | `boolean`                  |
+| `date`                                         | `string` (ISO 8601)        |
+| `author`                                       | `string` (user ID)         |
+| `select` (with options)                        | `'opt1' \| 'opt2'`         |
+| `select` (no options)                          | `string`                   |
+| `media`                                        | `string` (UUID)            |
+| `media` + `multiple`                           | `string[]`                 |
+| `repeatable`                                   | `{Parent}{Field}Item[]`    |
+| `component`                                    | `({Block1} \| {Block2})[]` |
 
 ### Using the Generated Types
 
@@ -111,9 +111,7 @@ export interface EliComponentMap {
 import type { EliContentMap, BlogPost } from './eli-cms';
 
 // Type-safe content fetching
-async function getContent<T extends keyof EliContentMap>(
-  slug: T,
-): Promise<EliContentMap[T][]> {
+async function getContent<T extends keyof EliContentMap>(slug: T): Promise<EliContentMap[T][]> {
   const res = await fetch(`/api/v1/public/contents/by-type/${slug}`);
   const json = await res.json();
   return json.data;

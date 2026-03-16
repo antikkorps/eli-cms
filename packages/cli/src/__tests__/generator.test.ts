@@ -41,9 +41,7 @@ describe('generate', () => {
         {
           slug: 'article',
           name: 'Article',
-          fields: [
-            { name: 'category', type: 'select', required: false, options: ['tech', 'news', 'sports'] },
-          ],
+          fields: [{ name: 'category', type: 'select', required: false, options: ['tech', 'news', 'sports'] }],
         },
       ],
       [],

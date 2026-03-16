@@ -134,7 +134,10 @@ async function testWebhook() {
     if (delivery.status === 'success') {
       toast.add({ title: t('webhooks.testSuccess', { status: responseStatus }), color: 'success' });
     } else {
-      toast.add({ title: t('webhooks.testFailed', { error: errorMessage || `HTTP ${responseStatus}` }), color: 'error' });
+      toast.add({
+        title: t('webhooks.testFailed', { error: errorMessage || `HTTP ${responseStatus}` }),
+        color: 'error',
+      });
     }
     // Refresh deliveries if on that tab
     if (activeTab.value === 'deliveries') await fetchDeliveries();
@@ -254,13 +257,7 @@ onMounted(fetchWebhook);
           <UButton to="/admin/webhooks" variant="ghost" color="neutral">
             {{ $t('common.cancel') }}
           </UButton>
-          <UButton
-            type="button"
-            variant="outline"
-            icon="i-lucide-send"
-            :loading="testing"
-            @click="testWebhook"
-          >
+          <UButton type="button" variant="outline" icon="i-lucide-send" :loading="testing" @click="testWebhook">
             {{ $t('webhooks.testDelivery') }}
           </UButton>
           <UButton type="submit" :loading="saving" :disabled="!form.name || !form.url || !form.events.length">

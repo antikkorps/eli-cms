@@ -27,11 +27,7 @@ interface AuxInterface {
   fields: string[];
 }
 
-function fieldToTsType(
-  field: FieldDefinition,
-  parentName: string,
-  aux: AuxInterface[],
-): string {
+function fieldToTsType(field: FieldDefinition, parentName: string, aux: AuxInterface[]): string {
   switch (field.type) {
     case 'text':
     case 'textarea':
@@ -50,9 +46,7 @@ function fieldToTsType(
 
     case 'select':
       if (field.options && field.options.length > 0) {
-        return field.options
-          .map((o) => `'${o.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`)
-          .join(' | ');
+        return field.options.map((o) => `'${o.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`).join(' | ');
       }
       return 'string';
 
@@ -77,9 +71,7 @@ function fieldToTsType(
       if (!field.componentSlugs || field.componentSlugs.length === 0) {
         return 'unknown[]';
       }
-      const union = field.componentSlugs
-        .map((s) => `${slugToInterfaceName(s)}Block`)
-        .join(' | ');
+      const union = field.componentSlugs.map((s) => `${slugToInterfaceName(s)}Block`).join(' | ');
       return `(${union})[]`;
     }
 
@@ -109,11 +101,7 @@ function generateInterface(
   return `export interface ${name} {\n${lines.join('\n')}\n}`;
 }
 
-export function generate(
-  contentTypes: ContentTypeSchema[],
-  components: ComponentSchema[],
-  sourceUrl: string,
-): string {
+export function generate(contentTypes: ContentTypeSchema[], components: ComponentSchema[], sourceUrl: string): string {
   const parts: string[] = [];
   const aux: AuxInterface[] = [];
 
@@ -160,17 +148,13 @@ export function generate(
   // Type maps
   if (contentTypes.length > 0) {
     parts.push('/** Type maps */');
-    const ctEntries = contentTypes.map(
-      (ct) => `  '${ct.slug}': ${slugToInterfaceName(ct.slug)};`,
-    );
+    const ctEntries = contentTypes.map((ct) => `  '${ct.slug}': ${slugToInterfaceName(ct.slug)};`);
     parts.push(`export interface EliContentMap {\n${ctEntries.join('\n')}\n}`);
     parts.push('');
   }
 
   if (components.length > 0) {
-    const compEntries = components.map(
-      (c) => `  '${c.slug}': ${slugToInterfaceName(c.slug)}Block;`,
-    );
+    const compEntries = components.map((c) => `  '${c.slug}': ${slugToInterfaceName(c.slug)}Block;`);
     parts.push(`export interface EliComponentMap {\n${compEntries.join('\n')}\n}`);
     parts.push('');
   }

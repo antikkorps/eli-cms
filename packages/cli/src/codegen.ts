@@ -48,7 +48,5 @@ export async function codegen(opts: { url?: string; output?: string }): Promise<
   const outPath = resolve(process.cwd(), opts.output ?? 'eli-cms.d.ts');
   writeFileSync(outPath, output, 'utf-8');
   process.stderr.write(`Generated ${outPath}\n`);
-  process.stderr.write(
-    `  ${contentTypes.length} content type(s), ${components.length} component(s)\n`,
-  );
+  process.stderr.write(`  ${contentTypes.length} content type(s), ${components.length} component(s)\n`);
 }
