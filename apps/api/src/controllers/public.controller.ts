@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { Context } from 'koa';
 import { contentTypeListQuerySchema, publicContentListQuerySchema, CONTENT_PREVIEW } from '@eli-cms/shared';
 import type { JwtPayload } from '@eli-cms/shared';
@@ -14,13 +15,37 @@ function isPreviewAllowed(ctx: Context): boolean {
   return !!user && Array.isArray(user.permissions) && user.permissions.includes(CONTENT_PREVIEW);
 }
 
+/**
+ * Set Cache-Control + ETag headers. Returns true if 304 should be sent (client cache is fresh).
+ */
+function setCacheHeaders(ctx: Context, body: unknown, maxAge: number, isPreview: boolean): boolean {
+  if (isPreview) {
+    ctx.set('Cache-Control', 'private, no-cache');
+    return false;
+  }
+
+  const json = JSON.stringify(body);
+  const etag = `"${createHash('md5').update(json).digest('hex')}"`;
+
+  if (ctx.get('If-None-Match') === etag) {
+    ctx.status = 304;
+    return true;
+  }
+
+  ctx.set('Cache-Control', `public, max-age=${maxAge}, s-maxage=${maxAge}`);
+  ctx.set('ETag', etag);
+  return false;
+}
+
 export class PublicController {
   static async getSchema(ctx: Context) {
     const [contentTypes, components] = await Promise.all([
       ContentTypeService.findAllRaw(),
       ComponentService.findAllRaw(),
     ]);
-    ctx.body = { success: true, data: { contentTypes, components } };
+    const body = { success: true, data: { contentTypes, components } };
+    if (setCacheHeaders(ctx, body, 86400, false)) return; // 24h
+    ctx.body = body;
   }
 
   static async listContentTypes(ctx: Context) {
@@ -29,12 +54,16 @@ export class PublicController {
       throw new AppError(400, result.error.issues.map((i) => i.message).join(', '));
     }
     const { data, meta } = await ContentTypeService.findAll(result.data);
-    ctx.body = { success: true, data, meta };
+    const body = { success: true, data, meta };
+    if (setCacheHeaders(ctx, body, 86400, false)) return; // 24h
+    ctx.body = body;
   }
 
   static async getContentTypeBySlug(ctx: Context) {
     const data = await ContentTypeService.findBySlugOrFail(ctx.params.slug);
-    ctx.body = { success: true, data };
+    const body = { success: true, data };
+    if (setCacheHeaders(ctx, body, 86400, false)) return; // 24h
+    ctx.body = body;
   }
 
   static async listContents(ctx: Context) {
@@ -67,7 +96,9 @@ export class PublicController {
       items = selectFieldsMany(items, result.data.fields);
     }
 
-    ctx.body = { success: true, data: items, meta };
+    const body = { success: true, data: items, meta };
+    if (setCacheHeaders(ctx, body, 3600, isPreview)) return; // 1h
+    ctx.body = body;
   }
 
   static async getContentById(ctx: Context) {
@@ -97,7 +128,9 @@ export class PublicController {
       item = selectFields(item, fields);
     }
 
-    ctx.body = { success: true, data: item };
+    const body = { success: true, data: item };
+    if (setCacheHeaders(ctx, body, 3600, preview)) return; // 1h
+    ctx.body = body;
   }
 
   static async listContentsByType(ctx: Context) {
@@ -135,7 +168,9 @@ export class PublicController {
       items = selectFieldsMany(items, result.data.fields);
     }
 
-    ctx.body = { success: true, data: items, meta };
+    const body = { success: true, data: items, meta };
+    if (setCacheHeaders(ctx, body, 3600, isPreview)) return; // 1h
+    ctx.body = body;
   }
 
   static async getContentBySlug(ctx: Context) {
@@ -167,6 +202,8 @@ export class PublicController {
       item = selectFields(item, fields);
     }
 
-    ctx.body = { success: true, data: item };
+    const body = { success: true, data: item };
+    if (setCacheHeaders(ctx, body, 3600, preview)) return; // 1h
+    ctx.body = body;
   }
 }

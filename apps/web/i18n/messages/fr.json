@@ -360,7 +360,10 @@
     "scheduledFor": "Planifié pour le {date}",
     "scheduleTitle": "Planifier la publication",
     "scheduleDate": "Date de publication",
-    "scheduleConfirm": "Planifier"
+    "scheduleConfirm": "Planifier",
+    "autosaving": "Enregistrement...",
+    "autosaved": "Enregistré",
+    "autosaveFailed": "Échec de la sauvegarde auto"
   },
   "uploads": {
     "title": "Fichiers",
@@ -438,7 +441,10 @@
     "deliveryDate": "Date",
     "pending": "En attente",
     "success": "Succès",
-    "failed": "Échoué"
+    "failed": "Échoué",
+    "testDelivery": "Tester",
+    "testSuccess": "Test réussi (HTTP {status})",
+    "testFailed": "Test échoué : {error}"
   },
   "auditLogs": {
     "title": "Journal d'audit",

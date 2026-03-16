@@ -120,6 +120,59 @@ export class WebhookService {
     return { data, meta: buildMeta(total, page, limit) };
   }
 
+  // ─── Test Delivery ─────────────────────────────────────
+
+  static async testDelivery(webhookId: string) {
+    const webhook = await this.findById(webhookId);
+
+    const testEvent: CmsEvent = {
+      event: 'webhook.test',
+      timestamp: new Date().toISOString(),
+      data: { message: 'Test delivery from Eli CMS', webhookId: webhook.id },
+    };
+
+    const body = JSON.stringify(testEvent);
+    const signature = createHmac('sha256', webhook.secret).update(body).digest('hex');
+
+    let status: 'success' | 'failed' = 'failed';
+    let responseStatus: number | null = null;
+    let errorMessage: string | null = null;
+
+    try {
+      const response = await fetch(webhook.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Webhook-Signature': signature,
+          'X-Webhook-Event': 'webhook.test',
+        },
+        body,
+        signal: AbortSignal.timeout(10_000),
+      });
+
+      responseStatus = response.status;
+      status = response.ok ? 'success' : 'failed';
+    } catch (err) {
+      errorMessage = err instanceof Error ? err.message : String(err);
+    }
+
+    // Record the test delivery
+    const [delivery] = await db
+      .insert(webhookDeliveries)
+      .values({
+        webhookId: webhook.id,
+        event: 'webhook.test',
+        payload: testEvent as unknown as Record<string, unknown>,
+        status,
+        responseStatus,
+        attempts: 1,
+        nextRetryAt: null,
+      })
+      .returning();
+
+    return { delivery, responseStatus, errorMessage };
+  }
+
   // ─── Initialization / Event Listeners ──────────────────
 
   static async initialize() {

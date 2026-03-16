@@ -48,7 +48,7 @@
 - [x] Default values for fields (add `default` to FieldDefinition + schema builder + field builder UI)
 - [x] Singleton content types (`isSingleton` column, enforce single entry 409, auto-redirect in contents list, sidebar icon)
 - [x] Client-side form validation (reuse shared Zod schemas, show field-level errors instead of generic toasts)
-- [~] HTTP caching on public API (Cache-Control + ETag on `/uploads/:id/serve` — remaining: content endpoints)
+- [x] HTTP caching on public API (Cache-Control + ETag on all public endpoints — schema/content-types 24h, contents 1h, preview bypasses cache)
 - [x] Brute-force login protection (progressive delays or lockout after N failed attempts)
 - [ ] Background job queue — replace `setInterval` scheduler with BullMQ/Redis
 - [x] Structured logging — replace `console.log` with pino (JSON, request IDs)
@@ -117,18 +117,17 @@
 
 ## High Priority — Developer Experience
 
-- [ ] SDK Client (`@eli-cms/client`) — typed JS/TS wrapper around the public API with caching, retry, pagination helpers. Package in `packages/client/`, works in Node + browser + any framework. Unlocks typed frontend integration.
-- [ ] TypeScript Codegen — CLI `eli codegen` reads content types via API (`GET /api/v1/public/schema`), generates TS interfaces per content type. Output: `eli-cms.d.ts`. Requires new schema export endpoint + CLI in `packages/cli/`.
-- [ ] MCP Server (`packages/mcp/`) — Model Context Protocol server exposing Eli CMS as tools for LLMs (Claude, Cursor, Copilot). Tools: `list_content_types`, `get_content_type`, `create_content_type`, `list_contents`, `create_content`, `list_components`, `get_schema`. Enables AI-native CMS workflows: "ajoute un champ image au blog", "crée 10 articles de démo", scaffold frontend code from content models. First-of-its-kind for headless CMS.
-- [ ] Autosave drafts (periodic save while editing, every 30s if changes detected, visual indicator)
+- [x] SDK Client (`@eli-cms/client`) — typed JS/TS wrapper around the public API with caching, retry, pagination helpers. Package in `packages/client/`, works in Node + browser + any framework.
+- [x] TypeScript Codegen — CLI `eli codegen` reads content types via API (`GET /api/v1/public/schema`), generates TS interfaces per content type. Output: `eli-cms.d.ts`. New schema export endpoint + CLI in `packages/cli/`.
+- [x] MCP Server (`packages/mcp/`) — Model Context Protocol server exposing Eli CMS as tools for LLMs (Claude, Cursor, Copilot).
+- [x] Autosave drafts (periodic save while editing, every 30s if changes detected, visual indicator)
 
 ## Medium Priority — Features
 
 - [ ] Multilingual content (per-locale fields, locale switcher in content form, default locale config)
-- [ ] Autosave drafts (periodic save while editing, every 30s if changes detected)
 - [ ] Content calendar view (visual calendar of scheduled/published content)
 - [ ] Per-content-type permissions (scope editor access to specific content types)
-- [ ] Webhook test delivery (`POST /webhooks/:id/test` — verify endpoint before going live)
+- [x] Webhook test delivery (`POST /webhooks/:id/test` — verify endpoint before going live)
 - [ ] Webhook delivery retry UI (manual retry button, delivery log detail view)
 - [ ] Dashboard charts (content created over time, storage usage, API usage)
 - [ ] Content type templates (blog, page, product — one-click presets)

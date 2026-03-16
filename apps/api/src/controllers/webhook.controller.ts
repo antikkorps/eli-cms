@@ -48,6 +48,11 @@ export class WebhookController {
     ctx.body = { success: true };
   }
 
+  static async testDelivery(ctx: Context) {
+    const result = await WebhookService.testDelivery(ctx.params.id);
+    ctx.body = { success: true, data: result };
+  }
+
   static async listDeliveries(ctx: Context) {
     const result = webhookDeliveryListQuerySchema.safeParse(ctx.query);
     if (!result.success) {

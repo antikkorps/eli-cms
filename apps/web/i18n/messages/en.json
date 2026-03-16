@@ -360,7 +360,10 @@
     "scheduledFor": "Scheduled for {date}",
     "scheduleTitle": "Schedule Publication",
     "scheduleDate": "Publication date",
-    "scheduleConfirm": "Schedule"
+    "scheduleConfirm": "Schedule",
+    "autosaving": "Saving...",
+    "autosaved": "Saved",
+    "autosaveFailed": "Autosave failed"
   },
   "uploads": {
     "title": "Uploads",
@@ -438,7 +441,10 @@
     "deliveryDate": "Date",
     "pending": "Pending",
     "success": "Success",
-    "failed": "Failed"
+    "failed": "Failed",
+    "testDelivery": "Test",
+    "testSuccess": "Test delivery succeeded (HTTP {status})",
+    "testFailed": "Test delivery failed: {error}"
   },
   "auditLogs": {
     "title": "Audit Logs",

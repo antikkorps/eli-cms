@@ -42,6 +42,7 @@ const form = reactive({
 
 const loading = ref(true);
 const saving = ref(false);
+const testing = ref(false);
 const activeTab = ref('settings');
 const deliveries = ref<WebhookDelivery[]>([]);
 const loadingDeliveries = ref(false);
@@ -119,6 +120,28 @@ async function submit() {
     toast.add({ title: t('common.error'), color: 'error' });
   } finally {
     saving.value = false;
+  }
+}
+
+async function testWebhook() {
+  testing.value = true;
+  try {
+    const res = await apiFetch<{
+      success: boolean;
+      data: { delivery: { status: string }; responseStatus: number | null; errorMessage: string | null };
+    }>(`/webhooks/${route.params.id}/test`, { method: 'POST' });
+    const { delivery, responseStatus, errorMessage } = res.data;
+    if (delivery.status === 'success') {
+      toast.add({ title: t('webhooks.testSuccess', { status: responseStatus }), color: 'success' });
+    } else {
+      toast.add({ title: t('webhooks.testFailed', { error: errorMessage || `HTTP ${responseStatus}` }), color: 'error' });
+    }
+    // Refresh deliveries if on that tab
+    if (activeTab.value === 'deliveries') await fetchDeliveries();
+  } catch {
+    toast.add({ title: t('common.error'), color: 'error' });
+  } finally {
+    testing.value = false;
   }
 }
 
@@ -230,6 +253,15 @@ onMounted(fetchWebhook);
         <div class="flex justify-end gap-2">
           <UButton to="/admin/webhooks" variant="ghost" color="neutral">
             {{ $t('common.cancel') }}
+          </UButton>
+          <UButton
+            type="button"
+            variant="outline"
+            icon="i-lucide-send"
+            :loading="testing"
+            @click="testWebhook"
+          >
+            {{ $t('webhooks.testDelivery') }}
           </UButton>
           <UButton type="submit" :loading="saving" :disabled="!form.name || !form.url || !form.events.length">
             {{ $t('common.save') }}
