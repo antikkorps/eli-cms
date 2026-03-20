@@ -13,3 +13,9 @@ webhooksRouter.put('/:id', authenticate, requirePermission(WEBHOOKS_UPDATE), Web
 webhooksRouter.delete('/:id', authenticate, requirePermission(WEBHOOKS_DELETE), WebhookController.delete);
 webhooksRouter.post('/:id/test', authenticate, requirePermission(WEBHOOKS_UPDATE), WebhookController.testDelivery);
 webhooksRouter.get('/:id/deliveries', authenticate, requirePermission(WEBHOOKS_READ), WebhookController.listDeliveries);
+webhooksRouter.post(
+  '/:id/deliveries/:deliveryId/retry',
+  authenticate,
+  requirePermission(WEBHOOKS_UPDATE),
+  WebhookController.retryDelivery,
+);

@@ -1,5 +1,5 @@
 import { createHmac } from 'node:crypto';
-import { eq, and, count as drizzleCount, lte, isNotNull } from 'drizzle-orm';
+import { eq, and, count as drizzleCount, lte, isNotNull, desc } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { webhooks, webhookDeliveries } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
@@ -113,11 +113,37 @@ export class WebhookService {
       .select()
       .from(webhookDeliveries)
       .where(where)
-      .orderBy(webhookDeliveries.createdAt)
+      .orderBy(desc(webhookDeliveries.createdAt))
       .limit(limit)
       .offset(offset);
 
     return { data, meta: buildMeta(total, page, limit) };
+  }
+
+  static async retryDelivery(webhookId: string, deliveryId: string) {
+    const webhook = await this.findById(webhookId);
+
+    const [delivery] = await db
+      .select()
+      .from(webhookDeliveries)
+      .where(and(eq(webhookDeliveries.id, deliveryId), eq(webhookDeliveries.webhookId, webhookId)))
+      .limit(1);
+
+    if (!delivery) throw new AppError(404, 'Delivery not found');
+    if (delivery.status !== 'failed') throw new AppError(400, 'Only failed deliveries can be retried');
+
+    // Reset delivery for retry
+    await db
+      .update(webhookDeliveries)
+      .set({ status: 'pending', nextRetryAt: null })
+      .where(eq(webhookDeliveries.id, deliveryId));
+
+    // Attempt delivery immediately
+    await this.attemptDelivery(deliveryId, webhook, delivery.payload as unknown as CmsEvent);
+
+    // Return updated delivery
+    const [updated] = await db.select().from(webhookDeliveries).where(eq(webhookDeliveries.id, deliveryId)).limit(1);
+    return updated;
   }
 
   // ─── Test Delivery ─────────────────────────────────────

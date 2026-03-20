@@ -444,7 +444,15 @@
     "failed": "Failed",
     "testDelivery": "Test",
     "testSuccess": "Test delivery succeeded (HTTP {status})",
-    "testFailed": "Test delivery failed: {error}"
+    "testFailed": "Test delivery failed: {error}",
+    "deliveryResponseStatus": "HTTP Status",
+    "deliveryDetail": "Delivery Details",
+    "payload": "Payload",
+    "nextRetry": "Next Retry",
+    "retry": "Retry",
+    "retrySuccess": "Retry succeeded",
+    "retryFailed": "Retry failed",
+    "filterByStatus": "Filter by status"
   },
   "auditLogs": {
     "title": "Audit Logs",
