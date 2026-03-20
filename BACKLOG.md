@@ -128,7 +128,7 @@
 - [ ] Content calendar view (visual calendar of scheduled/published content)
 - [ ] Per-content-type permissions (scope editor access to specific content types)
 - [x] Webhook test delivery (`POST /webhooks/:id/test` — verify endpoint before going live)
-- [ ] Webhook delivery retry UI (manual retry button, delivery log detail view)
+- [x] Webhook delivery retry UI (manual retry button, delivery log detail view, status filter, payload modal)
 - [ ] Dashboard charts (content created over time, storage usage, API usage)
 - [ ] Content type templates (blog, page, product — one-click presets)
 - [ ] Two-factor authentication (TOTP / authenticator app)
@@ -151,11 +151,9 @@
 
 ## Nice to Have
 
-- [ ] SDK client (`@eli-cms/client`) — typed wrapper around the public API for easy integration in any JS framework
 - [ ] Plugin system (hooks to extend content lifecycle, custom field types, installable extensions)
 - [ ] Single Sign-On (SSO) — SAML / OIDC integration
 - [ ] Content tree / nested pages (hierarchical content with parent-child relationships in navigation)
 - [ ] Real-time collaboration (presence indicators, live cursors in rich text)
 - [ ] Admin UI theming (custom logo, colors, branding)
-- [ ] Auto-generated TypeScript types from content models (like Contentful's codegen)
 - [ ] Multi-database support (MySQL, SQLite via Drizzle adapters)

@@ -444,7 +444,15 @@
     "failed": "Échoué",
     "testDelivery": "Tester",
     "testSuccess": "Test réussi (HTTP {status})",
-    "testFailed": "Test échoué : {error}"
+    "testFailed": "Test échoué : {error}",
+    "deliveryResponseStatus": "Statut HTTP",
+    "deliveryDetail": "Détails de la livraison",
+    "payload": "Payload",
+    "nextRetry": "Prochain essai",
+    "retry": "Réessayer",
+    "retrySuccess": "Réessai réussi",
+    "retryFailed": "Réessai échoué",
+    "filterByStatus": "Filtrer par statut"
   },
   "auditLogs": {
     "title": "Journal d'audit",

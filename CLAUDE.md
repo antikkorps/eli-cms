@@ -91,9 +91,77 @@ pnpm build:shared       # Build shared package (must run before API if types cha
 1. `POST /api/v1/content-types` with `{ slug, name, fields: FieldDefinition[] }`
 2. `POST /api/v1/contents` with `{ contentTypeId, data: {...} }` — validated dynamically
 
-Add under a ## Pre-Commit Checks section at the top level\n\nAfter making code changes, always run the full test suite before committing. If any tests fail, fix them before proceeding.
-Add under a ## Git Workflow section\n\nWhen implementing a feature across multiple files, ensure ALL modified/created files are staged and committed. Run `git status` before every commit to verify nothing is missing.
-Add under a ## Database section\n\nAlways run database migrations after creating them. Check that `pnpm db:migrate` (or equivalent) succeeds before moving on. Ensure drizzle config loads .env properly.
-Add under a ## Code Style & Approach section\n\nWhen fixing issues (especially security/CodeQL), prefer well-established patterns (whitelists, scrypt, built-in libraries) over clever custom solutions. Don't over-engineer — ask before building complex solutions for simple problems.
-Add at the very top of CLAUDE.md under a ## Project Overview section\n\nThis is a TypeScript monorepo (pnpm) with Nuxt frontend and a Node.js backend using Drizzle ORM and PostgreSQL. Always write TypeScript, not JavaScript. Respect existing project patterns.
-Add under a ## PR & Commit Guidelines section\n\nDo not add 'generated with Claude Code' or similar attribution to PRs, commits, or code comments unless explicitly asked.
+## Pre-Commit Checks
+
+Before every commit:
+
+1. Run `npx prettier --write` on all changed files
+2. Run the full test suite (`pnpm --filter @eli-cms/api test`) — fix any failures before committing
+3. Run `git status` to verify all modified/created files are staged
+
+## Git Workflow
+
+When implementing a feature across multiple files, ensure ALL modified/created files are staged and committed. Run `git status` before every commit to verify nothing is missing.
+
+## Database
+
+Always run database migrations after creating them. Check that `pnpm db:migrate` succeeds before moving on. Ensure drizzle config loads .env properly.
+
+## Code Style & Approach
+
+When fixing issues (especially security/CodeQL), prefer well-established patterns (whitelists, scrypt, built-in libraries) over clever custom solutions. Don't over-engineer — ask before building complex solutions for simple problems. This is a TypeScript monorepo (pnpm) with Nuxt frontend and a Node.js backend using Drizzle ORM and PostgreSQL. Always write TypeScript, not JavaScript. Respect existing project patterns.
+
+## PR & Commit Guidelines
+
+Do not add 'generated with Claude Code' or similar attribution to PRs, commits, or code comments unless explicitly asked.
+
+# Token Optimization with GoTK
+
+## Shell Commands
+
+Always use gotk to execute shell commands that produce verbose output:
+
+```bash
+gotk grep -rn "pattern" .
+gotk go test ./...
+gotk git log --oneline -20
+gotk find . -name "*.go"
+gotk make build 2>&1
+gotk docker build .
+gotk npm test
+gotk cargo build
+```
+
+Never run grep, find, git, go test, make, docker, npm, cargo, or other
+verbose commands without the gotk prefix. This reduces token consumption
+by ~80% while preserving all errors, warnings, and important information.
+
+## Context Search
+
+Prefer `gotk ctx` over grep for codebase search. It produces LLM-optimized
+output (~15x fewer tokens than raw grep) with built-in exclusions
+(node_modules, .git, vendor, lock files, binaries) and 5 output modes:
+
+```bash
+gotk ctx pattern                       # scan: file list + match counts
+gotk ctx pattern -d 5                 # detail: context windows
+gotk ctx pattern --def -t go          # def: function/type declarations
+gotk ctx pattern --tree               # tree: structural skeleton
+gotk ctx pattern --summary            # summary: directory breakdown
+gotk ctx pattern -t go -m 10         # filter by type, limit results
+```
+
+Global flags like --stats go before the subcommand:
+gotk --stats ctx pattern --summary
+
+## When NOT to use gotk
+
+- Simple commands with small output: `ls`, `pwd`, `cat small-file.txt`
+- Commands where you need raw unfiltered output for debugging
+- When explicitly told to bypass: `GOTK_PASSTHROUGH=1 command`
+
+## Tuning
+
+- Use `gotk --conservative cmd` when you need more detail
+- Use `gotk --aggressive cmd` when you need maximum reduction
+- Use `gotk --no-truncate cmd` when truncation removes needed context

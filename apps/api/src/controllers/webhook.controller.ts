@@ -63,4 +63,9 @@ export class WebhookController {
     const { data, meta } = await WebhookService.findDeliveries(ctx.params.id, result.data);
     ctx.body = { success: true, data, meta };
   }
+
+  static async retryDelivery(ctx: Context) {
+    const delivery = await WebhookService.retryDelivery(ctx.params.id, ctx.params.deliveryId);
+    ctx.body = { success: true, data: delivery };
+  }
 }
