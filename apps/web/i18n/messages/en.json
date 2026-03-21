@@ -90,7 +90,20 @@
     "users": "Users",
     "recentActivity": "Recent Activity",
     "viewAll": "View all",
-    "noActivity": "No activity yet"
+    "noActivity": "No activity yet",
+    "contentOverTime": "Content created (last 30 days)",
+    "contentByStatus": "Content by status",
+    "contentByType": "Content by type",
+    "storageUsage": "Storage usage",
+    "activityOverTime": "Activity (last 30 days)",
+    "noData": "No data available yet",
+    "storageCategories": {
+      "image": "Images",
+      "video": "Videos",
+      "audio": "Audio",
+      "document": "Documents",
+      "other": "Other"
+    }
   },
   "roles": {
     "title": "Roles",

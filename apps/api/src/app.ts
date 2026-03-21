@@ -22,6 +22,7 @@ import { auditLogsRouter } from './routes/audit-logs.js';
 import { apiKeysRouter } from './routes/api-keys.js';
 import { mediaFoldersRouter } from './routes/media-folders.js';
 import { componentsRouter } from './routes/components.js';
+import { statsRouter } from './routes/stats.js';
 import { csrf } from './middleware/csrf.js';
 
 export function createApp() {
@@ -85,6 +86,7 @@ export function createApp() {
   app.use(apiKeysRouter.routes()).use(apiKeysRouter.allowedMethods());
   app.use(mediaFoldersRouter.routes()).use(mediaFoldersRouter.allowedMethods());
   app.use(componentsRouter.routes()).use(componentsRouter.allowedMethods());
+  app.use(statsRouter.routes()).use(statsRouter.allowedMethods());
 
   return app;
 }

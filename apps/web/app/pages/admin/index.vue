@@ -22,27 +22,38 @@ interface StatsData {
   }>;
 }
 
+interface ChartStats {
+  contentOverTime: { date: string; count: number }[];
+  contentByStatus: { status: string; count: number }[];
+  contentByType: { name: string; count: number }[];
+  storageUsage: { category: string; totalSize: number; fileCount: number }[];
+  activityOverTime: { date: string; count: number }[];
+}
+
 const stats = reactive<StatsData>({
   contentCount: 0,
   contentTypeCount: 0,
   userCount: 0,
   recentLogs: [],
 });
+const chartStats = ref<ChartStats | null>(null);
 const loading = ref(true);
 
 onMounted(async () => {
   try {
-    const [contents, contentTypes, users] = await Promise.all([
+    const [contents, contentTypes, users, charts] = await Promise.all([
       apiFetch<{ success: boolean; meta?: { total: number } }>('/contents?limit=1'),
       apiFetch<{ success: boolean; meta?: { total: number } }>('/content-types?limit=1'),
       hasPermission('users:read')
         ? apiFetch<{ success: boolean; meta?: { total: number } }>('/users?limit=1')
         : Promise.resolve({ success: true, meta: { total: 0 } }),
+      apiFetch<{ success: boolean; data: ChartStats }>('/stats/dashboard'),
     ]);
 
     stats.contentCount = contents.meta?.total ?? 0;
     stats.contentTypeCount = contentTypes.meta?.total ?? 0;
     stats.userCount = users.meta?.total ?? 0;
+    chartStats.value = charts.data;
 
     if (hasPermission('audit-logs:read')) {
       const logs = await apiFetch<{
@@ -85,10 +96,10 @@ function formatDate(date: string) {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <USkeleton v-for="i in 3" :key="i" class="h-24 w-full rounded-lg" />
       </div>
-      <USkeleton class="h-8 w-48 rounded" />
-      <div class="space-y-3">
-        <USkeleton v-for="i in 5" :key="i" class="h-12 w-full rounded" />
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <USkeleton v-for="i in 4" :key="i" class="h-72 w-full rounded-lg" />
       </div>
+      <USkeleton class="h-72 w-full rounded-lg" />
     </div>
 
     <template v-else>
@@ -105,6 +116,16 @@ function formatDate(date: string) {
           </div>
         </UCard>
       </div>
+
+      <!-- Charts -->
+      <DashboardCharts
+        v-if="chartStats"
+        :content-over-time="chartStats.contentOverTime"
+        :content-by-status="chartStats.contentByStatus"
+        :content-by-type="chartStats.contentByType"
+        :storage-usage="chartStats.storageUsage"
+        :activity-over-time="chartStats.activityOverTime"
+      />
 
       <UCard v-if="hasPermission('audit-logs:read')">
         <template #header>
