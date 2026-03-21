@@ -129,7 +129,7 @@
 - [ ] Per-content-type permissions (scope editor access to specific content types)
 - [x] Webhook test delivery (`POST /webhooks/:id/test` — verify endpoint before going live)
 - [x] Webhook delivery retry UI (manual retry button, delivery log detail view, status filter, payload modal)
-- [ ] Dashboard charts (content created over time, storage usage, API usage)
+- [x] Dashboard charts (content created over time, storage usage, API usage)
 - [ ] Content type templates (blog, page, product — one-click presets)
 - [ ] Two-factor authentication (TOTP / authenticator app)
 - [ ] User invitation system (invite by email, set initial role)
