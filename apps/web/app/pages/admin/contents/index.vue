@@ -33,9 +33,10 @@ interface FieldDefinition {
   multiple?: boolean;
 }
 
+const ALL = '_all';
 const search = ref('');
-const contentTypeFilter = ref<string | undefined>(undefined);
-const statusFilter = ref<string | undefined>(undefined);
+const contentTypeFilter = ref(ALL);
+const statusFilter = ref(ALL);
 const bulkOpen = ref(false);
 const bulkActionType = ref('');
 
@@ -61,7 +62,11 @@ const {
   bulkAction,
 } = useCrudList<ContentItem>({
   endpoint: '/contents',
-  filters: { search, contentTypeId: contentTypeFilter, status: statusFilter },
+  filters: {
+    search,
+    contentTypeId: computed(() => (contentTypeFilter.value === ALL ? '' : contentTypeFilter.value)),
+    status: computed(() => (statusFilter.value === ALL ? '' : statusFilter.value)),
+  },
 });
 
 const canCreate = computed(() => hasPermission('content:create'));
@@ -102,13 +107,13 @@ const exportFormatItems = [
 ];
 
 async function handleExport() {
-  if (!contentTypeFilter.value) return;
+  if (contentTypeFilter.value === ALL) return;
   try {
     const params = new URLSearchParams({
       contentTypeId: contentTypeFilter.value,
       format: exportFormat.value,
     });
-    if (statusFilter.value) params.set('status', statusFilter.value);
+    if (statusFilter.value !== ALL) params.set('status', statusFilter.value);
 
     const data = await apiFetch<Blob>(`/contents/export?${params}`, {
       responseType: 'blob',
@@ -125,9 +130,13 @@ async function handleExport() {
   }
 }
 
-const typeFilterItems = computed(() => contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })));
+const typeFilterItems = computed(() => [
+  { label: t('contents.allTypes'), value: ALL },
+  ...contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })),
+]);
 
 const statusFilterItems = [
+  { label: t('contents.allStatuses'), value: ALL },
   { label: t('contents.draft'), value: 'draft' },
   { label: t('contents.inReview'), value: 'in-review' },
   { label: t('contents.approved'), value: 'approved' },
@@ -357,9 +366,9 @@ watch(
     syncingFromUrl = true;
     if (slug) {
       const ct = contentTypeItems.value.find((c) => c.slug === slug);
-      contentTypeFilter.value = ct ? ct.id : undefined;
+      contentTypeFilter.value = ct ? ct.id : ALL;
     } else {
-      contentTypeFilter.value = undefined;
+      contentTypeFilter.value = ALL;
     }
     nextTick(() => {
       syncingFromUrl = false;
@@ -414,7 +423,7 @@ onMounted(async () => {
       <div>
         <h1 class="text-2xl font-bold">
           {{
-            contentTypeFilter
+            contentTypeFilter !== '_all'
               ? (contentTypeItems.find((c) => c.id === contentTypeFilter)?.name ?? $t('contents.title'))
               : $t('contents.title')
           }}
@@ -422,6 +431,7 @@ onMounted(async () => {
         <p class="text-sm text-muted mt-1">{{ $t('contents.subtitle') }}</p>
       </div>
       <div class="flex gap-2">
+        <UButton to="/admin/contents/calendar" variant="outline" icon="i-lucide-calendar" :title="$t('nav.calendar')" />
         <UButton v-if="canCreate" variant="outline" icon="i-lucide-upload" @click="importOpen = true">
           {{ $t('export.import') }}
         </UButton>
@@ -433,22 +443,10 @@ onMounted(async () => {
 
     <div class="flex flex-wrap gap-3 items-center">
       <UInput v-model="search" :placeholder="$t('common.search')" icon="i-lucide-search" class="w-64" />
-      <USelect
-        v-model="contentTypeFilter"
-        nullable
-        :items="typeFilterItems"
-        :placeholder="$t('contents.allTypes')"
-        class="w-48"
-      />
-      <USelect
-        v-model="statusFilter"
-        nullable
-        :items="statusFilterItems"
-        :placeholder="$t('contents.allStatuses')"
-        class="w-48"
-      />
+      <USelect v-model="contentTypeFilter" :items="typeFilterItems" class="w-48" />
+      <USelect v-model="statusFilter" :items="statusFilterItems" class="w-48" />
 
-      <template v-if="contentTypeFilter">
+      <template v-if="contentTypeFilter !== '_all'">
         <USelect v-model="exportFormat" :items="exportFormatItems" class="w-24" />
         <UButton size="sm" variant="outline" icon="i-lucide-download" @click="handleExport">
           {{ $t('export.export') }}

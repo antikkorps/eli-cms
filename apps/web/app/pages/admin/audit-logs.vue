@@ -28,12 +28,14 @@ const page = ref(1);
 const limit = 20;
 const total = ref(0);
 
+const ALL = '_all';
 const filters = reactive({
-  action: undefined as string | undefined,
-  resourceType: undefined as string | undefined,
+  action: ALL,
+  resourceType: ALL,
 });
 
 const actionOptions = [
+  { label: t('auditLogs.allActions'), value: ALL },
   { label: t('auditLogs.actionCreate'), value: 'create' },
   { label: t('auditLogs.actionUpdate'), value: 'update' },
   { label: t('auditLogs.actionDelete'), value: 'delete' },
@@ -42,6 +44,7 @@ const actionOptions = [
 ];
 
 const resourceTypeOptions = [
+  { label: t('auditLogs.allResources'), value: ALL },
   { label: t('auditLogs.resourceContent'), value: 'content' },
   { label: t('auditLogs.resourceContentType'), value: 'content_type' },
   { label: t('auditLogs.resourceUser'), value: 'user' },
@@ -126,8 +129,8 @@ async function fetchLogs() {
       page: String(page.value),
       limit: String(limit),
     });
-    if (filters.action) params.set('action', filters.action);
-    if (filters.resourceType) params.set('resourceType', filters.resourceType);
+    if (filters.action !== ALL) params.set('action', filters.action);
+    if (filters.resourceType !== ALL) params.set('resourceType', filters.resourceType);
 
     const res = await apiFetch<{
       success: boolean;
@@ -164,20 +167,8 @@ const totalPages = computed(() => Math.ceil(total.value / limit));
     </div>
 
     <div class="flex flex-wrap gap-3">
-      <USelect
-        v-model="filters.action"
-        nullable
-        :items="actionOptions"
-        :placeholder="$t('auditLogs.allActions')"
-        class="w-48"
-      />
-      <USelect
-        v-model="filters.resourceType"
-        nullable
-        :items="resourceTypeOptions"
-        :placeholder="$t('auditLogs.allResources')"
-        class="w-48"
-      />
+      <USelect v-model="filters.action" :items="actionOptions" class="w-48" />
+      <USelect v-model="filters.resourceType" :items="resourceTypeOptions" class="w-48" />
     </div>
 
     <div v-if="loading && !logs.length" class="space-y-3">

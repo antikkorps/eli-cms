@@ -106,12 +106,28 @@ export class ContentService {
   }
 
   static async findAll(query: ContentListQuery) {
-    const { page, limit, contentTypeId, status, search, sortBy, sortOrder } = query;
+    const {
+      page,
+      limit,
+      contentTypeId,
+      status,
+      search,
+      sortBy,
+      sortOrder,
+      publishedAtFrom,
+      publishedAtTo,
+      createdAtFrom,
+      createdAtTo,
+    } = query;
     const offset = (page - 1) * limit;
 
     const filters = [isNull(contents.deletedAt)];
     if (contentTypeId) filters.push(eq(contents.contentTypeId, contentTypeId));
     if (status) filters.push(eq(contents.status, status));
+    if (publishedAtFrom) filters.push(gte(contents.publishedAt, publishedAtFrom));
+    if (publishedAtTo) filters.push(lte(contents.publishedAt, publishedAtTo));
+    if (createdAtFrom) filters.push(gte(contents.createdAt, createdAtFrom));
+    if (createdAtTo) filters.push(lte(contents.createdAt, createdAtTo));
 
     const tsquery = search ? sanitizeSearchTerms(search) : null;
     if (tsquery) {
