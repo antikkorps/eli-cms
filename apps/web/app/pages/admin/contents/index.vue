@@ -422,6 +422,7 @@ onMounted(async () => {
         <p class="text-sm text-muted mt-1">{{ $t('contents.subtitle') }}</p>
       </div>
       <div class="flex gap-2">
+        <UButton to="/admin/contents/calendar" variant="outline" icon="i-lucide-calendar" :title="$t('nav.calendar')" />
         <UButton v-if="canCreate" variant="outline" icon="i-lucide-upload" @click="importOpen = true">
           {{ $t('export.import') }}
         </UButton>

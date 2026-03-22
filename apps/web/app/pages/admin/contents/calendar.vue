@@ -134,61 +134,29 @@ function getPreviewText(data: Record<string, unknown>): string {
   return '';
 }
 
+function getEffectiveDate(item: CalendarContent): Date {
+  return item.publishedAt ? new Date(item.publishedAt) : new Date(item.createdAt);
+}
+
 async function fetchAllForMonth() {
   loading.value = true;
   try {
     const year = currentYear.value;
     const month = currentMonth.value;
-    const from = new Date(year, month, 1).toISOString();
-    const to = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
+    const monthStart = new Date(year, month, 1);
+    const monthEnd = new Date(year, month + 1, 0, 23, 59, 59);
 
-    const baseParams: Record<string, string> = { limit: '100', sortBy: 'createdAt', sortOrder: 'asc' };
-    if (contentTypeFilter.value) baseParams.contentTypeId = contentTypeFilter.value;
+    const params = new URLSearchParams({ limit: '100', sortBy: 'createdAt', sortOrder: 'asc' });
+    if (contentTypeFilter.value) params.set('contentTypeId', contentTypeFilter.value);
+    if (statusFilter.value) params.set('status', statusFilter.value);
 
-    const publishedStatuses = ['scheduled', 'published'];
-    const draftStatuses = ['draft', 'in-review', 'approved'];
+    const res = await apiFetch<{ data: CalendarContent[] }>(`/contents?${params}`);
 
-    const fetches: Promise<CalendarContent[]>[] = [];
-
-    // Fetch scheduled/published by publishedAt date range
-    if (!statusFilter.value || publishedStatuses.includes(statusFilter.value)) {
-      const params = new URLSearchParams({ ...baseParams, publishedAtFrom: from, publishedAtTo: to });
-      if (statusFilter.value) {
-        params.set('status', statusFilter.value);
-      } else {
-        // Fetch both scheduled and published
-        for (const st of publishedStatuses) {
-          const p = new URLSearchParams({ ...baseParams, publishedAtFrom: from, publishedAtTo: to, status: st });
-          fetches.push(apiFetch<{ data: CalendarContent[] }>(`/contents?${p}`).then((r) => r.data));
-        }
-      }
-      if (statusFilter.value) {
-        fetches.push(apiFetch<{ data: CalendarContent[] }>(`/contents?${params}`).then((r) => r.data));
-      }
-    }
-
-    // Fetch drafts/in-review/approved by createdAt date range
-    if (!statusFilter.value || draftStatuses.includes(statusFilter.value)) {
-      const statusesToFetch = statusFilter.value ? [statusFilter.value] : draftStatuses;
-      for (const st of statusesToFetch) {
-        const params = new URLSearchParams({ ...baseParams, createdAtFrom: from, createdAtTo: to, status: st });
-        fetches.push(apiFetch<{ data: CalendarContent[] }>(`/contents?${params}`).then((r) => r.data));
-      }
-    }
-
-    const results = await Promise.all(fetches);
-    const allItems: CalendarContent[] = [];
-    const seen = new Set<string>();
-    for (const batch of results) {
-      for (const item of batch) {
-        if (!seen.has(item.id)) {
-          seen.add(item.id);
-          allItems.push(item);
-        }
-      }
-    }
-
-    contents.value = allItems;
+    // Filter client-side by effective date (publishedAt or createdAt) within current month
+    contents.value = res.data.filter((item) => {
+      const d = getEffectiveDate(item);
+      return d >= monthStart && d <= monthEnd;
+    });
   } catch {
     contents.value = [];
   } finally {
@@ -226,9 +194,7 @@ onMounted(async () => {
         <h1 class="text-2xl font-bold">{{ $t('contents.calendarTitle') }}</h1>
         <p class="text-sm text-muted mt-1">{{ $t('contents.calendarSubtitle') }}</p>
       </div>
-      <UButton to="/admin/contents" variant="outline" icon="i-lucide-list">
-        {{ $t('nav.allContents') }}
-      </UButton>
+      <UButton to="/admin/contents" variant="outline" icon="i-lucide-list" :title="$t('nav.allContents')" />
     </div>
 
     <!-- Filters + Month navigation -->
