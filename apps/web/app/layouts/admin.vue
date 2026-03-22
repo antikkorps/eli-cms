@@ -58,6 +58,7 @@ const navigation = computed(() => {
     }
 
     children.push({ label: t('nav.allContents'), to: '/admin/contents' });
+    children.push({ label: t('nav.calendar'), icon: 'i-lucide-calendar', to: '/admin/contents/calendar' });
 
     const types = contentTypeItems.value;
     const visibleTypes = types.slice(0, MAX_SIDEBAR_TYPES);

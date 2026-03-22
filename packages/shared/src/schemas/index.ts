@@ -397,6 +397,10 @@ export const contentListQuerySchema = paginationSchema.extend({
   search: z.string().max(200).optional(),
   sortBy: z.enum(['createdAt', 'updatedAt', 'status', 'slug', 'relevance']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  publishedAtFrom: z.coerce.date().optional(),
+  publishedAtTo: z.coerce.date().optional(),
+  createdAtFrom: z.coerce.date().optional(),
+  createdAtTo: z.coerce.date().optional(),
 });
 
 export const trashListQuerySchema = paginationSchema.extend({

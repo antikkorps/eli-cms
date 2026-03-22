@@ -50,7 +50,8 @@
     "logout": "Déconnexion",
     "profile": "Profil",
     "newContent": "Nouveau contenu",
-    "uploadFile": "Téléverser un fichier"
+    "uploadFile": "Téléverser un fichier",
+    "calendar": "Calendrier"
   },
   "login": {
     "tagline": "CMS headless avec des types de contenu dynamiques. Zéro migration, flexibilité infinie.",
@@ -376,7 +377,12 @@
     "scheduleConfirm": "Planifier",
     "autosaving": "Enregistrement...",
     "autosaved": "Enregistré",
-    "autosaveFailed": "Échec de la sauvegarde auto"
+    "autosaveFailed": "Échec de la sauvegarde auto",
+    "calendarTitle": "Calendrier de contenu",
+    "calendarSubtitle": "Vue d'ensemble des contenus planifiés et publiés",
+    "calendarToday": "Aujourd'hui",
+    "calendarNoItems": "Aucun contenu pour cette période",
+    "calendarItemsOnDate": "{count} élément | {count} éléments"
   },
   "uploads": {
     "title": "Fichiers",

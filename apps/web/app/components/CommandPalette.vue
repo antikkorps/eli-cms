@@ -28,6 +28,12 @@ const groups = computed(() => {
   }
   if (hasPermission('content:read')) {
     navItems.push({ id: 'contents', label: t('nav.contents'), icon: 'i-lucide-file-text', to: '/admin/contents' });
+    navItems.push({
+      id: 'calendar',
+      label: t('nav.calendar'),
+      icon: 'i-lucide-calendar',
+      to: '/admin/contents/calendar',
+    });
   }
   if (hasPermission('content:create')) {
     navItems.push({ id: 'new-content', label: t('contents.create'), icon: 'i-lucide-plus', to: '/admin/contents/new' });

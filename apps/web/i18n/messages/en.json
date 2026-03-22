@@ -50,7 +50,8 @@
     "logout": "Log out",
     "profile": "Profile",
     "newContent": "New content",
-    "uploadFile": "Upload file"
+    "uploadFile": "Upload file",
+    "calendar": "Calendar"
   },
   "login": {
     "tagline": "Headless CMS with dynamic content types. Zero migration, infinite flexibility.",
@@ -376,7 +377,12 @@
     "scheduleConfirm": "Schedule",
     "autosaving": "Saving...",
     "autosaved": "Saved",
-    "autosaveFailed": "Autosave failed"
+    "autosaveFailed": "Autosave failed",
+    "calendarTitle": "Content Calendar",
+    "calendarSubtitle": "Visual overview of scheduled and published content",
+    "calendarToday": "Today",
+    "calendarNoItems": "No content for this period",
+    "calendarItemsOnDate": "{count} item | {count} items"
   },
   "uploads": {
     "title": "Uploads",
