@@ -25,7 +25,7 @@ interface ContentItem {
 }
 
 const search = ref('');
-const contentTypeFilter = ref<string | undefined>(undefined);
+const contentTypeFilter = ref('');
 
 const {
   items: contents,
@@ -134,7 +134,10 @@ async function executeBulk() {
   }
 }
 
-const typeFilterItems = computed(() => contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })));
+const typeFilterItems = computed(() => [
+  { label: t('contents.allTypes'), value: '' },
+  ...contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })),
+]);
 
 function getPreviewText(data: Record<string, unknown>): string {
   const first = Object.values(data).find((v) => typeof v === 'string' && v.length > 0);
@@ -258,12 +261,7 @@ onMounted(() => {
 
     <div class="flex flex-wrap gap-3 items-center">
       <UInput v-model="search" :placeholder="$t('common.search')" icon="i-lucide-search" class="w-64" />
-      <USelect
-        v-model.nullable="contentTypeFilter"
-        :items="typeFilterItems"
-        :placeholder="$t('contents.allTypes')"
-        class="w-48"
-      />
+      <USelect v-model="contentTypeFilter" :items="typeFilterItems" class="w-48" />
 
       <template v-if="selectedIds.size > 0">
         <span class="text-sm text-muted">{{ $t('contents.selected', { count: selectedIds.size }) }}</span>

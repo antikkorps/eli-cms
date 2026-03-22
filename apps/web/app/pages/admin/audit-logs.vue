@@ -29,11 +29,12 @@ const limit = 20;
 const total = ref(0);
 
 const filters = reactive({
-  action: undefined as string | undefined,
-  resourceType: undefined as string | undefined,
+  action: '',
+  resourceType: '',
 });
 
 const actionOptions = [
+  { label: t('auditLogs.allActions'), value: '' },
   { label: t('auditLogs.actionCreate'), value: 'create' },
   { label: t('auditLogs.actionUpdate'), value: 'update' },
   { label: t('auditLogs.actionDelete'), value: 'delete' },
@@ -42,6 +43,7 @@ const actionOptions = [
 ];
 
 const resourceTypeOptions = [
+  { label: t('auditLogs.allResources'), value: '' },
   { label: t('auditLogs.resourceContent'), value: 'content' },
   { label: t('auditLogs.resourceContentType'), value: 'content_type' },
   { label: t('auditLogs.resourceUser'), value: 'user' },
@@ -164,18 +166,8 @@ const totalPages = computed(() => Math.ceil(total.value / limit));
     </div>
 
     <div class="flex flex-wrap gap-3">
-      <USelect
-        v-model.nullable="filters.action"
-        :items="actionOptions"
-        :placeholder="$t('auditLogs.allActions')"
-        class="w-48"
-      />
-      <USelect
-        v-model.nullable="filters.resourceType"
-        :items="resourceTypeOptions"
-        :placeholder="$t('auditLogs.allResources')"
-        class="w-48"
-      />
+      <USelect v-model="filters.action" :items="actionOptions" class="w-48" />
+      <USelect v-model="filters.resourceType" :items="resourceTypeOptions" class="w-48" />
     </div>
 
     <div v-if="loading && !logs.length" class="space-y-3">

@@ -28,7 +28,7 @@ interface RoleOption {
 }
 
 const search = ref('');
-const roleFilter = ref<string | undefined>(undefined);
+const roleFilter = ref('');
 const roleOptions = ref<RoleOption[]>([]);
 
 const {
@@ -61,7 +61,10 @@ async function fetchRoles() {
   }
 }
 
-const roleFilterItems = computed(() => roleOptions.value.map((r) => ({ label: r.name, value: r.id })));
+const roleFilterItems = computed(() => [
+  { label: t('users.allRoles'), value: '' },
+  ...roleOptions.value.map((r) => ({ label: r.name, value: r.id })),
+]);
 
 function tryDelete(user: UserItem) {
   if (user.id === currentUser.value?.id) {
@@ -163,20 +166,7 @@ onMounted(fetchRoles);
     <div class="flex flex-wrap gap-3">
       <UInput v-model="search" :placeholder="$t('common.search')" icon="i-lucide-search" class="w-64" />
       <div class="flex items-center gap-1">
-        <USelect
-          v-model.nullable="roleFilter"
-          :items="roleFilterItems"
-          :placeholder="$t('users.allRoles')"
-          class="w-48"
-        />
-        <UButton
-          v-if="roleFilter"
-          icon="i-lucide-x"
-          variant="ghost"
-          color="neutral"
-          size="xs"
-          @click="roleFilter = undefined"
-        />
+        <USelect v-model="roleFilter" :items="roleFilterItems" class="w-48" />
       </div>
     </div>
 

@@ -20,8 +20,8 @@ interface CalendarContent {
   contentType?: { name: string; slug: string };
 }
 
-const contentTypeFilter = ref<string | undefined>(undefined);
-const statusFilter = ref<string | undefined>(undefined);
+const contentTypeFilter = ref('');
+const statusFilter = ref('');
 const loading = ref(false);
 const contents = ref<CalendarContent[]>([]);
 
@@ -164,10 +164,14 @@ async function fetchAllForMonth() {
   }
 }
 
-// Filters
-const typeFilterItems = computed(() => contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })));
+// Filters — empty string = "all" (native <select> can't deselect, so we use an explicit reset option)
+const typeFilterItems = computed(() => [
+  { label: t('contents.allTypes'), value: '' },
+  ...contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })),
+]);
 
 const statusFilterItems = [
+  { label: t('contents.allStatuses'), value: '' },
   { label: t('contents.draft'), value: 'draft' },
   { label: t('contents.inReview'), value: 'in-review' },
   { label: t('contents.approved'), value: 'approved' },
@@ -200,18 +204,8 @@ onMounted(async () => {
     <!-- Filters + Month navigation -->
     <div class="flex flex-wrap gap-3 items-center justify-between">
       <div class="flex gap-3 items-center">
-        <USelect
-          v-model.nullable="contentTypeFilter"
-          :items="typeFilterItems"
-          :placeholder="$t('contents.allTypes')"
-          class="w-48"
-        />
-        <USelect
-          v-model.nullable="statusFilter"
-          :items="statusFilterItems"
-          :placeholder="$t('contents.allStatuses')"
-          class="w-48"
-        />
+        <USelect v-model="contentTypeFilter" :items="typeFilterItems" class="w-48" />
+        <USelect v-model="statusFilter" :items="statusFilterItems" class="w-48" />
       </div>
 
       <div class="flex items-center gap-2">

@@ -34,8 +34,8 @@ interface FieldDefinition {
 }
 
 const search = ref('');
-const contentTypeFilter = ref<string | undefined>(undefined);
-const statusFilter = ref<string | undefined>(undefined);
+const contentTypeFilter = ref('');
+const statusFilter = ref('');
 const bulkOpen = ref(false);
 const bulkActionType = ref('');
 
@@ -125,9 +125,13 @@ async function handleExport() {
   }
 }
 
-const typeFilterItems = computed(() => contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })));
+const typeFilterItems = computed(() => [
+  { label: t('contents.allTypes'), value: '' },
+  ...contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })),
+]);
 
 const statusFilterItems = [
+  { label: t('contents.allStatuses'), value: '' },
   { label: t('contents.draft'), value: 'draft' },
   { label: t('contents.inReview'), value: 'in-review' },
   { label: t('contents.approved'), value: 'approved' },
@@ -357,9 +361,9 @@ watch(
     syncingFromUrl = true;
     if (slug) {
       const ct = contentTypeItems.value.find((c) => c.slug === slug);
-      contentTypeFilter.value = ct ? ct.id : undefined;
+      contentTypeFilter.value = ct ? ct.id : '';
     } else {
-      contentTypeFilter.value = undefined;
+      contentTypeFilter.value = '';
     }
     nextTick(() => {
       syncingFromUrl = false;
@@ -434,18 +438,8 @@ onMounted(async () => {
 
     <div class="flex flex-wrap gap-3 items-center">
       <UInput v-model="search" :placeholder="$t('common.search')" icon="i-lucide-search" class="w-64" />
-      <USelect
-        v-model.nullable="contentTypeFilter"
-        :items="typeFilterItems"
-        :placeholder="$t('contents.allTypes')"
-        class="w-48"
-      />
-      <USelect
-        v-model.nullable="statusFilter"
-        :items="statusFilterItems"
-        :placeholder="$t('contents.allStatuses')"
-        class="w-48"
-      />
+      <USelect v-model="contentTypeFilter" :items="typeFilterItems" class="w-48" />
+      <USelect v-model="statusFilter" :items="statusFilterItems" class="w-48" />
 
       <template v-if="contentTypeFilter">
         <USelect v-model="exportFormat" :items="exportFormatItems" class="w-24" />
