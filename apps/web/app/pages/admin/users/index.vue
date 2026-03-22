@@ -28,7 +28,8 @@ interface RoleOption {
 }
 
 const search = ref('');
-const roleFilter = ref('');
+const ALL = '_all';
+const roleFilter = ref(ALL);
 const roleOptions = ref<RoleOption[]>([]);
 
 const {
@@ -45,7 +46,7 @@ const {
   handleDelete,
 } = useCrudList<UserItem>({
   endpoint: '/users',
-  filters: { search, roleId: roleFilter },
+  filters: { search, roleId: computed(() => (roleFilter.value === ALL ? '' : roleFilter.value)) },
 });
 
 const canCreate = computed(() => hasPermission('users:create'));
@@ -62,7 +63,7 @@ async function fetchRoles() {
 }
 
 const roleFilterItems = computed(() => [
-  { label: t('users.allRoles'), value: '' },
+  { label: t('users.allRoles'), value: ALL },
   ...roleOptions.value.map((r) => ({ label: r.name, value: r.id })),
 ]);
 

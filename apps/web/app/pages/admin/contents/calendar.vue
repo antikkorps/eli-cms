@@ -20,8 +20,9 @@ interface CalendarContent {
   contentType?: { name: string; slug: string };
 }
 
-const contentTypeFilter = ref('');
-const statusFilter = ref('');
+const ALL = '_all';
+const contentTypeFilter = ref(ALL);
+const statusFilter = ref(ALL);
 const loading = ref(false);
 const contents = ref<CalendarContent[]>([]);
 
@@ -147,8 +148,8 @@ async function fetchAllForMonth() {
     const monthEnd = new Date(year, month + 1, 0, 23, 59, 59);
 
     const params = new URLSearchParams({ limit: '100', sortBy: 'createdAt', sortOrder: 'asc' });
-    if (contentTypeFilter.value) params.set('contentTypeId', contentTypeFilter.value);
-    if (statusFilter.value) params.set('status', statusFilter.value);
+    if (contentTypeFilter.value !== ALL) params.set('contentTypeId', contentTypeFilter.value);
+    if (statusFilter.value !== ALL) params.set('status', statusFilter.value);
 
     const res = await apiFetch<{ data: CalendarContent[] }>(`/contents?${params}`);
 
@@ -164,14 +165,13 @@ async function fetchAllForMonth() {
   }
 }
 
-// Filters — empty string = "all" (native <select> can't deselect, so we use an explicit reset option)
 const typeFilterItems = computed(() => [
-  { label: t('contents.allTypes'), value: '' },
+  { label: t('contents.allTypes'), value: ALL },
   ...contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })),
 ]);
 
 const statusFilterItems = [
-  { label: t('contents.allStatuses'), value: '' },
+  { label: t('contents.allStatuses'), value: ALL },
   { label: t('contents.draft'), value: 'draft' },
   { label: t('contents.inReview'), value: 'in-review' },
   { label: t('contents.approved'), value: 'approved' },

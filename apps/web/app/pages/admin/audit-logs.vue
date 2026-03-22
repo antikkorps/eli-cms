@@ -28,13 +28,14 @@ const page = ref(1);
 const limit = 20;
 const total = ref(0);
 
+const ALL = '_all';
 const filters = reactive({
-  action: '',
-  resourceType: '',
+  action: ALL,
+  resourceType: ALL,
 });
 
 const actionOptions = [
-  { label: t('auditLogs.allActions'), value: '' },
+  { label: t('auditLogs.allActions'), value: ALL },
   { label: t('auditLogs.actionCreate'), value: 'create' },
   { label: t('auditLogs.actionUpdate'), value: 'update' },
   { label: t('auditLogs.actionDelete'), value: 'delete' },
@@ -43,7 +44,7 @@ const actionOptions = [
 ];
 
 const resourceTypeOptions = [
-  { label: t('auditLogs.allResources'), value: '' },
+  { label: t('auditLogs.allResources'), value: ALL },
   { label: t('auditLogs.resourceContent'), value: 'content' },
   { label: t('auditLogs.resourceContentType'), value: 'content_type' },
   { label: t('auditLogs.resourceUser'), value: 'user' },
@@ -128,8 +129,8 @@ async function fetchLogs() {
       page: String(page.value),
       limit: String(limit),
     });
-    if (filters.action) params.set('action', filters.action);
-    if (filters.resourceType) params.set('resourceType', filters.resourceType);
+    if (filters.action !== ALL) params.set('action', filters.action);
+    if (filters.resourceType !== ALL) params.set('resourceType', filters.resourceType);
 
     const res = await apiFetch<{
       success: boolean;

@@ -33,9 +33,10 @@ interface FieldDefinition {
   multiple?: boolean;
 }
 
+const ALL = '_all';
 const search = ref('');
-const contentTypeFilter = ref('');
-const statusFilter = ref('');
+const contentTypeFilter = ref(ALL);
+const statusFilter = ref(ALL);
 const bulkOpen = ref(false);
 const bulkActionType = ref('');
 
@@ -61,7 +62,11 @@ const {
   bulkAction,
 } = useCrudList<ContentItem>({
   endpoint: '/contents',
-  filters: { search, contentTypeId: contentTypeFilter, status: statusFilter },
+  filters: {
+    search,
+    contentTypeId: computed(() => (contentTypeFilter.value === ALL ? '' : contentTypeFilter.value)),
+    status: computed(() => (statusFilter.value === ALL ? '' : statusFilter.value)),
+  },
 });
 
 const canCreate = computed(() => hasPermission('content:create'));
@@ -102,13 +107,13 @@ const exportFormatItems = [
 ];
 
 async function handleExport() {
-  if (!contentTypeFilter.value) return;
+  if (contentTypeFilter.value === ALL) return;
   try {
     const params = new URLSearchParams({
       contentTypeId: contentTypeFilter.value,
       format: exportFormat.value,
     });
-    if (statusFilter.value) params.set('status', statusFilter.value);
+    if (statusFilter.value !== ALL) params.set('status', statusFilter.value);
 
     const data = await apiFetch<Blob>(`/contents/export?${params}`, {
       responseType: 'blob',
@@ -126,12 +131,12 @@ async function handleExport() {
 }
 
 const typeFilterItems = computed(() => [
-  { label: t('contents.allTypes'), value: '' },
+  { label: t('contents.allTypes'), value: ALL },
   ...contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })),
 ]);
 
 const statusFilterItems = [
-  { label: t('contents.allStatuses'), value: '' },
+  { label: t('contents.allStatuses'), value: ALL },
   { label: t('contents.draft'), value: 'draft' },
   { label: t('contents.inReview'), value: 'in-review' },
   { label: t('contents.approved'), value: 'approved' },
@@ -361,9 +366,9 @@ watch(
     syncingFromUrl = true;
     if (slug) {
       const ct = contentTypeItems.value.find((c) => c.slug === slug);
-      contentTypeFilter.value = ct ? ct.id : '';
+      contentTypeFilter.value = ct ? ct.id : ALL;
     } else {
-      contentTypeFilter.value = '';
+      contentTypeFilter.value = ALL;
     }
     nextTick(() => {
       syncingFromUrl = false;
@@ -418,7 +423,7 @@ onMounted(async () => {
       <div>
         <h1 class="text-2xl font-bold">
           {{
-            contentTypeFilter
+            contentTypeFilter !== '_all'
               ? (contentTypeItems.find((c) => c.id === contentTypeFilter)?.name ?? $t('contents.title'))
               : $t('contents.title')
           }}
@@ -441,7 +446,7 @@ onMounted(async () => {
       <USelect v-model="contentTypeFilter" :items="typeFilterItems" class="w-48" />
       <USelect v-model="statusFilter" :items="statusFilterItems" class="w-48" />
 
-      <template v-if="contentTypeFilter">
+      <template v-if="contentTypeFilter !== '_all'">
         <USelect v-model="exportFormat" :items="exportFormatItems" class="w-24" />
         <UButton size="sm" variant="outline" icon="i-lucide-download" @click="handleExport">
           {{ $t('export.export') }}

@@ -25,7 +25,8 @@ interface ContentItem {
 }
 
 const search = ref('');
-const contentTypeFilter = ref('');
+const ALL = '_all';
+const contentTypeFilter = ref(ALL);
 
 const {
   items: contents,
@@ -44,7 +45,7 @@ const {
   fetchItems,
 } = useCrudList<ContentItem>({
   endpoint: '/contents/trash',
-  filters: { search, contentTypeId: contentTypeFilter },
+  filters: { search, contentTypeId: computed(() => (contentTypeFilter.value === ALL ? '' : contentTypeFilter.value)) },
   defaultSortBy: 'deletedAt',
 });
 
@@ -135,7 +136,7 @@ async function executeBulk() {
 }
 
 const typeFilterItems = computed(() => [
-  { label: t('contents.allTypes'), value: '' },
+  { label: t('contents.allTypes'), value: ALL },
   ...contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })),
 ]);
 
