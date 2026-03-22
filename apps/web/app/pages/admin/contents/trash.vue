@@ -259,8 +259,7 @@ onMounted(() => {
     <div class="flex flex-wrap gap-3 items-center">
       <UInput v-model="search" :placeholder="$t('common.search')" icon="i-lucide-search" class="w-64" />
       <USelect
-        v-model="contentTypeFilter"
-        nullable
+        v-model.nullable="contentTypeFilter"
         :items="typeFilterItems"
         :placeholder="$t('contents.allTypes')"
         class="w-48"

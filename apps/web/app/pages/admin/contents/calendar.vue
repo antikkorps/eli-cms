@@ -201,15 +201,13 @@ onMounted(async () => {
     <div class="flex flex-wrap gap-3 items-center justify-between">
       <div class="flex gap-3 items-center">
         <USelect
-          v-model="contentTypeFilter"
-          nullable
+          v-model.nullable="contentTypeFilter"
           :items="typeFilterItems"
           :placeholder="$t('contents.allTypes')"
           class="w-48"
         />
         <USelect
-          v-model="statusFilter"
-          nullable
+          v-model.nullable="statusFilter"
           :items="statusFilterItems"
           :placeholder="$t('contents.allStatuses')"
           class="w-48"

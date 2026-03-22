@@ -165,15 +165,13 @@ const totalPages = computed(() => Math.ceil(total.value / limit));
 
     <div class="flex flex-wrap gap-3">
       <USelect
-        v-model="filters.action"
-        nullable
+        v-model.nullable="filters.action"
         :items="actionOptions"
         :placeholder="$t('auditLogs.allActions')"
         class="w-48"
       />
       <USelect
-        v-model="filters.resourceType"
-        nullable
+        v-model.nullable="filters.resourceType"
         :items="resourceTypeOptions"
         :placeholder="$t('auditLogs.allResources')"
         class="w-48"

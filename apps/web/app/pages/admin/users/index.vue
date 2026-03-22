@@ -164,8 +164,7 @@ onMounted(fetchRoles);
       <UInput v-model="search" :placeholder="$t('common.search')" icon="i-lucide-search" class="w-64" />
       <div class="flex items-center gap-1">
         <USelect
-          v-model="roleFilter"
-          nullable
+          v-model.nullable="roleFilter"
           :items="roleFilterItems"
           :placeholder="$t('users.allRoles')"
           class="w-48"
