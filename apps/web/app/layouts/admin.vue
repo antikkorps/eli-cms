@@ -214,6 +214,7 @@ const navigation = computed(() => {
           <UDashboardSidebarCollapse class="hidden lg:flex" />
         </template>
         <template #right>
+          <NotificationBell />
           <DarkModeToggle />
           <LocaleSwitcher />
         </template>

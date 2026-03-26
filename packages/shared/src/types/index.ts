@@ -5,6 +5,7 @@ export interface Role {
   slug: string;
   description: string | null;
   permissions: string[];
+  allowedContentTypes: string[] | null;
   isSystem: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -97,6 +98,7 @@ export interface Content {
   slug: string | null;
   status: ContentStatus;
   data: Record<string, unknown>;
+  featured: boolean;
   publishedAt: Date | null;
   editedBy: string | null;
   deletedAt: Date | null;
@@ -133,6 +135,7 @@ export interface JwtPayload {
   email: string;
   roleId: string;
   permissions: string[];
+  allowedContentTypes?: string[] | null;
   apiKeyId?: string;
 }
 
@@ -167,6 +170,41 @@ export interface ContentVersion {
   status: string;
   editedBy: string;
   createdAt: Date;
+}
+
+// ─── Content Comments ───────────────────────────────────
+export interface ContentComment {
+  id: string;
+  contentId: string;
+  userId: string;
+  body: string;
+  mentionedUserIds: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  body: string | null;
+  resourceType: string | null;
+  resourceId: string | null;
+  isRead: boolean;
+  link: string | null;
+  createdAt: Date;
+}
+
+export interface ContentCommentWithAuthor extends ContentComment {
+  author: {
+    id: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    avatarStyle: string | null;
+    avatarSeed: string | null;
+  };
 }
 
 // ─── Storage / Media ────────────────────────────────────

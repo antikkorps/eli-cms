@@ -22,6 +22,8 @@ import { auditLogsRouter } from './routes/audit-logs.js';
 import { apiKeysRouter } from './routes/api-keys.js';
 import { mediaFoldersRouter } from './routes/media-folders.js';
 import { componentsRouter } from './routes/components.js';
+import { contentCommentsRouter } from './routes/content-comments.js';
+import { notificationsRouter } from './routes/notifications.js';
 import { statsRouter } from './routes/stats.js';
 import { csrf } from './middleware/csrf.js';
 
@@ -78,6 +80,7 @@ export function createApp() {
   app.use(contentsRouter.routes()).use(contentsRouter.allowedMethods());
   app.use(contentRelationsRouter.routes()).use(contentRelationsRouter.allowedMethods());
   app.use(contentVersionsRouter.routes()).use(contentVersionsRouter.allowedMethods());
+  app.use(contentCommentsRouter.routes()).use(contentCommentsRouter.allowedMethods());
   app.use(usersRouter.routes()).use(usersRouter.allowedMethods());
   app.use(uploadsRouter.routes()).use(uploadsRouter.allowedMethods());
   app.use(settingsRouter.routes()).use(settingsRouter.allowedMethods());
@@ -86,6 +89,7 @@ export function createApp() {
   app.use(apiKeysRouter.routes()).use(apiKeysRouter.allowedMethods());
   app.use(mediaFoldersRouter.routes()).use(mediaFoldersRouter.allowedMethods());
   app.use(componentsRouter.routes()).use(componentsRouter.allowedMethods());
+  app.use(notificationsRouter.routes()).use(notificationsRouter.allowedMethods());
   app.use(statsRouter.routes()).use(statsRouter.allowedMethods());
 
   return app;

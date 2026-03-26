@@ -20,6 +20,7 @@ export const roles = pgTable('roles', {
   slug: varchar('slug', { length: 255 }).notNull().unique(),
   description: varchar('description', { length: 500 }),
   permissions: jsonb('permissions').notNull().$type<string[]>(),
+  allowedContentTypes: jsonb('allowed_content_types').$type<string[] | null>().default(null),
   isSystem: boolean('is_system').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
@@ -137,6 +138,7 @@ export const contents = pgTable(
       .$type<'draft' | 'in-review' | 'approved' | 'scheduled' | 'published'>(),
     data: jsonb('data').notNull().$type<Record<string, unknown>>(),
     publishedAt: timestamp('published_at', { withTimezone: true }),
+    featured: boolean('featured').notNull().default(false),
     editedBy: uuid('edited_by').references(() => users.id, { onDelete: 'set null' }),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -315,6 +317,56 @@ export const auditLogs = pgTable(
     index('idx_audit_logs_action').on(table.action),
     index('idx_audit_logs_resource_type').on(table.resourceType),
     index('idx_audit_logs_created_at').on(table.createdAt),
+  ],
+);
+
+// ─── Content Comments ──────────────────────────────────
+export const contentComments = pgTable(
+  'content_comments',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    contentId: uuid('content_id')
+      .notNull()
+      .references(() => contents.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    body: text('body').notNull(),
+    mentionedUserIds: jsonb('mentioned_user_ids').$type<string[]>().default([]),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index('idx_content_comments_content').on(table.contentId),
+    index('idx_content_comments_user').on(table.userId),
+    index('idx_content_comments_created').on(table.createdAt),
+  ],
+);
+
+// ─── Notifications ─────────────────────────────────────
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    type: varchar('type', { length: 50 }).notNull(),
+    title: varchar('title', { length: 255 }).notNull(),
+    body: text('body'),
+    resourceType: varchar('resource_type', { length: 50 }),
+    resourceId: varchar('resource_id', { length: 255 }),
+    isRead: boolean('is_read').notNull().default(false),
+    link: varchar('link', { length: 500 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('idx_notifications_user').on(table.userId),
+    index('idx_notifications_is_read').on(table.isRead),
+    index('idx_notifications_created').on(table.createdAt),
   ],
 );
 

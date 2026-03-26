@@ -1,6 +1,6 @@
-import { eq, ilike, or, count as drizzleCount } from 'drizzle-orm';
+import { eq, ilike, or, count as drizzleCount, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { roles, users } from '../db/schema/index.js';
+import { roles, users, contentTypes } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import { ALL_PERMISSIONS } from '@eli-cms/shared';
@@ -43,6 +43,17 @@ export class RoleService {
     const existing = await this.findBySlug(input.slug);
     if (existing) throw new AppError(409, `Slug "${input.slug}" already exists`);
 
+    // Validate content type IDs if provided
+    if (input.allowedContentTypes?.length) {
+      const found = await db
+        .select({ id: contentTypes.id })
+        .from(contentTypes)
+        .where(inArray(contentTypes.id, input.allowedContentTypes));
+      if (found.length !== input.allowedContentTypes.length) {
+        throw new AppError(400, 'One or more content type IDs are invalid');
+      }
+    }
+
     const [role] = await db
       .insert(roles)
       .values({
@@ -50,6 +61,7 @@ export class RoleService {
         slug: input.slug,
         description: input.description ?? null,
         permissions: input.permissions,
+        allowedContentTypes: input.allowedContentTypes ?? null,
         isSystem: false,
       })
       .returning();
@@ -88,6 +100,17 @@ export class RoleService {
     if (input.slug && input.slug !== existing.slug) {
       const slugExists = await this.findBySlug(input.slug);
       if (slugExists) throw new AppError(409, `Slug "${input.slug}" already exists`);
+    }
+
+    // Validate content type IDs if provided
+    if (input.allowedContentTypes?.length) {
+      const found = await db
+        .select({ id: contentTypes.id })
+        .from(contentTypes)
+        .where(inArray(contentTypes.id, input.allowedContentTypes));
+      if (found.length !== input.allowedContentTypes.length) {
+        throw new AppError(400, 'One or more content type IDs are invalid');
+      }
     }
 
     const [role] = await db.update(roles).set(input).where(eq(roles.id, id)).returning();

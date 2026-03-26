@@ -105,7 +105,7 @@ export class ContentService {
     }
   }
 
-  static async findAll(query: ContentListQuery) {
+  static async findAll(query: ContentListQuery, options?: { allowedContentTypes?: string[] }) {
     const {
       page,
       limit,
@@ -128,6 +128,9 @@ export class ContentService {
     if (publishedAtTo) filters.push(lte(contents.publishedAt, publishedAtTo));
     if (createdAtFrom) filters.push(gte(contents.createdAt, createdAtFrom));
     if (createdAtTo) filters.push(lte(contents.createdAt, createdAtTo));
+    if (options?.allowedContentTypes?.length) {
+      filters.push(inArray(contents.contentTypeId, options.allowedContentTypes));
+    }
 
     const tsquery = search ? sanitizeSearchTerms(search) : null;
     if (tsquery) {
@@ -155,6 +158,7 @@ export class ContentService {
         slug: contents.slug,
         status: contents.status,
         data: contents.data,
+        featured: contents.featured,
         publishedAt: contents.publishedAt,
         editedBy: contents.editedBy,
         deletedAt: contents.deletedAt,
@@ -196,6 +200,9 @@ export class ContentService {
 
     // Slug exact match
     if (filter?.slug) filters.push(eq(contents.slug, filter.slug));
+
+    // Featured filter
+    if (filter?.featured !== undefined) filters.push(eq(contents.featured, filter.featured));
 
     // Date range filters
     if (filter?.createdAt?.gte) filters.push(gte(contents.createdAt, new Date(filter.createdAt.gte)));
@@ -243,11 +250,13 @@ export class ContentService {
     return { data, meta: buildMeta(total, page, limit) };
   }
 
-  static async findById(id: string) {
+  static async findById(id: string, options?: { includeTrashed?: boolean }) {
+    const filters = [eq(contents.id, id)];
+    if (!options?.includeTrashed) filters.push(isNull(contents.deletedAt));
     const [content] = await db
       .select()
       .from(contents)
-      .where(and(eq(contents.id, id), isNull(contents.deletedAt)))
+      .where(and(...filters))
       .limit(1);
     if (!content) throw new AppError(404, 'Content not found');
     const contentType = await ContentTypeService.findById(content.contentTypeId);
@@ -255,6 +264,14 @@ export class ContentService {
       ...content,
       contentType: { id: contentType.id, slug: contentType.slug, name: contentType.name, fields: contentType.fields },
     };
+  }
+
+  static async findByIds(ids: string[]) {
+    if (ids.length === 0) return [];
+    return db
+      .select({ id: contents.id, contentTypeId: contents.contentTypeId })
+      .from(contents)
+      .where(inArray(contents.id, ids));
   }
 
   static async findPublishedById(id: string) {
@@ -510,6 +527,7 @@ export class ContentService {
         slug: slug ?? null,
         status: input.status ?? 'draft',
         data: dataResult.data,
+        featured: input.featured ?? false,
         editedBy: actor?.id ?? null,
       })
       .returning();
@@ -786,12 +804,15 @@ export class ContentService {
     return content;
   }
 
-  static async findTrashed(query: TrashListQuery) {
+  static async findTrashed(query: TrashListQuery, options?: { allowedContentTypes?: string[] }) {
     const { page, limit, contentTypeId, search, sortBy, sortOrder } = query;
     const offset = (page - 1) * limit;
 
     const filters = [isNotNull(contents.deletedAt)];
     if (contentTypeId) filters.push(eq(contents.contentTypeId, contentTypeId));
+    if (options?.allowedContentTypes?.length) {
+      filters.push(inArray(contents.contentTypeId, options.allowedContentTypes));
+    }
 
     const tsquery = search ? sanitizeSearchTerms(search) : null;
     if (tsquery) {
@@ -830,8 +851,15 @@ export class ContentService {
     eventBus.emit('content.purged', { content, ...actorData });
   }
 
-  static async trashCount() {
-    const [{ total }] = await db.select({ total: drizzleCount() }).from(contents).where(isNotNull(contents.deletedAt));
+  static async trashCount(options?: { allowedContentTypes?: string[] }) {
+    const filters = [isNotNull(contents.deletedAt)];
+    if (options?.allowedContentTypes?.length) {
+      filters.push(inArray(contents.contentTypeId, options.allowedContentTypes));
+    }
+    const [{ total }] = await db
+      .select({ total: drizzleCount() })
+      .from(contents)
+      .where(and(...filters));
     return total;
   }
 }

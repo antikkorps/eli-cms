@@ -127,7 +127,9 @@
     "systemRole": "Système",
     "ownRolePermissionsHint": "Vous ne pouvez pas modifier les permissions de votre propre rôle.",
     "deleteTitle": "Supprimer le rôle",
-    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ? Cette action est irréversible."
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ? Cette action est irréversible.",
+    "contentTypeScopeLabel": "Accès aux types de contenu",
+    "restrictContentTypes": "Restreindre à des types de contenu spécifiques"
   },
   "users": {
     "title": "Utilisateurs",
@@ -341,6 +343,8 @@
     "columnSlug": "Slug",
     "duplicate": "Dupliquer",
     "duplicatePrefix": "Copie de",
+    "toggleFeatured": "Épingler/détacher",
+    "featured": "Épinglé",
     "duplicated": "Contenu dupliqué",
     "bulkActions": "Actions groupées",
     "bulkDelete": "Supprimer la sélection",
@@ -351,6 +355,17 @@
     "bulkSuccess": "Action groupée effectuée",
     "selected": "{count} sélectionné(s)",
     "relationsTab": "Relations",
+    "commentsTab": "Commentaires",
+    "noComments": "Aucun commentaire. Lancez la conversation !",
+    "commentPlaceholder": "Écrire un commentaire...",
+    "addComment": "Publier",
+    "editComment": "Modifier",
+    "deleteComment": "Supprimer",
+    "commentAdded": "Commentaire publié",
+    "commentUpdated": "Commentaire mis à jour",
+    "commentDeleted": "Commentaire supprimé",
+    "deleteCommentConfirm": "Êtes-vous sûr de vouloir supprimer ce commentaire ?",
+    "editedLabel": "modifié",
     "addRelation": "Ajouter une relation",
     "relationType": "Type de relation",
     "selectContent": "Sélectionner un contenu",
@@ -718,5 +733,10 @@
     "errorUsed": "Ce lien de réinitialisation a déjà été utilisé",
     "errorMismatch": "Les mots de passe ne correspondent pas",
     "backToLogin": "Retour à la connexion"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "noNotifications": "Aucune notification"
   }
 }

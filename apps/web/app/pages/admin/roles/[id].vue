@@ -20,6 +20,7 @@ const form = reactive({
   slug: '',
   description: '',
   permissions: [] as string[],
+  allowedContentTypes: null as string[] | null,
 });
 
 const { user } = useAuth();
@@ -40,6 +41,7 @@ async function fetchRole() {
         slug: string;
         description: string | null;
         permissions: string[];
+        allowedContentTypes: string[] | null;
         isSystem: boolean;
       };
     }>(`/roles/${route.params.id}`);
@@ -47,6 +49,7 @@ async function fetchRole() {
     form.slug = res.data.slug;
     form.description = res.data.description ?? '';
     form.permissions = res.data.permissions;
+    form.allowedContentTypes = res.data.allowedContentTypes;
     isSystem.value = res.data.isSystem;
   } catch {
     toast.add({ title: t('common.error'), color: 'error' });
@@ -63,6 +66,7 @@ async function submit() {
       name: form.name,
       description: form.description || null,
       permissions: form.permissions,
+      allowedContentTypes: form.allowedContentTypes,
     };
     if (!isSystem.value) {
       body.slug = form.slug;
@@ -119,6 +123,10 @@ onMounted(fetchRole);
 
       <UFormField :label="$t('roles.permissionsLabel')">
         <PermissionPicker v-model="form.permissions" :disabled="isOwnRole" />
+      </UFormField>
+
+      <UFormField :label="$t('roles.contentTypeScopeLabel')">
+        <ContentTypeScopePicker v-model="form.allowedContentTypes" :disabled="isOwnRole" />
       </UFormField>
 
       <div v-if="!isOwnRole" class="flex justify-end gap-2">

@@ -127,6 +127,41 @@
       "when": 1773700000000,
       "tag": "0017_user_names",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1773800000000,
+      "tag": "0018_contents_composite_index",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1773900000000,
+      "tag": "0019_content_comments",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1774000000000,
+      "tag": "0020_content_featured",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1774100000000,
+      "tag": "0021_role_allowed_content_types",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1774200000000,
+      "tag": "0022_mentions_and_notifications",
+      "breakpoints": true
     }
   ]
 }

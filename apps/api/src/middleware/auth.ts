@@ -19,6 +19,7 @@ export async function authenticate(ctx: Context, next: Next) {
       email: '',
       roleId: '',
       permissions: result.permissions,
+      allowedContentTypes: null,
       apiKeyId: result.id,
     } satisfies JwtPayload;
 

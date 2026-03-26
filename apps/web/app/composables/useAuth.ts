@@ -2,6 +2,7 @@ interface AuthRole {
   name: string;
   slug: string;
   permissions: string[];
+  allowedContentTypes?: string[] | null;
 }
 
 interface AuthUser {
@@ -65,6 +66,14 @@ export function useAuth() {
   function hasPermission(perm: string): boolean {
     const perms = state.user?.role?.permissions ?? [];
     return perms.includes('*') || perms.includes(perm);
+  }
+
+  function hasContentTypeAccess(contentTypeId: string): boolean {
+    const perms = state.user?.role?.permissions ?? [];
+    if (perms.includes('*')) return true;
+    const allowed = state.user?.role?.allowedContentTypes;
+    if (!allowed || allowed.length === 0) return true;
+    return allowed.includes(contentTypeId);
   }
 
   async function login(email: string, password: string) {
@@ -150,6 +159,7 @@ export function useAuth() {
     setTokens,
     clearTokens,
     hasPermission,
+    hasContentTypeAccess,
     login,
     fetchUser,
     updateProfile,

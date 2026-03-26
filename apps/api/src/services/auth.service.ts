@@ -69,6 +69,7 @@ export class AuthService {
         password: users.password,
         roleId: users.roleId,
         permissions: roles.permissions,
+        allowedContentTypes: roles.allowedContentTypes,
         failedLoginAttempts: users.failedLoginAttempts,
         lockedUntil: users.lockedUntil,
       })
@@ -112,6 +113,7 @@ export class AuthService {
       email: row.email,
       roleId: row.roleId,
       permissions: row.permissions as string[],
+      allowedContentTypes: row.allowedContentTypes as string[] | null,
     };
 
     const tokens = await this.generateTokens(payload, randomUUID());
@@ -154,6 +156,7 @@ export class AuthService {
         email: users.email,
         roleId: users.roleId,
         permissions: roles.permissions,
+        allowedContentTypes: roles.allowedContentTypes,
       })
       .from(users)
       .innerJoin(roles, eq(users.roleId, roles.id))
@@ -173,6 +176,7 @@ export class AuthService {
       email: row.email,
       roleId: row.roleId,
       permissions: row.permissions as string[],
+      allowedContentTypes: row.allowedContentTypes as string[] | null,
     };
     return this.generateTokens(payload, stored.family);
   }
@@ -306,6 +310,7 @@ export class AuthService {
         roleName: roles.name,
         roleSlug: roles.slug,
         permissions: roles.permissions,
+        allowedContentTypes: roles.allowedContentTypes,
       })
       .from(users)
       .innerJoin(roles, eq(users.roleId, roles.id))
@@ -323,7 +328,12 @@ export class AuthService {
       roleId: row.roleId,
       avatarStyle: row.avatarStyle,
       avatarSeed: row.avatarSeed,
-      role: { name: row.roleName, slug: row.roleSlug, permissions: row.permissions },
+      role: {
+        name: row.roleName,
+        slug: row.roleSlug,
+        permissions: row.permissions,
+        allowedContentTypes: row.allowedContentTypes as string[] | null,
+      },
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

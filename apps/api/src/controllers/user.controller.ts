@@ -1,10 +1,35 @@
 import type { Context } from 'koa';
 import { userListQuerySchema, createUserSchema, updateUserSchema } from '@eli-cms/shared';
+import { or, ilike } from 'drizzle-orm';
+import { db } from '../db/index.js';
+import { users } from '../db/schema/index.js';
 import { UserService } from '../services/user.service.js';
 import { AppError } from '../utils/app-error.js';
 import { extractActor } from '../utils/extract-actor.js';
 
 export class UserController {
+  static async mentionSearch(ctx: Context) {
+    const q = ((ctx.query.q as string) ?? '').trim();
+    if (!q || q.length < 1) {
+      ctx.body = { success: true, data: [] };
+      return;
+    }
+    const pattern = `%${q}%`;
+    const data = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        avatarStyle: users.avatarStyle,
+        avatarSeed: users.avatarSeed,
+      })
+      .from(users)
+      .where(or(ilike(users.email, pattern), ilike(users.firstName, pattern), ilike(users.lastName, pattern)))
+      .limit(10);
+    ctx.body = { success: true, data };
+  }
+
   static async list(ctx: Context) {
     const result = userListQuerySchema.safeParse(ctx.query);
     if (!result.success) {
