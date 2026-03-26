@@ -125,14 +125,36 @@
 ## Medium Priority — Features
 
 - [ ] Multilingual content (per-locale fields, locale switcher in content form, default locale config)
-- [ ] Content calendar view (visual calendar of scheduled/published content)
-- [ ] Per-content-type permissions (scope editor access to specific content types)
+- [x] Content calendar view (visual calendar of scheduled/published content)
+- [x] Per-content-type permissions (scope editor access to specific content types)
 - [x] Webhook test delivery (`POST /webhooks/:id/test` — verify endpoint before going live)
 - [x] Webhook delivery retry UI (manual retry button, delivery log detail view, status filter, payload modal)
 - [x] Dashboard charts (content created over time, storage usage, API usage)
 - [ ] Content type templates (blog, page, product — one-click presets)
 - [ ] Two-factor authentication (TOTP / authenticator app)
 - [ ] User invitation system (invite by email, set initial role)
+
+## Medium Priority — Editorial & Collaboration
+
+- [x] Content comments/notes (internal discussion thread per content — feedback between editors/reviewers, not exposed in public API)
+- [x] In-app notification center (real-time notifications on workflow transitions — content submitted for review, approved, commented — bell icon in navbar)
+- [ ] Shareable preview links (signed temporary URL to preview unpublished content — share with clients/external reviewers without admin access)
+- [ ] SEO toolkit (auto-generated meta title/description/OG image fields per content type, XML sitemap endpoint, Google snippet preview)
+- [ ] Saved filters/views (save filter+sort combinations as named views, per-user, quick access from sidebar or dropdown)
+- [ ] Bulk edit (edit a single field across multiple contents at once — e.g. change category on 20 articles)
+- [x] Content pinning/featuring (boolean `featured` flag, queryable in public API, toggle in contents list)
+
+## Medium Priority — AI
+
+- [ ] AI content assistant (generate/rewrite/translate text via Claude API from rich text editor toolbar button)
+- [ ] Media AI (auto-generate alt text and auto-tag images via vision model on upload)
+
+## Medium Priority — Infrastructure
+
+- [ ] Multi-environment (staging/production content environments with promotion workflow between them)
+- [ ] Backup & restore (full database export/import from admin UI — JSON dump, scheduled backups)
+- [ ] API usage dashboard (metrics per API key — requests/day, latency, top endpoints, quota visualization)
+- [ ] Field-level permissions (hide or make read-only specific fields based on user role, not just content-type level)
 
 ## Low Priority
 

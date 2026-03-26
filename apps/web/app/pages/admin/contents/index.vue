@@ -8,7 +8,7 @@ definePageMeta({
 
 const { apiFetch, baseURL } = useApi();
 const { t, locale } = useI18n();
-const { hasPermission } = useAuth();
+const { hasPermission, hasContentTypeAccess } = useAuth();
 const route = useRoute();
 const router = useRouter();
 const { items: contentTypeItems, fetch: fetchContentTypes, invalidate: invalidateContentTypes } = useContentTypes();
@@ -20,6 +20,7 @@ interface ContentItem {
   slug: string | null;
   status: string;
   data: Record<string, unknown>;
+  featured: boolean;
   contentType?: { name: string; slug: string };
   createdAt: string;
   updatedAt: string;
@@ -60,6 +61,7 @@ const {
   toggleSelect,
   selectAll,
   bulkAction,
+  fetchItems,
 } = useCrudList<ContentItem>({
   endpoint: '/contents',
   filters: {
@@ -82,6 +84,18 @@ async function duplicateContent(id: string) {
     });
     toast.add({ title: t('contents.duplicated'), color: 'success' });
     router.push(`/admin/contents/${res.data.id}`);
+  } catch {
+    toast.add({ title: t('common.error'), color: 'error' });
+  }
+}
+
+async function toggleFeatured(item: ContentItem) {
+  try {
+    await apiFetch(`/contents/${item.id}`, {
+      method: 'PUT',
+      body: { featured: !item.featured },
+    });
+    item.featured = !item.featured;
   } catch {
     toast.add({ title: t('common.error'), color: 'error' });
   }
@@ -132,7 +146,7 @@ async function handleExport() {
 
 const typeFilterItems = computed(() => [
   { label: t('contents.allTypes'), value: ALL },
-  ...contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })),
+  ...contentTypeItems.value.filter((ct) => hasContentTypeAccess(ct.id)).map((ct) => ({ label: ct.name, value: ct.id })),
 ]);
 
 const statusFilterItems = [
@@ -310,6 +324,18 @@ const columns = computed(() => [
     cell: ({ row }: { row: { original: ContentItem } }) => {
       const buttons = [];
       const isSingleton = contentTypeItems.value.find((c) => c.id === row.original.contentTypeId)?.isSingleton;
+      if (canUpdate.value) {
+        buttons.push(
+          h(UButton as ReturnType<typeof resolveComponent>, {
+            icon: row.original.featured ? 'i-lucide-star' : 'i-lucide-star-off',
+            variant: 'ghost',
+            color: row.original.featured ? 'warning' : 'neutral',
+            size: 'sm',
+            title: t('contents.toggleFeatured'),
+            onClick: () => toggleFeatured(row.original),
+          }),
+        );
+      }
       if (canCreate.value && !isSingleton) {
         buttons.push(
           h(UButton as ReturnType<typeof resolveComponent>, {

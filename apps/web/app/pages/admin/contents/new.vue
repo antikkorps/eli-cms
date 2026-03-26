@@ -16,6 +16,7 @@ const {
   invalidate: invalidateContentTypes,
 } = useContentTypes();
 const { errors: validationErrors, validate, clearErrors } = useContentValidation();
+const { hasContentTypeAccess } = useAuth();
 
 const selectedTypeId = ref('');
 const slug = ref('');
@@ -25,7 +26,9 @@ const saving = ref(false);
 
 const selectedType = computed(() => contentTypeItems.value.find((ct) => ct.id === selectedTypeId.value));
 
-const typeItems = computed(() => contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })));
+const typeItems = computed(() =>
+  contentTypeItems.value.filter((ct) => hasContentTypeAccess(ct.id)).map((ct) => ({ label: ct.name, value: ct.id })),
+);
 
 const statusItems = [
   { label: t('contents.draft'), value: 'draft' },

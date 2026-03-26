@@ -167,6 +167,7 @@ export const createContentSchema = z.object({
     .optional(),
   status: z.enum(CONTENT_STATUSES).default('draft'),
   data: z.record(z.unknown()),
+  featured: z.boolean().default(false),
   publishedAt: z.string().datetime({ offset: true }).optional(),
 });
 
@@ -179,6 +180,7 @@ export const updateContentSchema = z.object({
     .optional(),
   status: z.enum(CONTENT_STATUSES).optional(),
   data: z.record(z.unknown()).optional(),
+  featured: z.boolean().optional(),
   publishedAt: z.string().datetime({ offset: true }).nullable().optional(),
 });
 
@@ -414,6 +416,10 @@ const publicFilterSchema = z
   .object({
     contentTypeId: z.string().uuid().optional(),
     slug: z.string().max(255).optional(),
+    featured: z
+      .enum(['true', 'false'])
+      .transform((v) => v === 'true')
+      .optional(),
     createdAt: z
       .object({
         gte: z.string().datetime({ offset: true }).optional(),
@@ -528,6 +534,33 @@ export const updateMediaSchema = z.object({
 });
 export type UpdateMediaInput = z.infer<typeof updateMediaSchema>;
 
+// ─── Content Comment schemas ────────────────────────────
+export const createContentCommentSchema = z.object({
+  body: z.string().min(1).max(10000).transform(sanitize),
+  mentionedUserIds: z.array(z.string().uuid()).max(50).default([]),
+});
+
+export const updateContentCommentSchema = z.object({
+  body: z.string().min(1).max(10000).transform(sanitize),
+  mentionedUserIds: z.array(z.string().uuid()).max(50).optional(),
+});
+
+export const contentCommentListQuerySchema = paginationSchema;
+
+export type CreateContentCommentInput = z.infer<typeof createContentCommentSchema>;
+export type UpdateContentCommentInput = z.infer<typeof updateContentCommentSchema>;
+export type ContentCommentListQuery = z.infer<typeof contentCommentListQuerySchema>;
+
+// ─── Notification schemas ───────────────────────────────
+export const notificationListQuerySchema = paginationSchema.extend({
+  isRead: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .optional(),
+});
+
+export type NotificationListQuery = z.infer<typeof notificationListQuerySchema>;
+
 // ─── Content Relations schemas ──────────────────────────
 export const createContentRelationSchema = z.object({
   targetId: z.string().uuid(),
@@ -553,6 +586,7 @@ export const createRoleSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
   description: safeString(500).nullable().optional(),
   permissions: z.array(permissionEnum).min(1),
+  allowedContentTypes: z.array(z.string().uuid()).nullable().optional(),
 });
 
 export const updateRoleSchema = z.object({
@@ -565,6 +599,7 @@ export const updateRoleSchema = z.object({
     .optional(),
   description: safeString(500).nullable().optional(),
   permissions: z.array(permissionEnum).min(1).optional(),
+  allowedContentTypes: z.array(z.string().uuid()).nullable().optional(),
 });
 
 export const roleListQuerySchema = paginationSchema.extend({

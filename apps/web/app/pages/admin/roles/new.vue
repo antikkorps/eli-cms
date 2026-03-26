@@ -19,6 +19,7 @@ const form = reactive({
   slug: '',
   description: '',
   permissions: [] as string[],
+  allowedContentTypes: null as string[] | null,
 });
 
 const saving = ref(false);
@@ -42,6 +43,7 @@ async function submit() {
         slug: form.slug,
         description: form.description || null,
         permissions: form.permissions,
+        allowedContentTypes: form.allowedContentTypes,
       },
     });
     toast.add({ title: t('common.created'), color: 'success' });
@@ -78,6 +80,10 @@ async function submit() {
 
       <UFormField :label="$t('roles.permissionsLabel')">
         <PermissionPicker v-model="form.permissions" />
+      </UFormField>
+
+      <UFormField :label="$t('roles.contentTypeScopeLabel')">
+        <ContentTypeScopePicker v-model="form.allowedContentTypes" />
       </UFormField>
 
       <div class="flex justify-end gap-2">

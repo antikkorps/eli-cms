@@ -40,6 +40,11 @@ export const COMPONENTS_READ = 'components:read';
 export const COMPONENTS_UPDATE = 'components:update';
 export const COMPONENTS_DELETE = 'components:delete';
 
+export const COMMENTS_CREATE = 'comments:create';
+export const COMMENTS_READ = 'comments:read';
+export const COMMENTS_UPDATE = 'comments:update';
+export const COMMENTS_DELETE = 'comments:delete';
+
 export const AUDIT_LOGS_READ = 'audit-logs:read';
 
 export const API_KEYS_CREATE = 'api-keys:create';
@@ -81,6 +86,10 @@ export const ALL_PERMISSIONS = [
   COMPONENTS_READ,
   COMPONENTS_UPDATE,
   COMPONENTS_DELETE,
+  COMMENTS_CREATE,
+  COMMENTS_READ,
+  COMMENTS_UPDATE,
+  COMMENTS_DELETE,
   AUDIT_LOGS_READ,
   API_KEYS_CREATE,
   API_KEYS_READ,
@@ -102,6 +111,10 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, readonly Permission[]> = {
     CONTENT_REVIEW,
     CONTENT_TYPES_READ,
     COMPONENTS_READ,
+    COMMENTS_CREATE,
+    COMMENTS_READ,
+    COMMENTS_UPDATE,
+    COMMENTS_DELETE,
     UPLOADS_CREATE,
     UPLOADS_READ,
     UPLOADS_UPDATE,
@@ -119,6 +132,10 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, readonly Permission[]> = {
     USERS_READ,
     USERS_UPDATE,
     ROLES_READ,
+    COMMENTS_CREATE,
+    COMMENTS_READ,
+    COMMENTS_UPDATE,
+    COMMENTS_DELETE,
     UPLOADS_CREATE,
     UPLOADS_READ,
     UPLOADS_UPDATE,
@@ -134,6 +151,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, readonly Permission[]> = {
     CONTENT_REVIEW,
     CONTENT_TYPES_READ,
     COMPONENTS_READ,
+    COMMENTS_CREATE,
+    COMMENTS_READ,
+    COMMENTS_UPDATE,
     UPLOADS_CREATE,
     UPLOADS_READ,
     UPLOADS_UPDATE,

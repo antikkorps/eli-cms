@@ -80,6 +80,7 @@ const tabs = computed(() => [
   { label: t('contents.contentTab'), value: 'content' },
   { label: t('contents.versionsTab'), value: 'versions' },
   { label: t('contents.relationsTab'), value: 'relations' },
+  { label: t('contents.commentsTab'), value: 'comments' },
 ]);
 
 async function fetchContent() {
@@ -335,6 +336,11 @@ onMounted(async () => {
       formLoaded = true;
     });
   }
+  // Support ?tab=comments navigation from notifications
+  const tabQuery = route.query.tab as string | undefined;
+  if (tabQuery && ['content', 'versions', 'relations', 'comments'].includes(tabQuery)) {
+    activeTab.value = tabQuery;
+  }
 });
 
 onBeforeUnmount(() => {
@@ -477,6 +483,11 @@ onBeforeUnmount(() => {
           </div>
           <UButton icon="i-lucide-trash-2" variant="ghost" color="error" size="sm" @click="removeRelation(rel.id)" />
         </div>
+      </div>
+
+      <!-- Comments tab -->
+      <div v-else-if="activeTab === 'comments'">
+        <ContentComments :content-id="route.params.id as string" />
       </div>
 
       <ScheduleModal v-model:open="scheduleOpen" @confirm="handleSchedule" />
