@@ -27,7 +27,7 @@
     "koa-bodyparser": "^4.4.1",
     "koa-ratelimit": "^6.0.0",
     "multer": "^2.1.1",
-    "nodemailer": "^8.0.1",
+    "nodemailer": "^8.0.4",
     "pg": "^8.13.0",
     "pino": "^10.3.1",
     "sharp": "^0.34.5",
