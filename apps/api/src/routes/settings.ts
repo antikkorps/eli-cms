@@ -12,3 +12,6 @@ settingsRouter.put('/storage', authenticate, requirePermission(SETTINGS_UPDATE),
 settingsRouter.get('/smtp', authenticate, requirePermission(SETTINGS_READ), SettingsController.getSmtp);
 settingsRouter.put('/smtp', authenticate, requirePermission(SETTINGS_UPDATE), SettingsController.updateSmtp);
 settingsRouter.post('/smtp/test', authenticate, requirePermission(SETTINGS_UPDATE), SettingsController.testSmtp);
+
+settingsRouter.get('/seo', authenticate, requirePermission(SETTINGS_READ), SettingsController.getSeo);
+settingsRouter.put('/seo', authenticate, requirePermission(SETTINGS_UPDATE), SettingsController.updateSeo);

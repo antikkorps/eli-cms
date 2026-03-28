@@ -1,5 +1,6 @@
 import Router from '@koa/router';
 import { PublicController } from '../controllers/public.controller.js';
+import { SitemapController } from '../controllers/sitemap.controller.js';
 import { publicRateLimit } from '../middleware/rate-limiter.js';
 import { optionalAuth } from '../middleware/optional-auth.js';
 
@@ -14,3 +15,5 @@ publicRouter.get('/contents', optionalAuth, PublicController.listContents);
 publicRouter.get('/contents/by-type/:slug', optionalAuth, PublicController.listContentsByType);
 publicRouter.get('/contents/:id', optionalAuth, PublicController.getContentById);
 publicRouter.get('/content-types/:slug/contents/:contentSlug', optionalAuth, PublicController.getContentBySlug);
+
+publicRouter.get('/sitemap.xml', SitemapController.getSitemap);

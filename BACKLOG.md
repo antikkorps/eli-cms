@@ -139,7 +139,7 @@
 - [x] Content comments/notes (internal discussion thread per content — feedback between editors/reviewers, not exposed in public API)
 - [x] In-app notification center (real-time notifications on workflow transitions — content submitted for review, approved, commented — bell icon in navbar)
 - [ ] Shareable preview links (signed temporary URL to preview unpublished content — share with clients/external reviewers without admin access)
-- [ ] SEO toolkit (auto-generated meta title/description/OG image fields per content type, XML sitemap endpoint, Google snippet preview)
+- [x] SEO toolkit (auto-generated meta title/description/OG image fields per content type, XML sitemap endpoint, Google snippet preview)
 - [ ] Saved filters/views (save filter+sort combinations as named views, per-user, quick access from sidebar or dropdown)
 - [ ] Bulk edit (edit a single field across multiple contents at once — e.g. change category on 20 articles)
 - [x] Content pinning/featuring (boolean `featured` flag, queryable in public API, toggle in contents list)

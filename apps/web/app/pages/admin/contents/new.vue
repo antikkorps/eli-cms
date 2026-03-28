@@ -23,6 +23,7 @@ const slug = ref('');
 const status = ref('draft');
 const data = ref<Record<string, unknown>>({});
 const saving = ref(false);
+const seoSiteUrl = ref('');
 
 const selectedType = computed(() => contentTypeItems.value.find((ct) => ct.id === selectedTypeId.value));
 
@@ -123,8 +124,18 @@ defineShortcuts({
   },
 });
 
+async function fetchSeoConfig() {
+  try {
+    const res = await apiFetch<{ success: boolean; data: { siteUrl: string } | null }>('/settings/seo');
+    if (res.data?.siteUrl) seoSiteUrl.value = res.data.siteUrl;
+  } catch {
+    // not configured
+  }
+}
+
 onMounted(async () => {
   await fetchContentTypes();
+  fetchSeoConfig();
   // Pre-select type from URL ?type=slug
   const typeSlug = route.query.type as string | undefined;
   if (typeSlug && !route.query.duplicate) {
@@ -168,6 +179,14 @@ onMounted(async () => {
 
       <template v-if="selectedType">
         <DynamicContentForm v-model="data" :fields="selectedType.fields ?? []" :errors="validationErrors" />
+
+        <GoogleSnippetPreview
+          :title="(data._seoTitle as string) ?? ''"
+          :description="(data._seoDescription as string) ?? ''"
+          :slug="slug"
+          :site-url="seoSiteUrl"
+          :content-type-slug="selectedType.slug ?? ''"
+        />
       </template>
 
       <div class="flex justify-end gap-2">

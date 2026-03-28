@@ -45,10 +45,12 @@ const form = reactive({
 });
 
 const contentTypeId = ref('');
+const contentTypeSlug = ref('');
 const fields = ref<FieldDefinition[]>([]);
 const loading = ref(true);
 const saving = ref(false);
 const activeTab = ref('content');
+const seoSiteUrl = ref('');
 
 // Autosave
 const AUTOSAVE_DELAY = 30_000; // 30 seconds
@@ -94,10 +96,11 @@ async function fetchContent() {
         slug: string | null;
         status: string;
         data: Record<string, unknown>;
-        contentType?: { fields: FieldDefinition[] };
+        contentType?: { fields: FieldDefinition[]; slug?: string };
       };
     }>(`/contents/${route.params.id}`);
     contentTypeId.value = res.data.contentTypeId;
+    contentTypeSlug.value = res.data.contentType?.slug ?? '';
     form.slug = res.data.slug ?? '';
     form.status = res.data.status;
     form.data = res.data.data;
@@ -327,8 +330,18 @@ watch(activeTab, (tab) => {
   if (tab === 'relations' && !relations.value.length) fetchRelations();
 });
 
+async function fetchSeoConfig() {
+  try {
+    const res = await apiFetch<{ success: boolean; data: { siteUrl: string } | null }>('/settings/seo');
+    if (res.data?.siteUrl) seoSiteUrl.value = res.data.siteUrl;
+  } catch {
+    // not configured
+  }
+}
+
 onMounted(async () => {
   await fetchContent();
+  fetchSeoConfig();
   if (!loading.value) {
     await acquireLock(route.params.id as string);
     // Enable autosave after initial data is loaded
@@ -397,6 +410,14 @@ onBeforeUnmount(() => {
           </UFormField>
 
           <DynamicContentForm v-model="form.data" :fields="fields" :errors="validationErrors" />
+
+          <GoogleSnippetPreview
+            :title="(form.data._seoTitle as string) ?? ''"
+            :description="(form.data._seoDescription as string) ?? ''"
+            :slug="form.slug"
+            :site-url="seoSiteUrl"
+            :content-type-slug="contentTypeSlug"
+          />
 
           <div class="flex justify-end gap-2">
             <UButton to="/admin/contents" variant="ghost" color="neutral">
