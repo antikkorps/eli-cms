@@ -252,6 +252,13 @@ export interface MediaFolderTree extends MediaFolder {
   children: MediaFolderTree[];
 }
 
+// ─── SEO ────────────────────────────────────────────────
+export interface SeoConfig {
+  siteUrl: string;
+  defaultOgImage?: string;
+  excludedContentTypes?: string[];
+}
+
 // ─── SMTP ───────────────────────────────────────────────
 export type SmtpAuthType = 'password' | 'oauth2' | 'none';
 

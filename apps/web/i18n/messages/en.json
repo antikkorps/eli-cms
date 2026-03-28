@@ -738,5 +738,21 @@
     "title": "Notifications",
     "markAllRead": "Mark all as read",
     "noNotifications": "No notifications yet"
+  },
+  "seo": {
+    "title": "SEO",
+    "metaTitle": "Meta Title",
+    "metaDescription": "Meta Description",
+    "ogImage": "OG Image",
+    "siteUrl": "Site URL",
+    "siteUrlHint": "Used for sitemap generation and snippet preview",
+    "defaultOgImage": "Default OG Image",
+    "excludedContentTypes": "Excluded Content Types",
+    "excludedContentTypesHint": "Content types excluded from the XML sitemap",
+    "snippetPreview": "Google Snippet Preview",
+    "noTitle": "Add a meta title...",
+    "noDescription": "Add a meta description...",
+    "titleCount": "Title",
+    "descriptionCount": "Description"
   }
 }

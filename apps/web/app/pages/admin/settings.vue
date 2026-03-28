@@ -16,6 +16,7 @@ const activeTab = ref('storage');
 const tabs = computed(() => [
   { label: t('settings.storageTitle'), value: 'storage', icon: 'i-lucide-hard-drive' },
   { label: t('settings.smtpTitle'), value: 'smtp', icon: 'i-lucide-mail' },
+  { label: t('seo.title'), value: 'seo', icon: 'i-lucide-search' },
   ...(hasPermission('settings:update')
     ? [{ label: t('settings.onboardingTitle'), value: 'onboarding', icon: 'i-lucide-wand-sparkles' }]
     : []),
@@ -202,6 +203,54 @@ async function sendTestEmail() {
   }
 }
 
+// ─── SEO ───────────────────────────────────────────────
+const { items: contentTypeItems, fetch: fetchContentTypes } = useContentTypes();
+
+const seo = reactive({
+  siteUrl: '',
+  defaultOgImage: null as string | null,
+  excludedContentTypes: [] as string[],
+});
+
+const seoLoading = ref(true);
+const seoSaving = ref(false);
+
+const contentTypeSelectItems = computed(() => contentTypeItems.value.map((ct) => ({ label: ct.name, value: ct.id })));
+
+async function fetchSeo() {
+  seoLoading.value = true;
+  try {
+    const res = await apiFetch<{
+      success: boolean;
+      data: { siteUrl: string; defaultOgImage?: string; excludedContentTypes?: string[] } | null;
+    }>('/settings/seo');
+    if (res.data) {
+      seo.siteUrl = res.data.siteUrl;
+      seo.defaultOgImage = res.data.defaultOgImage ?? null;
+      seo.excludedContentTypes = res.data.excludedContentTypes ?? [];
+    }
+  } catch {
+    // not configured yet
+  } finally {
+    seoLoading.value = false;
+  }
+}
+
+async function submitSeo() {
+  seoSaving.value = true;
+  try {
+    const body: Record<string, unknown> = { siteUrl: seo.siteUrl };
+    if (seo.defaultOgImage) body.defaultOgImage = seo.defaultOgImage;
+    if (seo.excludedContentTypes.length) body.excludedContentTypes = seo.excludedContentTypes;
+    await apiFetch('/settings/seo', { method: 'PUT', body });
+    toast.add({ title: t('common.saved'), color: 'success' });
+  } catch {
+    toast.add({ title: t('common.error'), color: 'error' });
+  } finally {
+    seoSaving.value = false;
+  }
+}
+
 // ─── Onboarding ────────────────────────────────────────
 const resettingOnboarding = ref(false);
 
@@ -222,6 +271,8 @@ async function resetOnboarding() {
 onMounted(() => {
   fetchSettings();
   fetchSmtp();
+  fetchSeo();
+  fetchContentTypes();
 });
 </script>
 
@@ -376,6 +427,38 @@ onMounted(() => {
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- SEO tab -->
+    <div v-if="activeTab === 'seo'">
+      <div v-if="seoLoading" class="text-sm text-muted">{{ $t('common.loading') }}</div>
+
+      <form v-else class="space-y-6" @submit.prevent="submitSeo">
+        <div class="space-y-4">
+          <UFormField :label="$t('seo.siteUrl')" :hint="$t('seo.siteUrlHint')">
+            <UInput v-model="seo.siteUrl" placeholder="https://example.com" required class="w-full" />
+          </UFormField>
+
+          <UFormField :label="$t('seo.defaultOgImage')">
+            <MediaPicker
+              :model-value="seo.defaultOgImage"
+              :multiple="false"
+              :accept="['image/*']"
+              @update:model-value="(v: any) => (seo.defaultOgImage = v)"
+            />
+          </UFormField>
+
+          <UFormField :label="$t('seo.excludedContentTypes')" :hint="$t('seo.excludedContentTypesHint')">
+            <USelectMenu v-model="seo.excludedContentTypes" :items="contentTypeSelectItems" multiple class="w-full" />
+          </UFormField>
+        </div>
+
+        <div class="flex justify-end">
+          <UButton type="submit" :loading="seoSaving">
+            {{ $t('common.save') }}
+          </UButton>
+        </div>
+      </form>
     </div>
 
     <!-- Onboarding tab -->

@@ -3,6 +3,7 @@ import type { FieldDefinition } from '../types/index.js';
 import { sanitize, sanitizeHtml } from '../utils/sanitize.js';
 import { ALL_PERMISSIONS } from '../constants/permissions.js';
 import { DICEBEAR_STYLES } from '../constants/avatar.js';
+import { SEO_FIELD_PREFIX } from '../constants/seo.js';
 
 /** Zod string that strips all HTML tags and trims. */
 const safeString = (max = 255) => z.string().max(max).transform(sanitize);
@@ -101,7 +102,10 @@ const baseFieldDefinitionSchema = z.object({
   name: z
     .string()
     .min(1)
-    .regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier'),
+    .regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, 'Field name must be a valid identifier')
+    .refine((n) => !n.startsWith(SEO_FIELD_PREFIX), {
+      message: `Field names starting with "${SEO_FIELD_PREFIX}" are reserved for SEO fields`,
+    }),
   type: z.enum([...scalarFieldTypes, 'repeatable']),
   required: z.boolean(),
   label: safeString(255).pipe(z.string().min(1)),
@@ -719,6 +723,13 @@ export const apiKeyListQuerySchema = paginationSchema.extend({
     .optional(),
 });
 
+// ─── SEO Config schema ──────────────────────────────────
+export const seoConfigSchema = z.object({
+  siteUrl: z.string().url(),
+  defaultOgImage: z.string().uuid().optional(),
+  excludedContentTypes: z.array(z.string().uuid()).optional(),
+});
+
 // ─── SMTP Config schema ─────────────────────────────────
 export const smtpConfigSchema = z
   .object({
@@ -824,5 +835,6 @@ export type UpdateComponentInput = z.infer<typeof updateComponentSchema>;
 export type ComponentListQuery = z.infer<typeof componentListQuerySchema>;
 
 export type SmtpConfigInput = z.infer<typeof smtpConfigSchema>;
+export type SeoConfigInput = z.infer<typeof seoConfigSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

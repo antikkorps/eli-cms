@@ -4,8 +4,17 @@ import { contentTypes, contents } from '../db/schema/index.js';
 import { AppError } from '../utils/app-error.js';
 import { buildMeta } from '../utils/pagination.js';
 import type { CreateContentTypeInput, UpdateContentTypeInput, ContentTypeListQuery } from '@eli-cms/shared';
+import { getSeoFields, SEO_FIELD_PREFIX } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
 import type { Actor } from './content.service.js';
+
+/** Append SEO fields to a content type's fields array (read-time only). */
+function injectSeoFields<T extends { fields: unknown }>(ct: T): T {
+  const existing = ct.fields as Array<{ name: string }>;
+  // Filter out any user fields that would collide with reserved _seo* names
+  const userFields = existing.filter((f) => !f.name.startsWith(SEO_FIELD_PREFIX));
+  return { ...ct, fields: [...userFields, ...getSeoFields()] };
+}
 
 export class ContentTypeService {
   static async findAll(query: ContentTypeListQuery) {
@@ -47,7 +56,7 @@ export class ContentTypeService {
         .limit(limit)
         .offset(offset);
 
-      return { data, meta: buildMeta(total, page, limit) };
+      return { data: data.map(injectSeoFields), meta: buildMeta(total, page, limit) };
     }
 
     const data = await db
@@ -58,22 +67,23 @@ export class ContentTypeService {
       .limit(limit)
       .offset(offset);
 
-    return { data, meta: buildMeta(total, page, limit) };
+    return { data: data.map(injectSeoFields), meta: buildMeta(total, page, limit) };
   }
 
   static async findAllRaw() {
-    return db.select().from(contentTypes).orderBy(contentTypes.createdAt);
+    const data = await db.select().from(contentTypes).orderBy(contentTypes.createdAt);
+    return data.map(injectSeoFields);
   }
 
   static async findById(id: string) {
     const [ct] = await db.select().from(contentTypes).where(eq(contentTypes.id, id)).limit(1);
     if (!ct) throw new AppError(404, 'Content type not found');
-    return ct;
+    return injectSeoFields(ct);
   }
 
   static async findBySlug(slug: string) {
     const [ct] = await db.select().from(contentTypes).where(eq(contentTypes.slug, slug)).limit(1);
-    return ct ?? null;
+    return ct ? injectSeoFields(ct) : null;
   }
 
   static async findBySlugOrFail(slug: string) {

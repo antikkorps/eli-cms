@@ -1,12 +1,13 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { settings } from '../db/schema/index.js';
-import type { StorageConfig, SmtpConfig } from '@eli-cms/shared';
+import type { StorageConfig, SmtpConfig, SeoConfig } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
 import type { Actor } from './content.service.js';
 
 const STORAGE_KEY = 'storage';
 const SMTP_KEY = 'smtp';
+const SEO_KEY = 'seo';
 
 const DEFAULT_STORAGE_CONFIG: StorageConfig = { activeStorage: 'local' };
 
@@ -55,5 +56,27 @@ export class SettingsService {
       : {};
     eventBus.emit('settings.updated', { key: SMTP_KEY, ...actorData });
     return row.value as SmtpConfig;
+  }
+
+  static async getSeoConfig(): Promise<SeoConfig | null> {
+    const [row] = await db.select().from(settings).where(eq(settings.key, SEO_KEY)).limit(1);
+    return row ? (row.value as SeoConfig) : null;
+  }
+
+  static async updateSeoConfig(config: SeoConfig, actor?: Actor): Promise<SeoConfig> {
+    const [row] = await db
+      .insert(settings)
+      .values({ key: SEO_KEY, value: config, updatedAt: new Date() })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: config, updatedAt: new Date() },
+      })
+      .returning();
+
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
+    eventBus.emit('settings.updated', { key: SEO_KEY, ...actorData });
+    return row.value as SeoConfig;
   }
 }
