@@ -10,6 +10,7 @@ import { publicRouter } from './routes/public.js';
 import { contentTypesRouter } from './routes/content-types.js';
 import { contentsRouter } from './routes/contents.js';
 import { usersRouter } from './routes/users.js';
+import { invitationsRouter } from './routes/invitations.js';
 import { uploadsRouter } from './routes/uploads.js';
 import { settingsRouter } from './routes/settings.js';
 import { contentRelationsRouter } from './routes/content-relations.js';
@@ -82,6 +83,7 @@ export function createApp() {
   app.use(contentVersionsRouter.routes()).use(contentVersionsRouter.allowedMethods());
   app.use(contentCommentsRouter.routes()).use(contentCommentsRouter.allowedMethods());
   app.use(usersRouter.routes()).use(usersRouter.allowedMethods());
+  app.use(invitationsRouter.routes()).use(invitationsRouter.allowedMethods());
   app.use(uploadsRouter.routes()).use(uploadsRouter.allowedMethods());
   app.use(settingsRouter.routes()).use(settingsRouter.allowedMethods());
   app.use(webhooksRouter.routes()).use(webhooksRouter.allowedMethods());

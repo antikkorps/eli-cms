@@ -73,6 +73,35 @@ export const passwordResetTokens = pgTable(
   ],
 );
 
+// ─── User Invitations ──────────────────────────────────
+export const userInvitations = pgTable(
+  'user_invitations',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    email: varchar('email', { length: 255 }).notNull(),
+    roleId: uuid('role_id')
+      .notNull()
+      .references(() => roles.id, { onDelete: 'restrict' }),
+    tokenHash: varchar('token_hash', { length: 64 }).notNull(),
+    invitedBy: uuid('invited_by')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index('idx_user_invitations_email').on(table.email),
+    index('idx_user_invitations_token_hash').on(table.tokenHash),
+    index('idx_user_invitations_invited_by').on(table.invitedBy),
+  ],
+);
+
 // ─── Components (reusable field groups / blocks) ───────
 export const components = pgTable('components', {
   id: uuid('id').defaultRandom().primaryKey(),

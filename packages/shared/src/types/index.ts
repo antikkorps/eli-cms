@@ -23,6 +23,24 @@ export interface User {
   updatedAt: Date;
 }
 
+export type UserInvitationStatus = 'pending' | 'accepted' | 'revoked' | 'expired';
+
+export interface UserInvitation {
+  id: string;
+  email: string;
+  roleId: string;
+  roleName?: string;
+  invitedBy: string;
+  invitedByEmail?: string;
+  invitedByName?: string | null;
+  expiresAt: Date;
+  acceptedAt: Date | null;
+  revokedAt: Date | null;
+  status: UserInvitationStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export type FieldType =
   | 'text'
   | 'textarea'
