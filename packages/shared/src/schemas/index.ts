@@ -764,6 +764,23 @@ export const resetPasswordSchema = z.object({
   newPassword: z.string().min(6),
 });
 
+// ─── User Invitation schemas ────────────────────────────
+export const createInvitationSchema = z.object({
+  email: z.string().email(),
+  roleId: z.string().uuid(),
+});
+
+export const invitationListQuerySchema = paginationSchema.extend({
+  status: z.enum(['pending', 'accepted', 'revoked', 'expired']).optional(),
+});
+
+export const acceptInvitationSchema = z.object({
+  token: z.string().uuid(),
+  password: z.string().min(6),
+  firstName: z.string().max(100).optional(),
+  lastName: z.string().max(100).optional(),
+});
+
 // ─── Setup schema ───────────────────────────────────────
 export const setupSchema = z
   .object({
@@ -838,3 +855,6 @@ export type SmtpConfigInput = z.infer<typeof smtpConfigSchema>;
 export type SeoConfigInput = z.infer<typeof seoConfigSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type CreateInvitationInput = z.infer<typeof createInvitationSchema>;
+export type InvitationListQuery = z.infer<typeof invitationListQuerySchema>;
+export type AcceptInvitationInput = z.infer<typeof acceptInvitationSchema>;

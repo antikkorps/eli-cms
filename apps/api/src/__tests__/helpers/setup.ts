@@ -14,7 +14,7 @@ export function agent() {
 
 export async function truncateAll() {
   await db.execute(
-    sql`TRUNCATE TABLE audit_logs, api_keys, webhook_deliveries, webhooks, content_versions, content_relations, media, settings, contents, content_types, refresh_tokens, users, roles RESTART IDENTITY CASCADE`,
+    sql`TRUNCATE TABLE audit_logs, api_keys, webhook_deliveries, webhooks, content_versions, content_relations, media, settings, contents, content_types, refresh_tokens, user_invitations, users, roles RESTART IDENTITY CASCADE`,
   );
 }
 
@@ -26,17 +26,17 @@ const roleMetadata: Record<string, { name: string; description: string }> = {
 
 export async function ensureRoles() {
   for (const [slug, permissions] of Object.entries(DEFAULT_ROLE_PERMISSIONS)) {
-    const existing = await db.select().from(roles).where(eq(roles.slug, slug)).limit(1);
-    if (existing.length === 0) {
-      const meta = roleMetadata[slug] ?? { name: slug, description: '' };
-      await db.insert(roles).values({
+    const meta = roleMetadata[slug] ?? { name: slug, description: '' };
+    await db
+      .insert(roles)
+      .values({
         name: meta.name,
         slug,
         description: meta.description,
         permissions: [...permissions],
         isSystem: true,
-      });
-    }
+      })
+      .onConflictDoNothing({ target: roles.slug });
   }
 }
 

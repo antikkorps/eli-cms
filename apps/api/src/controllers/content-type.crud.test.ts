@@ -111,7 +111,8 @@ describe('Content Types CRUD', () => {
       expect(res.body.data.id).toBe(created.body.data.id);
       expect(res.body.data.slug).toBe('blog');
       expect(res.body.data.name).toBe('Blog');
-      expect(res.body.data.fields).toHaveLength(3);
+      const userFields = res.body.data.fields.filter((f: { name: string }) => !f.name.startsWith('_seo'));
+      expect(userFields).toHaveLength(3);
       expect(res.body.data.createdAt).toBeDefined();
       expect(res.body.data.updatedAt).toBeDefined();
     });

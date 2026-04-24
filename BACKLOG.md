@@ -155,11 +155,13 @@
 - [ ] Backup & restore (full database export/import from admin UI — JSON dump, scheduled backups)
 - [ ] API usage dashboard (metrics per API key — requests/day, latency, top endpoints, quota visualization)
 - [ ] Field-level permissions (hide or make read-only specific fields based on user role, not just content-type level)
+- [ ] Multisite (gérer plusieurs sites/marques depuis une seule instance — scope des contents/settings par site, sélecteur de site dans l'admin, filtrage API par site)
 
 ## Low Priority
 
 - [x] Component / block system (reusable field groups embeddable in any content type — hero, CTA, testimonials, icon picker, seed defaults, sidebar reorganization)
 - [ ] JSON/object field type (arbitrary nested JSON with optional schema validation)
+- [ ] GraphQL API (expose le schéma + les contents en GraphQL en plus du REST — alternative attendue par les équipes front modernes, citée comme standard dans les architectures hybrides)
 - [x] Dark mode polish (ensure all custom components respect dark theme)
 - [ ] OpenAPI spec completion (add paths/endpoints, currently only schemas defined)
 - [ ] E2E tests (Playwright or Cypress)

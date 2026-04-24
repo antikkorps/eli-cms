@@ -66,6 +66,39 @@ export class EmailService {
     });
   }
 
+  static async sendInvitation(
+    email: string,
+    token: string,
+    frontendUrl: string,
+    opts: { inviterName: string; roleName: string; expiresAt: Date },
+  ): Promise<void> {
+    const { transporter, smtp } = await this.getTransporter();
+    const acceptUrl = `${frontendUrl}/accept-invitation?token=${token}`;
+    const expiry = opts.expiresAt.toLocaleDateString(undefined, { dateStyle: 'long' });
+
+    await transporter.sendMail({
+      from: `"${smtp.fromName}" <${smtp.fromAddress}>`,
+      to: email,
+      subject: `You're invited to join ${smtp.fromName}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+          <h2 style="color: #1a1a2e;">You've been invited</h2>
+          <p><strong>${opts.inviterName}</strong> invited you to join Eli CMS as <strong>${opts.roleName}</strong>.</p>
+          <p>Click the button below to set your password and activate your account. This invitation expires on ${expiry}.</p>
+          <p style="text-align: center; margin: 32px 0;">
+            <a href="${acceptUrl}"
+               style="background-color: #6366f1; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+              Accept invitation
+            </a>
+          </p>
+          <p style="color: #666; font-size: 14px;">If you weren't expecting this invitation, you can safely ignore this email.</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #999; font-size: 12px;">Eli CMS</p>
+        </div>
+      `,
+    });
+  }
+
   static async sendTestEmail(toAddress: string): Promise<void> {
     const { transporter, smtp } = await this.getTransporter();
 

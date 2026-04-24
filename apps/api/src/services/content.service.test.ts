@@ -112,7 +112,8 @@ describe('ContentService', () => {
       expect(found.id).toBe(created.id);
       expect(found.contentType).toBeDefined();
       expect(found.contentType.slug).toBe('blog');
-      expect(found.contentType.fields).toHaveLength(3);
+      const userFields = found.contentType.fields.filter((f: { name: string }) => !f.name.startsWith('_seo'));
+      expect(userFields).toHaveLength(3);
     });
 
     it('throws 404 for non-existent id', async () => {

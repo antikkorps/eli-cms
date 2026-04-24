@@ -159,9 +159,14 @@ onMounted(fetchRoles);
         <h1 class="text-2xl font-bold">{{ $t('users.title') }}</h1>
         <p class="text-sm text-muted mt-1">{{ $t('users.subtitle') }}</p>
       </div>
-      <UButton v-if="canCreate" to="/admin/users/new" icon="i-lucide-plus">
-        {{ $t('users.create') }}
-      </UButton>
+      <div class="flex gap-2">
+        <UButton v-if="canCreate" to="/admin/users/invitations" variant="subtle" icon="i-lucide-mail">
+          {{ $t('invitations.title') }}
+        </UButton>
+        <UButton v-if="canCreate" to="/admin/users/new" icon="i-lucide-plus">
+          {{ $t('users.create') }}
+        </UButton>
+      </div>
     </div>
 
     <div class="flex flex-wrap gap-3">
