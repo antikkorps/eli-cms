@@ -1,5 +1,5 @@
 import type { Context } from 'koa';
-import { storageConfigSchema, smtpConfigSchema, seoConfigSchema } from '@eli-cms/shared';
+import { storageConfigSchema, smtpConfigSchema, seoConfigSchema, i18nConfigSchema } from '@eli-cms/shared';
 import { SettingsService } from '../services/settings.service.js';
 import { invalidateStorageCache } from '../services/storage/index.js';
 import { EmailService } from '../services/email.service.js';
@@ -77,6 +77,21 @@ export class SettingsController {
     }
 
     const saved = await SettingsService.updateSeoConfig(result.data, extractActor(ctx));
+    ctx.body = { success: true, data: saved };
+  }
+
+  static async getI18n(ctx: Context) {
+    const config = await SettingsService.getI18nConfig();
+    ctx.body = { success: true, data: config };
+  }
+
+  static async updateI18n(ctx: Context) {
+    const result = i18nConfigSchema.safeParse(ctx.request.body);
+    if (!result.success) {
+      throw new AppError(400, result.error.issues.map((issue: { message: string }) => issue.message).join(', '));
+    }
+
+    const saved = await SettingsService.updateI18nConfig(result.data, extractActor(ctx));
     ctx.body = { success: true, data: saved };
   }
 }

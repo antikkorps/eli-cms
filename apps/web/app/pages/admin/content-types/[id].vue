@@ -86,11 +86,22 @@ onMounted(fetchContentType);
 
 <template>
   <div class="p-6 space-y-6 max-w-3xl">
-    <div class="flex items-center gap-3">
-      <UButton to="/admin/content-types" variant="ghost" icon="i-lucide-arrow-left" size="sm" />
-      <div>
-        <h1 class="text-2xl font-bold">{{ $t('contentTypes.editTitle') }}</h1>
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <UButton to="/admin/content-types" variant="ghost" icon="i-lucide-arrow-left" size="sm" />
+        <div>
+          <h1 class="text-2xl font-bold">{{ $t('contentTypes.editTitle') }}</h1>
+        </div>
       </div>
+      <UButton
+        v-if="!loading"
+        :to="`/admin/content-type-templates/new?cloneFromContentType=${$route.params.id}`"
+        variant="outline"
+        icon="i-lucide-bookmark-plus"
+        size="sm"
+      >
+        {{ $t('contentTypeTemplates.saveAsTemplate') }}
+      </UButton>
     </div>
 
     <div v-if="loading" class="text-sm text-muted">{{ $t('common.loading') }}</div>

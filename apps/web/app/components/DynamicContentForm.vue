@@ -49,6 +49,7 @@ interface FieldDefinition {
   group?: string;
   componentSlugs?: string[];
   validation?: FieldValidation;
+  localizable?: boolean;
 }
 
 interface ComponentDef {
@@ -67,6 +68,44 @@ const props = withDefaults(
 );
 
 const model = defineModel<Record<string, unknown>>({ default: () => ({}) });
+
+// ─── i18n: per-field active locale ──────────────────────
+const { state: i18nState, fetch: fetchI18n } = useI18nConfig();
+onMounted(fetchI18n);
+
+const activeLocales = reactive<Record<string, string>>({});
+
+function localeFor(fieldName: string): string {
+  return activeLocales[fieldName] ?? i18nState.defaultLocale;
+}
+
+function setActiveLocale(fieldName: string, locale: string) {
+  activeLocales[fieldName] = locale;
+}
+
+function isLocalized(field: FieldDefinition): boolean {
+  return field.localizable === true && i18nState.locales.length > 1;
+}
+
+function getLocalizedValue(fieldName: string, localizable: boolean | undefined): unknown {
+  const raw = model.value[fieldName];
+  if (!localizable) return raw;
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    return (raw as Record<string, unknown>)[localeFor(fieldName)];
+  }
+  return raw;
+}
+
+function setLocalizedValue(fieldName: string, value: unknown, localizable: boolean | undefined) {
+  if (!localizable) {
+    updateValue(fieldName, value);
+    return;
+  }
+  const current = model.value[fieldName];
+  const wrapped =
+    current && typeof current === 'object' && !Array.isArray(current) ? (current as Record<string, unknown>) : {};
+  updateValue(fieldName, { ...wrapped, [localeFor(fieldName)]: value });
+}
 
 // ─── Component blocks ──────────────────────────────────
 const { items: availableComponents, fetch: fetchComponents } = useComponents();
@@ -236,88 +275,110 @@ watch(
 
     <template v-for="field in hasGroups ? (fieldsByGroup.get(activeTab) ?? []) : props.fields" :key="field.name">
       <UFormField :label="field.label" :required="field.required" :error="props.errors[field.name]">
+        <!-- Per-field locale tabs (only for localizable fields when >1 locale) -->
+        <div v-if="isLocalized(field)" class="mb-2 flex flex-wrap gap-1">
+          <UButton
+            v-for="loc in i18nState.locales"
+            :key="loc"
+            size="xs"
+            :variant="localeFor(field.name) === loc ? 'solid' : 'soft'"
+            :color="localeFor(field.name) === loc ? 'primary' : 'neutral'"
+            @click="setActiveLocale(field.name, loc)"
+          >
+            <span class="font-mono">{{ loc }}</span>
+            <span v-if="loc === i18nState.defaultLocale" class="text-xs opacity-60 ml-1">★</span>
+          </UButton>
+        </div>
+
         <UInput
           v-if="field.type === 'text' || field.type === 'email' || field.type === 'url'"
-          :model-value="(model[field.name] as string) ?? ''"
+          :key="`${field.name}-${localeFor(field.name)}`"
+          :model-value="(getLocalizedValue(field.name, field.localizable) as string) ?? ''"
           :type="field.type === 'email' ? 'email' : field.type === 'url' ? 'url' : 'text'"
           :required="field.required"
           :minlength="field.validation?.minLength"
           :maxlength="field.validation?.maxLength"
           :pattern="field.validation?.pattern"
           class="w-full"
-          @update:model-value="(v: string) => updateValue(field.name, v)"
+          @update:model-value="(v: string) => setLocalizedValue(field.name, v, field.localizable)"
         />
 
         <UTextarea
           v-else-if="field.type === 'textarea'"
-          :model-value="(model[field.name] as string) ?? ''"
+          :key="`${field.name}-${localeFor(field.name)}`"
+          :model-value="(getLocalizedValue(field.name, field.localizable) as string) ?? ''"
           :required="field.required"
           :minlength="field.validation?.minLength"
           :maxlength="field.validation?.maxLength"
           :rows="4"
           class="w-full"
-          @update:model-value="(v: string) => updateValue(field.name, v)"
+          @update:model-value="(v: string) => setLocalizedValue(field.name, v, field.localizable)"
         />
 
         <UInput
           v-else-if="field.type === 'number'"
-          :model-value="(model[field.name] as number) ?? ''"
+          :key="`${field.name}-${localeFor(field.name)}`"
+          :model-value="(getLocalizedValue(field.name, field.localizable) as number) ?? ''"
           type="number"
           :required="field.required"
           :min="field.validation?.min"
           :max="field.validation?.max"
           class="w-full"
-          @update:model-value="(v: number) => updateValue(field.name, v)"
+          @update:model-value="(v: number) => setLocalizedValue(field.name, v, field.localizable)"
         />
 
         <USwitch
           v-else-if="field.type === 'boolean'"
-          :model-value="(model[field.name] as boolean) ?? false"
-          @update:model-value="(v: boolean) => updateValue(field.name, v)"
+          :model-value="(getLocalizedValue(field.name, field.localizable) as boolean) ?? false"
+          @update:model-value="(v: boolean) => setLocalizedValue(field.name, v, field.localizable)"
         />
 
         <UInput
           v-else-if="field.type === 'date'"
-          :model-value="(model[field.name] as string) ?? ''"
+          :key="`${field.name}-${localeFor(field.name)}`"
+          :model-value="(getLocalizedValue(field.name, field.localizable) as string) ?? ''"
           type="date"
           :required="field.required"
           class="w-full"
-          @update:model-value="(v: string) => updateValue(field.name, v)"
+          @update:model-value="(v: string) => setLocalizedValue(field.name, v, field.localizable)"
         />
 
         <USelect
           v-else-if="field.type === 'select'"
-          :model-value="(model[field.name] as string) ?? ''"
+          :model-value="(getLocalizedValue(field.name, field.localizable) as string) ?? ''"
           :items="getSelectItems(field)"
           :required="field.required"
           class="w-full"
-          @update:model-value="(v: string) => updateValue(field.name, v)"
+          @update:model-value="(v: string) => setLocalizedValue(field.name, v, field.localizable)"
         />
 
         <MediaPicker
           v-else-if="field.type === 'media'"
           :model-value="
-            field.multiple ? ((model[field.name] as string[]) ?? []) : ((model[field.name] as string) ?? null)
+            field.multiple
+              ? ((getLocalizedValue(field.name, field.localizable) as string[]) ?? [])
+              : ((getLocalizedValue(field.name, field.localizable) as string) ?? null)
           "
           :multiple="field.multiple"
           :accept="field.accept"
-          @update:model-value="(v: any) => updateValue(field.name, v)"
+          @update:model-value="(v: any) => setLocalizedValue(field.name, v, field.localizable)"
         />
 
         <AuthorPicker
           v-else-if="field.type === 'author'"
-          :model-value="(model[field.name] as string) ?? null"
-          @update:model-value="(v: string | null) => updateValue(field.name, v)"
+          :model-value="(getLocalizedValue(field.name, field.localizable) as string) ?? null"
+          @update:model-value="(v: string | null) => setLocalizedValue(field.name, v, field.localizable)"
         />
 
         <UEditor
           v-else-if="field.type === 'richtext'"
           v-slot="{ editor }"
-          :model-value="(model[field.name] as string) ?? ''"
+          :key="`${field.name}-${localeFor(field.name)}`"
+          :model-value="(getLocalizedValue(field.name, field.localizable) as string) ?? ''"
           content-type="html"
           :placeholder="field.label"
           class="w-full min-h-48 border border-accented rounded-md"
-          @update:model-value="(v: string) => updateValue(field.name, v)"
+          @update:model-value="(v: string) => setLocalizedValue(field.name, v, field.localizable)"
         >
           <div class="flex items-center border-b border-accented">
             <UEditorToolbar :editor="editor" :items="editorToolbarItems" class="flex-1" />

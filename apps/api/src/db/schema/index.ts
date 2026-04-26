@@ -131,6 +131,22 @@ export const contentTypes = pgTable('content_types', {
     .$onUpdate(() => new Date()),
 });
 
+// ─── Content Type Templates (presets for new content types) ────
+export const contentTypeTemplates = pgTable('content_type_templates', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  slug: varchar('slug', { length: 255 }).notNull().unique(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  icon: varchar('icon', { length: 255 }),
+  fields: jsonb('fields').notNull().$type<FieldDefinition[]>(),
+  isSystem: boolean('is_system').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
 // ─── Refresh Tokens ────────────────────────────────────
 export const refreshTokens = pgTable(
   'refresh_tokens',

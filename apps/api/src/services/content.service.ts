@@ -21,6 +21,8 @@ import { eventBus } from './event-bus.js';
 import { UploadService } from './upload.service.js';
 import { UserService } from './user.service.js';
 import { WorkflowService } from './workflow.service.js';
+import { SettingsService } from './settings.service.js';
+import { localizeData, flattenLocalizedData } from '../utils/localize.js';
 
 export interface Actor {
   id: string;
@@ -174,7 +176,8 @@ export class ContentService {
       .limit(limit)
       .offset(offset);
 
-    const data = rows.map(({ ctName, ctSlug, ...rest }) => ({
+    const localized = await this.applyI18nWrap(rows);
+    const data = localized.map(({ ctName, ctSlug, ...rest }) => ({
       ...rest,
       contentType: { name: ctName, slug: ctSlug },
     }));
@@ -182,7 +185,10 @@ export class ContentService {
     return { data, meta: buildMeta(total, page, limit) };
   }
 
-  static async findPublic(query: PublicContentListQuery, options?: { isPreview?: boolean; contentTypeId?: string }) {
+  static async findPublic(
+    query: PublicContentListQuery,
+    options?: { isPreview?: boolean; contentTypeId?: string; locale?: string },
+  ) {
     const { page, limit, search, sortBy, sortOrder, filter } = query;
     const offset = (page - 1) * limit;
     const isPreview = options?.isPreview ?? false;
@@ -245,9 +251,38 @@ export class ContentService {
       orderByClause = orderFn(orderCol);
     }
 
-    const data = await db.select().from(contents).where(where).orderBy(orderByClause).limit(limit).offset(offset);
+    const rawData = await db.select().from(contents).where(where).orderBy(orderByClause).limit(limit).offset(offset);
+    const data = await this.localizeRowsForPublic(rawData, options?.locale);
 
     return { data, meta: buildMeta(total, page, limit) };
+  }
+
+  /**
+   * Localizes public-API rows: auto-wraps legacy data, then flattens to the
+   * requested locale (with default fallback) when `locale` is provided.
+   */
+  private static async localizeRowsForPublic<T extends { contentTypeId: string; data: unknown }>(
+    rows: T[],
+    locale?: string,
+  ): Promise<T[]> {
+    if (rows.length === 0) return rows;
+    const i18n = await SettingsService.getI18nConfig();
+    const ctIds = [...new Set(rows.map((r) => r.contentTypeId))];
+    const ctCache = new Map<string, { fields: FieldDefinition[]; componentMap: ComponentFieldsMap }>();
+    for (const ctId of ctIds) {
+      const ct = await ContentTypeService.findById(ctId);
+      const componentMap = await this.buildComponentMap(ct.fields);
+      ctCache.set(ctId, { fields: ct.fields, componentMap });
+    }
+    return rows.map((row) => {
+      const cached = ctCache.get(row.contentTypeId);
+      if (!cached) return row;
+      const wrapped = localizeData(cached.fields, row.data as Record<string, unknown>, i18n, cached.componentMap);
+      const finalData = locale
+        ? flattenLocalizedData(cached.fields, wrapped, i18n, locale, cached.componentMap)
+        : wrapped;
+      return { ...row, data: finalData };
+    });
   }
 
   static async findById(id: string, options?: { includeTrashed?: boolean }) {
@@ -260,8 +295,12 @@ export class ContentService {
       .limit(1);
     if (!content) throw new AppError(404, 'Content not found');
     const contentType = await ContentTypeService.findById(content.contentTypeId);
+    const i18n = await SettingsService.getI18nConfig();
+    const componentMap = await this.buildComponentMap(contentType.fields);
+    const localizedData = localizeData(contentType.fields, content.data as Record<string, unknown>, i18n, componentMap);
     return {
       ...content,
+      data: localizedData,
       contentType: { id: contentType.id, slug: contentType.slug, name: contentType.name, fields: contentType.fields },
     };
   }
@@ -274,14 +313,15 @@ export class ContentService {
       .where(inArray(contents.id, ids));
   }
 
-  static async findPublishedById(id: string) {
+  static async findPublishedById(id: string, options?: { locale?: string }) {
     const [content] = await db
       .select()
       .from(contents)
       .where(and(eq(contents.id, id), eq(contents.status, 'published'), isNull(contents.deletedAt)))
       .limit(1);
     if (!content) throw new AppError(404, 'Content not found');
-    return content;
+    const [localized] = await this.localizeRowsForPublic([content], options?.locale);
+    return localized;
   }
 
   private static collectMediaIds(
@@ -391,6 +431,30 @@ export class ContentService {
     }
   }
 
+  /**
+   * Auto-wraps localizable fields in a batch of rows. Looks up each row's
+   * content-type fields once per unique content-type ID.
+   */
+  private static async applyI18nWrap<T extends { contentTypeId: string; data: unknown }>(rows: T[]): Promise<T[]> {
+    if (rows.length === 0) return rows;
+    const i18n = await SettingsService.getI18nConfig();
+    const ctIds = [...new Set(rows.map((r) => r.contentTypeId))];
+    const ctCache = new Map<string, { fields: FieldDefinition[]; componentMap: ComponentFieldsMap }>();
+    for (const ctId of ctIds) {
+      const ct = await ContentTypeService.findById(ctId);
+      const componentMap = await this.buildComponentMap(ct.fields);
+      ctCache.set(ctId, { fields: ct.fields, componentMap });
+    }
+    return rows.map((row) => {
+      const cached = ctCache.get(row.contentTypeId);
+      if (!cached) return row;
+      return {
+        ...row,
+        data: localizeData(cached.fields, row.data as Record<string, unknown>, i18n, cached.componentMap),
+      };
+    });
+  }
+
   private static async buildComponentMap(fields: FieldDefinition[]): Promise<ComponentFieldsMap> {
     const slugs = new Set<string>();
     const collectSlugs = (defs: FieldDefinition[]) => {
@@ -455,7 +519,7 @@ export class ContentService {
     return content;
   }
 
-  static async findPublishedBySlug(slug: string, contentTypeId: string) {
+  static async findPublishedBySlug(slug: string, contentTypeId: string, options?: { locale?: string }) {
     const [content] = await db
       .select()
       .from(contents)
@@ -469,7 +533,8 @@ export class ContentService {
       )
       .limit(1);
     if (!content) throw new AppError(404, 'Content not found');
-    return content;
+    const [localized] = await this.localizeRowsForPublic([content], options?.locale);
+    return localized;
   }
 
   static async create(input: CreateContentInput, actor?: Actor) {
@@ -486,10 +551,12 @@ export class ContentService {
       }
     }
 
-    // Dynamic validation (with component resolution)
+    // Dynamic validation (with component resolution + i18n wrapping)
     const componentMap = await this.buildComponentMap(contentType.fields);
-    const dataSchema = buildContentDataSchema(contentType.fields, componentMap);
-    const dataResult = dataSchema.safeParse(input.data);
+    const i18n = await SettingsService.getI18nConfig();
+    const dataSchema = buildContentDataSchema(contentType.fields, componentMap, i18n);
+    const wrappedInput = localizeData(contentType.fields, input.data as Record<string, unknown>, i18n, componentMap);
+    const dataResult = dataSchema.safeParse(wrappedInput);
     if (!dataResult.success) {
       throw new AppError(
         400,
@@ -600,8 +667,15 @@ export class ContentService {
     if (input.data) {
       cachedContentType = await ContentTypeService.findById(existing.contentTypeId);
       const componentMap = await this.buildComponentMap(cachedContentType.fields);
-      const dataSchema = buildContentDataSchema(cachedContentType.fields, componentMap);
-      const dataResult = dataSchema.safeParse(input.data);
+      const i18n = await SettingsService.getI18nConfig();
+      const dataSchema = buildContentDataSchema(cachedContentType.fields, componentMap, i18n);
+      const wrappedInput = localizeData(
+        cachedContentType.fields,
+        input.data as Record<string, unknown>,
+        i18n,
+        componentMap,
+      );
+      const dataResult = dataSchema.safeParse(wrappedInput);
       if (!dataResult.success) {
         throw new AppError(
           400,

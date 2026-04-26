@@ -75,7 +75,7 @@ export class PublicController {
 
     const isPreview = result.data.preview === true && isPreviewAllowed(ctx);
 
-    const { data, meta } = await ContentService.findPublic(result.data, { isPreview });
+    const { data, meta } = await ContentService.findPublic(result.data, { isPreview, locale: result.data.locale });
 
     let items: Record<string, unknown>[] = data;
 
@@ -107,12 +107,13 @@ export class PublicController {
     const preview = result.success && result.data.preview === true && isPreviewAllowed(ctx);
     const populate = result.success ? result.data.populate : undefined;
     const fields = result.success ? result.data.fields : undefined;
+    const locale = result.success ? result.data.locale : undefined;
 
     let item: Record<string, unknown>;
     if (preview) {
       item = await ContentService.findById(ctx.params.id);
     } else {
-      item = await ContentService.findPublishedById(ctx.params.id);
+      item = await ContentService.findPublishedById(ctx.params.id, { locale });
     }
 
     // Populate relations
@@ -147,6 +148,7 @@ export class PublicController {
     const { data, meta } = await ContentService.findPublic(result.data, {
       isPreview,
       contentTypeId: contentType.id,
+      locale: result.data.locale,
     });
 
     let items: Record<string, unknown>[] = data;
@@ -181,12 +183,13 @@ export class PublicController {
     const preview = result.success && result.data.preview === true && isPreviewAllowed(ctx);
     const populate = result.success ? result.data.populate : undefined;
     const fields = result.success ? result.data.fields : undefined;
+    const locale = result.success ? result.data.locale : undefined;
 
     let item: Record<string, unknown>;
     if (preview) {
       item = await ContentService.findBySlug(ctx.params.contentSlug, contentType.id);
     } else {
-      item = await ContentService.findPublishedBySlug(ctx.params.contentSlug, contentType.id);
+      item = await ContentService.findPublishedBySlug(ctx.params.contentSlug, contentType.id, { locale });
     }
 
     // Populate relations

@@ -124,14 +124,14 @@
 
 ## Medium Priority — Features
 
-- [ ] Multilingual content (per-locale fields, locale switcher in content form, default locale config)
+- [x] Multilingual content (field-level `localizable` flag, `{ [locale]: value }` storage, configurable locales + default in settings, per-field locale tabs in admin form, public API `?locale=` query with default fallback, auto-wrap of legacy primitives on read)
 - [x] Content calendar view (visual calendar of scheduled/published content)
 - [x] Per-content-type permissions (scope editor access to specific content types)
 - [x] Webhook test delivery (`POST /webhooks/:id/test` — verify endpoint before going live)
 - [x] Webhook delivery retry UI (manual retry button, delivery log detail view, status filter, payload modal)
 - [x] Dashboard charts (content created over time, storage usage, API usage)
-- [ ] Content type templates (blog, page, product — one-click presets)
-- [ ] Two-factor authentication (TOTP / authenticator app)
+- [x] Content type templates (DB-backed CRUD with 5 seeded system presets — Blog Post, Landing Page, Product, FAQ, Author Bio; admin pages list/new/edit; picker on new CT page; "Save as template" button on existing CT; system templates immutable, clonable)
+- [ ] Two-factor authentication (TOTP / authenticator app) — **next session**: phase A core (otplib + qrcode, enable/disable/login flow, 8 backup codes one-shot displayed) + phase B trust device (table `user_trusted_devices` with bcrypt-hashed token + label + last_used + expires_at, HttpOnly opaque cookie, profile page list with revoke + revoke-all, disable 2FA purges all)
 - [ ] User invitation system (invite by email, set initial role)
 
 ## Medium Priority — Editorial & Collaboration

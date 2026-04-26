@@ -154,6 +154,30 @@ describe('Content Types CRUD', () => {
       expect(res.body.data.slug).toBe('blog');
     });
 
+    it('200 silently strips _seo* fields round-tripped from a read', async () => {
+      // Reproduces the bug where the admin UI reads the content type (with
+      // injected SEO fields) and round-trips them on save.
+      const api = agent();
+      const created = await api
+        .post('/api/v1/content-types')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send(buildBlogContentType());
+
+      const read = await api
+        .get(`/api/v1/content-types/${created.body.data.id}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      // Read response includes injected _seo* fields — submit them as-is.
+      const res = await api
+        .put(`/api/v1/content-types/${created.body.data.id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ fields: read.body.data.fields });
+
+      expect(res.status).toBe(200);
+      const stored = res.body.data.fields as Array<{ name: string }>;
+      expect(stored.some((f) => f.name.startsWith('_seo'))).toBe(false);
+    });
+
     it('200 updates the slug', async () => {
       const api = agent();
       const created = await api

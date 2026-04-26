@@ -28,6 +28,7 @@ interface FieldDefinition {
   group?: string;
   componentSlugs?: string[];
   validation?: FieldValidation;
+  localizable?: boolean;
 }
 
 const model = defineModel<FieldDefinition[]>({ default: () => [] });
@@ -386,13 +387,29 @@ function onSubFieldsReorder(fieldIndex: number, newSubFields: FieldDefinition[])
                   />
                 </UFormField>
 
-                <div class="flex items-end h-full pb-1">
+                <div class="flex items-end h-full pb-1 gap-4">
                   <label class="flex items-center gap-2 cursor-pointer">
                     <USwitch
                       :model-value="field.required"
                       @update:model-value="(v: boolean) => updateField(index, 'required', v)"
                     />
                     <span class="text-sm font-medium">{{ $t('fieldBuilder.fieldRequired') }}</span>
+                  </label>
+
+                  <label
+                    v-if="!['repeatable', 'component'].includes(field.type)"
+                    class="flex items-center gap-2 cursor-pointer"
+                  >
+                    <USwitch
+                      :model-value="field.localizable ?? false"
+                      @update:model-value="(v: boolean) => updateField(index, 'localizable', v || undefined)"
+                    />
+                    <span class="text-sm font-medium flex items-center gap-1">
+                      {{ $t('fieldBuilder.fieldLocalizable') }}
+                      <UTooltip :text="$t('fieldBuilder.fieldLocalizableHint')">
+                        <UIcon name="i-lucide-info" class="size-3.5 text-gray-400 dark:text-gray-500" />
+                      </UTooltip>
+                    </span>
                   </label>
                 </div>
               </div>

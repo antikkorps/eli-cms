@@ -23,6 +23,7 @@ import { auditLogsRouter } from './routes/audit-logs.js';
 import { apiKeysRouter } from './routes/api-keys.js';
 import { mediaFoldersRouter } from './routes/media-folders.js';
 import { componentsRouter } from './routes/components.js';
+import { contentTypeTemplatesRouter } from './routes/content-type-templates.js';
 import { contentCommentsRouter } from './routes/content-comments.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { statsRouter } from './routes/stats.js';
@@ -91,6 +92,7 @@ export function createApp() {
   app.use(apiKeysRouter.routes()).use(apiKeysRouter.allowedMethods());
   app.use(mediaFoldersRouter.routes()).use(mediaFoldersRouter.allowedMethods());
   app.use(componentsRouter.routes()).use(componentsRouter.allowedMethods());
+  app.use(contentTypeTemplatesRouter.routes()).use(contentTypeTemplatesRouter.allowedMethods());
   app.use(notificationsRouter.routes()).use(notificationsRouter.allowedMethods());
   app.use(statsRouter.routes()).use(statsRouter.allowedMethods());
 

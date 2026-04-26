@@ -79,6 +79,7 @@ export interface FieldDefinition {
   group?: string; // field group/tab name for UI organization
   componentSlugs?: string[]; // for component type — allowed component slugs
   validation?: FieldValidation; // advanced validation rules
+  localizable?: boolean; // when true, value is stored as { [locale]: value } per configured i18n locales
 }
 
 export interface ContentType {
@@ -88,6 +89,18 @@ export interface ContentType {
   fields: FieldDefinition[];
   isSingleton: boolean;
   slugPattern: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ContentTypeTemplate {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  fields: FieldDefinition[];
+  isSystem: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -276,6 +289,14 @@ export interface SeoConfig {
   defaultOgImage?: string;
   excludedContentTypes?: string[];
 }
+
+// ─── i18n ───────────────────────────────────────────────
+export interface I18nConfig {
+  defaultLocale: string;
+  locales: string[];
+}
+
+export type LocalizedValue<T = unknown> = Record<string, T>;
 
 // ─── SMTP ───────────────────────────────────────────────
 export type SmtpAuthType = 'password' | 'oauth2' | 'none';
