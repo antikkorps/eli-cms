@@ -130,7 +130,7 @@
 - [x] Webhook test delivery (`POST /webhooks/:id/test` — verify endpoint before going live)
 - [x] Webhook delivery retry UI (manual retry button, delivery log detail view, status filter, payload modal)
 - [x] Dashboard charts (content created over time, storage usage, API usage)
-- [ ] Content type templates (blog, page, product — one-click presets)
+- [x] Content type templates (DB-backed CRUD with 5 seeded system presets — Blog Post, Landing Page, Product, FAQ, Author Bio; admin pages list/new/edit; picker on new CT page; "Save as template" button on existing CT; system templates immutable, clonable)
 - [ ] Two-factor authentication (TOTP / authenticator app)
 - [ ] User invitation system (invite by email, set initial role)
 

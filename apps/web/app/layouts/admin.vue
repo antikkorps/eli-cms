@@ -140,6 +140,13 @@ const navigation = computed(() => {
   if (hasPermission('components:read') || hasPermission('components:create')) {
     structureChildren.push({ label: t('nav.components'), icon: 'i-lucide-component', to: '/admin/components' });
   }
+  if (hasPermission('content-types:read') || hasPermission('content-types:create')) {
+    structureChildren.push({
+      label: t('nav.contentTypeTemplates'),
+      icon: 'i-lucide-layout-template',
+      to: '/admin/content-type-templates',
+    });
+  }
   if (structureChildren.length > 0) {
     items.push({
       label: t('nav.structure'),

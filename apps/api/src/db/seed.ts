@@ -1,9 +1,10 @@
 import bcrypt from 'bcryptjs';
 import { db, pool } from './index.js';
-import { users, roles, components, contentTypes } from './schema/index.js';
+import { users, roles, components, contentTypes, contentTypeTemplates } from './schema/index.js';
 import { eq } from 'drizzle-orm';
 import { DEFAULT_ROLE_PERMISSIONS } from '@eli-cms/shared';
 import type { FieldDefinition } from '@eli-cms/shared';
+import { seedSystemContentTypeTemplates } from './seed-content-type-templates.js';
 
 async function seed() {
   console.log('Seeding database...');
@@ -171,6 +172,9 @@ async function seed() {
       console.log(`Content type "${ct.slug}" already exists, skipping.`);
     }
   }
+
+  // 5. Ensure system content type templates exist
+  await seedSystemContentTypeTemplates(db, contentTypeTemplates);
 
   await pool.end();
   console.log('Seed complete.');

@@ -178,6 +178,24 @@ export const createContentTypeSchema = z.object({
 
 export const updateContentTypeSchema = createContentTypeSchema.partial();
 
+// ─── Content Type Template schemas ─────────────────────
+export const createContentTypeTemplateSchema = z.object({
+  slug: z
+    .string()
+    .min(1)
+    .max(255)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
+  name: safeString(255).pipe(z.string().min(1)),
+  description: safeString(1000).nullable().optional(),
+  icon: z.string().max(255).nullable().optional(),
+  fields: userFieldsArraySchema,
+});
+
+export const updateContentTypeTemplateSchema = createContentTypeTemplateSchema.partial();
+
+export type CreateContentTypeTemplateInput = z.infer<typeof createContentTypeTemplateSchema>;
+export type UpdateContentTypeTemplateInput = z.infer<typeof updateContentTypeTemplateSchema>;
+
 // Content schemas
 export const CONTENT_STATUSES = ['draft', 'in-review', 'approved', 'scheduled', 'published'] as const;
 
@@ -435,6 +453,12 @@ export const updateComponentSchema = createComponentSchema.partial();
 export const componentListQuerySchema = paginationSchema.extend({
   search: z.string().max(200).optional(),
 });
+
+export const contentTypeTemplateListQuerySchema = paginationSchema.extend({
+  search: z.string().max(200).optional(),
+});
+
+export type ContentTypeTemplateListQuery = z.infer<typeof contentTypeTemplateListQuerySchema>;
 
 export const contentTypeListQuerySchema = paginationSchema.extend({
   search: z.string().max(200).optional(),

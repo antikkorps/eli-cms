@@ -93,6 +93,18 @@ export interface ContentType {
   updatedAt: Date;
 }
 
+export interface ContentTypeTemplate {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  fields: FieldDefinition[];
+  isSystem: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // ─── Components (reusable field groups / blocks) ───────
 export interface Component {
   id: string;
