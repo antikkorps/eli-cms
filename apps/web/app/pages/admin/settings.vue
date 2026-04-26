@@ -17,6 +17,7 @@ const tabs = computed(() => [
   { label: t('settings.storageTitle'), value: 'storage', icon: 'i-lucide-hard-drive' },
   { label: t('settings.smtpTitle'), value: 'smtp', icon: 'i-lucide-mail' },
   { label: t('seo.title'), value: 'seo', icon: 'i-lucide-search' },
+  { label: t('settings.i18nTitle'), value: 'i18n', icon: 'i-lucide-languages' },
   ...(hasPermission('settings:update')
     ? [{ label: t('settings.onboardingTitle'), value: 'onboarding', icon: 'i-lucide-wand-sparkles' }]
     : []),
@@ -251,6 +252,73 @@ async function submitSeo() {
   }
 }
 
+// ─── i18n ──────────────────────────────────────────────
+const i18nConfig = reactive({
+  defaultLocale: 'en',
+  locales: ['en'] as string[],
+});
+const i18nLoading = ref(true);
+const i18nSaving = ref(false);
+const newLocaleInput = ref('');
+const localePattern = /^[a-z]{2,3}(-[A-Z]{2})?$/;
+
+async function fetchI18n() {
+  i18nLoading.value = true;
+  try {
+    const res = await apiFetch<{ success: boolean; data: { defaultLocale: string; locales: string[] } }>(
+      '/settings/i18n',
+    );
+    if (res.data) {
+      i18nConfig.defaultLocale = res.data.defaultLocale;
+      i18nConfig.locales = [...res.data.locales];
+    }
+  } catch {
+    // defaults ok
+  } finally {
+    i18nLoading.value = false;
+  }
+}
+
+function addLocale() {
+  const code = newLocaleInput.value.trim();
+  if (!localePattern.test(code)) {
+    toast.add({ title: t('settings.i18nInvalidLocale'), color: 'error' });
+    return;
+  }
+  if (i18nConfig.locales.includes(code)) {
+    toast.add({ title: t('settings.i18nDuplicateLocale'), color: 'warning' });
+    return;
+  }
+  i18nConfig.locales.push(code);
+  newLocaleInput.value = '';
+}
+
+function removeLocale(code: string) {
+  if (i18nConfig.locales.length <= 1) return;
+  i18nConfig.locales = i18nConfig.locales.filter((l) => l !== code);
+  if (i18nConfig.defaultLocale === code) {
+    i18nConfig.defaultLocale = i18nConfig.locales[0]!;
+  }
+}
+
+const i18nLocaleOptions = computed(() => i18nConfig.locales.map((l) => ({ label: l, value: l })));
+
+async function submitI18n() {
+  i18nSaving.value = true;
+  try {
+    await apiFetch('/settings/i18n', {
+      method: 'PUT',
+      body: { defaultLocale: i18nConfig.defaultLocale, locales: i18nConfig.locales },
+    });
+    useI18nConfig().invalidate();
+    toast.add({ title: t('common.saved'), color: 'success' });
+  } catch {
+    toast.add({ title: t('common.error'), color: 'error' });
+  } finally {
+    i18nSaving.value = false;
+  }
+}
+
 // ─── Onboarding ────────────────────────────────────────
 const resettingOnboarding = ref(false);
 
@@ -273,6 +341,7 @@ onMounted(() => {
   fetchSmtp();
   fetchSeo();
   fetchContentTypes();
+  fetchI18n();
 });
 </script>
 
@@ -457,6 +526,56 @@ onMounted(() => {
           <UButton type="submit" :loading="seoSaving">
             {{ $t('common.save') }}
           </UButton>
+        </div>
+      </form>
+    </div>
+
+    <!-- i18n tab -->
+    <div v-if="activeTab === 'i18n'">
+      <div v-if="i18nLoading" class="text-sm text-muted">{{ $t('common.loading') }}</div>
+
+      <form v-else class="space-y-6" @submit.prevent="submitI18n">
+        <p class="text-sm text-muted">{{ $t('settings.i18nDescription') }}</p>
+
+        <UFormField :label="$t('settings.i18nLocalesLabel')" :hint="$t('settings.i18nLocalesHint')">
+          <div class="space-y-2">
+            <div v-for="code in i18nConfig.locales" :key="code" class="flex items-center gap-2">
+              <UBadge color="neutral" variant="soft" class="font-mono">{{ code }}</UBadge>
+              <span v-if="code === i18nConfig.defaultLocale" class="text-xs text-muted">
+                ({{ $t('settings.i18nDefaultLocaleLabel').toLowerCase() }})
+              </span>
+              <UButton
+                size="xs"
+                color="error"
+                variant="ghost"
+                icon="i-lucide-trash-2"
+                :disabled="i18nConfig.locales.length <= 1"
+                @click="removeLocale(code)"
+              >
+                {{ $t('settings.i18nRemoveLocale') }}
+              </UButton>
+            </div>
+
+            <div class="flex gap-2">
+              <UInput
+                v-model="newLocaleInput"
+                placeholder="fr-CA"
+                class="flex-1 font-mono"
+                @keydown.enter.prevent="addLocale"
+              />
+              <UButton variant="outline" icon="i-lucide-plus" @click="addLocale">
+                {{ $t('settings.i18nAddLocale') }}
+              </UButton>
+            </div>
+          </div>
+        </UFormField>
+
+        <UFormField :label="$t('settings.i18nDefaultLocaleLabel')" :hint="$t('settings.i18nDefaultLocaleHint')">
+          <USelect v-model="i18nConfig.defaultLocale" :items="i18nLocaleOptions" class="w-full" />
+        </UFormField>
+
+        <div class="flex justify-end">
+          <UButton type="submit" :loading="i18nSaving">{{ $t('common.save') }}</UButton>
         </div>
       </form>
     </div>

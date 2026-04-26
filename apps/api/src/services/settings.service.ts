@@ -1,15 +1,19 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { settings } from '../db/schema/index.js';
-import type { StorageConfig, SmtpConfig, SeoConfig } from '@eli-cms/shared';
+import type { StorageConfig, SmtpConfig, SeoConfig, I18nConfig } from '@eli-cms/shared';
 import { eventBus } from './event-bus.js';
 import type { Actor } from './content.service.js';
 
 const STORAGE_KEY = 'storage';
 const SMTP_KEY = 'smtp';
 const SEO_KEY = 'seo';
+const I18N_KEY = 'i18n';
 
 const DEFAULT_STORAGE_CONFIG: StorageConfig = { activeStorage: 'local' };
+const DEFAULT_I18N_CONFIG: I18nConfig = { defaultLocale: 'en', locales: ['en'] };
+
+let i18nCache: I18nConfig | null = null;
 
 export class SettingsService {
   static async getStorageConfig(): Promise<StorageConfig> {
@@ -78,5 +82,35 @@ export class SettingsService {
       : {};
     eventBus.emit('settings.updated', { key: SEO_KEY, ...actorData });
     return row.value as SeoConfig;
+  }
+
+  static async getI18nConfig(): Promise<I18nConfig> {
+    if (i18nCache) return i18nCache;
+    const [row] = await db.select().from(settings).where(eq(settings.key, I18N_KEY)).limit(1);
+    i18nCache = row ? (row.value as I18nConfig) : DEFAULT_I18N_CONFIG;
+    return i18nCache;
+  }
+
+  static async updateI18nConfig(config: I18nConfig, actor?: Actor): Promise<I18nConfig> {
+    const [row] = await db
+      .insert(settings)
+      .values({ key: I18N_KEY, value: config, updatedAt: new Date() })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: config, updatedAt: new Date() },
+      })
+      .returning();
+
+    i18nCache = row.value as I18nConfig;
+
+    const actorData = actor
+      ? { actorId: actor.id, actorType: actor.type, ipAddress: actor.ip, userAgent: actor.userAgent }
+      : {};
+    eventBus.emit('settings.updated', { key: I18N_KEY, ...actorData });
+    return i18nCache;
+  }
+
+  static invalidateI18nCache(): void {
+    i18nCache = null;
   }
 }

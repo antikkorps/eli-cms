@@ -15,3 +15,6 @@ settingsRouter.post('/smtp/test', authenticate, requirePermission(SETTINGS_UPDAT
 
 settingsRouter.get('/seo', authenticate, requirePermission(SETTINGS_READ), SettingsController.getSeo);
 settingsRouter.put('/seo', authenticate, requirePermission(SETTINGS_UPDATE), SettingsController.updateSeo);
+
+settingsRouter.get('/i18n', authenticate, requirePermission(SETTINGS_READ), SettingsController.getI18n);
+settingsRouter.put('/i18n', authenticate, requirePermission(SETTINGS_UPDATE), SettingsController.updateI18n);

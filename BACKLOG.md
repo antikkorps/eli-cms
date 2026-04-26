@@ -124,7 +124,7 @@
 
 ## Medium Priority — Features
 
-- [ ] Multilingual content (per-locale fields, locale switcher in content form, default locale config)
+- [x] Multilingual content (field-level `localizable` flag, `{ [locale]: value }` storage, configurable locales + default in settings, per-field locale tabs in admin form, public API `?locale=` query with default fallback, auto-wrap of legacy primitives on read)
 - [x] Content calendar view (visual calendar of scheduled/published content)
 - [x] Per-content-type permissions (scope editor access to specific content types)
 - [x] Webhook test delivery (`POST /webhooks/:id/test` — verify endpoint before going live)

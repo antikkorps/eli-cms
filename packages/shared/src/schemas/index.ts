@@ -116,6 +116,7 @@ const baseFieldDefinitionSchema = z.object({
   group: z.string().max(255).optional(),
   componentSlugs: z.array(z.string().max(255)).optional(),
   validation: fieldValidationSchema,
+  localizable: z.boolean().optional(),
   subFields: z
     .lazy(() =>
       z
@@ -145,6 +146,24 @@ const fieldDefinitionSchema = baseFieldDefinitionSchema.refine(
   { message: 'Repeatable fields must have at least one sub-field', path: ['subFields'] },
 );
 
+/**
+ * Strips SEO fields from incoming `fields` arrays. The API injects them at
+ * read-time, so admin UIs round-trip them on save — we silently drop them
+ * here so they don't trip the "_seo* is reserved" refine in fieldDefinitionSchema.
+ */
+const userFieldsArraySchema = z.preprocess((val) => {
+  if (!Array.isArray(val)) return val;
+  return val.filter(
+    (f) =>
+      !(
+        f &&
+        typeof f === 'object' &&
+        typeof (f as { name?: unknown }).name === 'string' &&
+        (f as { name: string }).name.startsWith(SEO_FIELD_PREFIX)
+      ),
+  );
+}, z.array(fieldDefinitionSchema).min(1));
+
 export const createContentTypeSchema = z.object({
   slug: z
     .string()
@@ -152,7 +171,7 @@ export const createContentTypeSchema = z.object({
     .max(255)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase kebab-case'),
   name: safeString(255).pipe(z.string().min(1)),
-  fields: z.array(fieldDefinitionSchema).min(1),
+  fields: userFieldsArraySchema,
   isSingleton: z.boolean().default(false),
   slugPattern: z.string().max(500).nullable().optional(),
 });
@@ -194,13 +213,23 @@ export const updateContentSchema = z.object({
  */
 export type ComponentFieldsMap = Map<string, FieldDefinition[]>;
 
+export interface BuildSchemaI18n {
+  defaultLocale: string;
+  locales: string[];
+}
+
 /**
  * Builds a Zod schema dynamically from field definitions.
  * This is the core of the CPT system — zero code, zero migration.
+ *
+ * When `i18n` is provided, fields with `localizable: true` are wrapped in a
+ * locale-keyed object (`{ en: ..., fr: ... }`). The default locale is required
+ * when the field itself is required; other locales are always optional.
  */
 export function buildContentDataSchema(
   fields: FieldDefinition[],
   componentMap?: ComponentFieldsMap,
+  i18n?: BuildSchemaI18n,
 ): z.ZodObject<Record<string, z.ZodTypeAny>> {
   const shape: Record<string, z.ZodTypeAny> = {};
 
@@ -298,7 +327,7 @@ export function buildContentDataSchema(
         break;
       case 'repeatable':
         if (field.subFields && field.subFields.length > 0) {
-          const itemSchema = buildContentDataSchema(field.subFields, componentMap);
+          const itemSchema = buildContentDataSchema(field.subFields, componentMap, i18n);
           fieldSchema = z.array(itemSchema);
         } else {
           fieldSchema = z.array(z.unknown());
@@ -312,7 +341,7 @@ export function buildContentDataSchema(
             .filter((slug) => componentMap.has(slug))
             .map((slug) => {
               const compFields = componentMap.get(slug)!;
-              const dataSchema = buildContentDataSchema(compFields, componentMap);
+              const dataSchema = buildContentDataSchema(compFields, componentMap, i18n);
               return dataSchema.extend({ _component: z.literal(slug) });
             });
 
@@ -338,7 +367,25 @@ export function buildContentDataSchema(
         fieldSchema = z.unknown();
     }
 
-    if (field.defaultValue !== undefined && field.defaultValue !== null) {
+    // Wrap localizable fields in a locale-keyed object: { [locale]: value }.
+    // Repeatable/component fields are not localizable as a whole — to translate
+    // their inner content, mark sub-fields as localizable individually.
+    const isLocalizable =
+      field.localizable === true && field.type !== 'repeatable' && field.type !== 'component' && i18n !== undefined;
+
+    if (isLocalizable) {
+      const localeShape: Record<string, z.ZodTypeAny> = {};
+      const innerSchema = fieldSchema;
+      for (const locale of i18n!.locales) {
+        const isDefault = locale === i18n!.defaultLocale;
+        localeShape[locale] = field.required && isDefault ? innerSchema : innerSchema.optional();
+      }
+      fieldSchema = z.object(localeShape).strict({ message: 'Unknown locale key' });
+
+      if (field.defaultValue !== undefined && field.defaultValue !== null) {
+        fieldSchema = fieldSchema.default({ [i18n!.defaultLocale]: field.defaultValue });
+      }
+    } else if (field.defaultValue !== undefined && field.defaultValue !== null) {
       fieldSchema = fieldSchema.default(field.defaultValue);
     }
 
@@ -455,6 +502,12 @@ export const publicContentListQuerySchema = paginationSchema.extend({
   preview: z
     .enum(['true', 'false'])
     .transform((v) => v === 'true')
+    .optional(),
+  locale: z
+    .string()
+    .min(2)
+    .max(10)
+    .regex(/^[a-z]{2,3}(-[A-Z]{2})?$/)
     .optional(),
 });
 
@@ -729,6 +782,30 @@ export const seoConfigSchema = z.object({
   defaultOgImage: z.string().uuid().optional(),
   excludedContentTypes: z.array(z.string().uuid()).optional(),
 });
+
+// ─── i18n Config schema ─────────────────────────────────
+/** BCP 47 subset: language code (2 letters) optionally followed by a region (e.g. "en", "fr-CA", "pt-BR"). */
+const localeCode = z
+  .string()
+  .min(2)
+  .max(10)
+  .regex(/^[a-z]{2,3}(-[A-Z]{2})?$/, 'Locale must be a BCP 47 code (e.g. "en", "fr-CA")');
+
+export const i18nConfigSchema = z
+  .object({
+    defaultLocale: localeCode,
+    locales: z.array(localeCode).min(1).max(50),
+  })
+  .refine((c) => c.locales.includes(c.defaultLocale), {
+    message: 'defaultLocale must be present in locales',
+    path: ['defaultLocale'],
+  })
+  .refine((c) => new Set(c.locales).size === c.locales.length, {
+    message: 'locales must be unique',
+    path: ['locales'],
+  });
+
+export type I18nConfigInput = z.infer<typeof i18nConfigSchema>;
 
 // ─── SMTP Config schema ─────────────────────────────────
 export const smtpConfigSchema = z

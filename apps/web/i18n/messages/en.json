@@ -248,7 +248,17 @@
     "onboardingTitle": "Onboarding",
     "onboardingDescription": "Re-run the onboarding wizard to add new content types and components. Existing data won't be deleted.",
     "onboardingRelaunch": "Relaunch onboarding wizard",
-    "onboardingReset": "Onboarding reset — redirecting to wizard"
+    "onboardingReset": "Onboarding reset — redirecting to wizard",
+    "i18nTitle": "Languages",
+    "i18nDescription": "Configure the locales available for translatable content fields. The default locale is required when a localizable field is required.",
+    "i18nLocalesLabel": "Available locales",
+    "i18nLocalesHint": "BCP 47 codes (e.g. en, fr, fr-CA, pt-BR). Add at least one.",
+    "i18nDefaultLocaleLabel": "Default locale",
+    "i18nDefaultLocaleHint": "Used as fallback when a translation is missing.",
+    "i18nAddLocale": "Add locale",
+    "i18nRemoveLocale": "Remove",
+    "i18nDuplicateLocale": "Locale already added",
+    "i18nInvalidLocale": "Invalid locale code"
   },
   "contentTypes": {
     "title": "Content Types",
@@ -324,6 +334,8 @@
     "fieldLabelPlaceholder": "e.g. Title",
     "fieldType": "Type",
     "fieldRequired": "Required",
+    "fieldLocalizable": "Translatable",
+    "fieldLocalizableHint": "Store a value per locale. Default-locale value is required when the field itself is required.",
     "fieldOptions": "Options (one per line)",
     "fieldOptionsPlaceholder": "option1\noption2\noption3",
     "duplicateName": "Field name already exists",

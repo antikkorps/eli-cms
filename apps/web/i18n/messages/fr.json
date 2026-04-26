@@ -248,7 +248,17 @@
     "onboardingTitle": "Onboarding",
     "onboardingDescription": "Relancez l'assistant de configuration pour ajouter de nouveaux types de contenu et composants. Les données existantes ne seront pas supprimées.",
     "onboardingRelaunch": "Relancer l'assistant",
-    "onboardingReset": "Onboarding réinitialisé — redirection vers l'assistant"
+    "onboardingReset": "Onboarding réinitialisé — redirection vers l'assistant",
+    "i18nTitle": "Langues",
+    "i18nDescription": "Configurez les locales disponibles pour les champs de contenu traduisibles. La locale par défaut est requise lorsqu'un champ traduisible est obligatoire.",
+    "i18nLocalesLabel": "Locales disponibles",
+    "i18nLocalesHint": "Codes BCP 47 (ex. en, fr, fr-CA, pt-BR). Au moins une locale requise.",
+    "i18nDefaultLocaleLabel": "Locale par défaut",
+    "i18nDefaultLocaleHint": "Utilisée comme repli lorsqu'une traduction est absente.",
+    "i18nAddLocale": "Ajouter une locale",
+    "i18nRemoveLocale": "Retirer",
+    "i18nDuplicateLocale": "Locale déjà ajoutée",
+    "i18nInvalidLocale": "Code de locale invalide"
   },
   "contentTypes": {
     "title": "Types de contenu",
@@ -324,6 +334,8 @@
     "fieldLabelPlaceholder": "ex. Titre",
     "fieldType": "Type",
     "fieldRequired": "Requis",
+    "fieldLocalizable": "Traduisible",
+    "fieldLocalizableHint": "Stocke une valeur par locale. La valeur dans la locale par défaut est requise si le champ lui-même est obligatoire.",
     "fieldOptions": "Options (une par ligne)",
     "fieldOptionsPlaceholder": "option1\noption2\noption3",
     "duplicateName": "Ce nom de champ existe déjà",
