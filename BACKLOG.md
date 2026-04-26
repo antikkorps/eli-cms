@@ -131,7 +131,7 @@
 - [x] Webhook delivery retry UI (manual retry button, delivery log detail view, status filter, payload modal)
 - [x] Dashboard charts (content created over time, storage usage, API usage)
 - [x] Content type templates (DB-backed CRUD with 5 seeded system presets — Blog Post, Landing Page, Product, FAQ, Author Bio; admin pages list/new/edit; picker on new CT page; "Save as template" button on existing CT; system templates immutable, clonable)
-- [ ] Two-factor authentication (TOTP / authenticator app)
+- [ ] Two-factor authentication (TOTP / authenticator app) — **next session**: phase A core (otplib + qrcode, enable/disable/login flow, 8 backup codes one-shot displayed) + phase B trust device (table `user_trusted_devices` with bcrypt-hashed token + label + last_used + expires_at, HttpOnly opaque cookie, profile page list with revoke + revoke-all, disable 2FA purges all)
 - [ ] User invitation system (invite by email, set initial role)
 
 ## Medium Priority — Editorial & Collaboration
