@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@eli-cms/shared": "workspace:*",
-    "@nuxt/ui": "^4.5.0",
+    "@nuxt/ui": "^4.8.1",
     "@nuxtjs/i18n": "^10.2.3",
     "@tiptap/pm": "^3.20.0",
     "@tiptap/vue-3": "^3.20.0",
